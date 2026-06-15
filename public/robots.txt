@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Disallow sensitive or internal paths
+Disallow: /api/
+Disallow: /*.json$
+
+Sitemap: https://explainthehacker.cyberedt.com/sitemap.xml

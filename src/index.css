@@ -1,0 +1,545 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens: Terminal Hacker Theme ──────────────────── */
+:root {
+  /* Core palette */
+  --color-bg: #000000;
+  --color-surface: #0a0a0a;
+  --color-surface-2: #111111;
+  --color-surface-3: #1a1a1a;
+  --color-border: #1f1f1f;
+  --color-border-2: #2a2a2a;
+  --color-border-focus: #ff0033;
+
+  /* Brand */
+  --color-accent: #ff0033;       /* red — primary brand */
+  --color-accent-dark: #cc0028;
+  --color-primary: #ffffff;
+
+  /* Semantic */
+  --color-success: #00ff9d;      /* terminal green */
+  --color-warning: #ffaa00;
+  --color-danger: #ff0033;
+  --color-info: #00aaff;
+
+  /* Typography */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #888888;
+  --color-text-muted: #444444;
+
+  /* Fonts */
+  --font-display: 'Bebas Neue', 'Impact', sans-serif;
+  --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+
+  /* Shadows */
+  --shadow-card: 0 0 0 1px #1f1f1f;
+  --shadow-card-hover: 0 0 0 1px #2a2a2a, 0 4px 24px rgba(255, 0, 51, 0.08);
+  --shadow-accent: 0 0 0 2px rgba(255, 0, 51, 0.4);
+  --shadow-glow-red: 0 0 20px rgba(255, 0, 51, 0.15);
+}
+
+/* ─── Reset & Base ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff0033;
+}
+
+/* ─── Typography ──────────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-display) !important;
+}
+
+.font-mono {
+  font-family: var(--font-mono) !important;
+}
+
+/* ─── Blinking cursor ─────────────────────────────────────────── */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--color-accent);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 1px;
+}
+
+/* ─── Scanline overlay (optional: cyberpunk effect) ───────────── */
+.bg-scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+}
+
+/* ─── Card ────────────────────────────────────────────────────── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--color-border-2);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Card with red left border (terminal style) */
+.card-terminal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 2px solid var(--color-accent);
+}
+
+/* ─── Buttons ────────────────────────────────────────────────── */
+
+/* Primary: white bg, black text (like reference's INITIALIZE_LABS) */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: #ffffff;
+  color: #000000;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 1px solid #ffffff;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #000;
+  color: #fff;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Secondary: black bg, white border/text (like reference's GIT_CLONE) */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: #000000;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--color-border-2);
+  border-radius: 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: #555;
+  color: #ccc;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Ghost red accent button */
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--color-accent);
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-accent:hover {
+  background: rgba(255, 0, 51, 0.08);
+}
+
+/* ─── Input ──────────────────────────────────────────────────── */
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  background: #050505;
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-accent);
+  background: #000;
+}
+
+.input-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Select */
+.select-field {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  background: #050505;
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23444444' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 14px) center;
+}
+
+.select-field:focus {
+  border-color: var(--color-accent);
+}
+
+/* ─── Field Label ─────────────────────────────────────────────── */
+.field-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.field-error {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─── Badge ───────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge-red {
+  background: rgba(255, 0, 51, 0.12);
+  color: #ff0033;
+  border: 1px solid rgba(255, 0, 51, 0.3);
+}
+
+.badge-green {
+  background: rgba(0, 255, 157, 0.08);
+  color: #00ff9d;
+  border: 1px solid rgba(0, 255, 157, 0.2);
+}
+
+.badge-yellow {
+  background: rgba(255, 170, 0, 0.08);
+  color: #ffaa00;
+  border: 1px solid rgba(255, 170, 0, 0.2);
+}
+
+.badge-gray {
+  background: rgba(255, 255, 255, 0.04);
+  color: #888;
+  border: 1px solid #2a2a2a;
+}
+
+.badge-blue {
+  background: rgba(0, 170, 255, 0.08);
+  color: #00aaff;
+  border: 1px solid rgba(0, 170, 255, 0.2);
+}
+
+.badge-purple {
+  background: rgba(180, 0, 255, 0.08);
+  color: #cc44ff;
+  border: 1px solid rgba(180, 0, 255, 0.2);
+}
+
+/* ─── Risk colors ─────────────────────────────────────────────── */
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-danger  { color: var(--color-danger); }
+.text-accent  { color: var(--color-accent); }
+.text-muted   { color: var(--color-text-muted); }
+.text-secondary { color: var(--color-text-secondary); }
+
+/* ─── Terminal label (like "■ LIVE ATTACK CHAIN VISUALIZATION") ─ */
+.terminal-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.terminal-label::before {
+  content: '■';
+  color: var(--color-accent);
+  font-size: 0.6rem;
+}
+
+/* ─── Status dot ──────────────────────────────────────────────── */
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ─── Ticker ──────────────────────────────────────────────────── */
+.ticker-wrap {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker {
+  display: inline-block;
+  animation: ticker 90s linear infinite;
+}
+
+@keyframes ticker {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.ticker-item {
+  display: inline-block;
+  padding: 0 2rem;
+}
+
+/* ─── Section divider ─────────────────────────────────────────── */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 0;
+}
+
+/* ─── Animations ──────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes rotation {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes progressBar {
+  0%   { width: 0%; }
+  50%  { width: 70%; }
+  100% { width: 100%; }
+}
+
+@keyframes glitch {
+  0%   { transform: translate(0); }
+  20%  { transform: translate(-2px, 1px); }
+  40%  { transform: translate(2px, -1px); }
+  60%  { transform: translate(0); }
+  80%  { transform: translate(1px, 2px); }
+  100% { transform: translate(0); }
+}
+
+.animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+.animate-fade-in    { animation: fadeIn 0.4s ease-out forwards; }
+.animate-glitch     { animation: glitch 0.3s ease-in-out; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+
+/* Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #222;
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotation 0.7s linear infinite;
+}
+
+/* Progress bar */
+.progress-bar {
+  animation: progressBar 1.8s ease-in-out forwards;
+}
+
+/* ─── Recharts overrides ──────────────────────────────────────── */
+.recharts-text {
+  fill: var(--color-text-secondary) !important;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--color-border) !important;
+}
+
+.recharts-tooltip-wrapper { z-index: 50; }
+
+.recharts-default-tooltip {
+  background: #0a0a0a !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.8) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  color: #fff !important;
+}
+
+.recharts-tooltip-item,
+.recharts-tooltip-label {
+  color: #fff !important;
+}
+
+/* ─── Focus Visibility ─────────────────────────────────────────── */
+.card:focus-within {
+  outline: none;
+  border-color: var(--color-border-2);
+}
+
+/* ─── Mobile ───────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .hero-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ─── Reduced Motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ticker { animation: none !important; }
+
+  .spinner {
+    animation: none !important;
+    border-top-color: var(--color-accent);
+  }
+
+  .cursor-blink { animation: none !important; opacity: 1; }
+}
