@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function PlatformLayout({ children }) {
 
     return (
@@ -18,8 +20,8 @@ export default function PlatformLayout({ children }) {
                     style={{ maxWidth: '1400px', height: '56px' }}
                 >
                     {/* Logo: EXPLAIN_THE_HACKER_ with blinking cursor */}
-                    <a
-                        href="/"
+                    <Link
+                        to="/"
                         className="flex items-center"
                         style={{
                             fontFamily: 'var(--font-mono)',
@@ -42,7 +44,7 @@ export default function PlatformLayout({ children }) {
                                 verticalAlign: 'middle',
                             }}
                         />
-                    </a>
+                    </Link>
 
                     {/* Nav links */}
                     <div className="flex items-center gap-8">
@@ -54,25 +56,43 @@ export default function PlatformLayout({ children }) {
                             { label: 'LIBRARY', href: '/library' },
                             { label: 'ROADMAP', href: '/roadmap' },
                             { label: 'CYBEREDT', href: 'https://www.cyberedt.com' },
-                        ].map(({ label, href }) => (
-                            <a
-                                key={label}
-                                href={href}
-                                style={{
-                                    fontFamily: 'var(--font-mono)',
-                                    fontSize: '0.7rem',
-                                    fontWeight: 600,
-                                    color: 'var(--color-text-secondary)',
-                                    letterSpacing: '0.1em',
-                                    textDecoration: 'none',
-                                    transition: 'color 0.15s ease',
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-                                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-secondary)')}
-                            >
-                                {label}
-                            </a>
-                        ))}
+                        ].map(({ label, href }) => {
+                            const isExternal = href.startsWith('http');
+                            const style = {
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '0.7rem',
+                                fontWeight: 600,
+                                color: 'var(--color-text-secondary)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.1em',
+                                textDecoration: 'none',
+                                transition: 'color 0.2s ease',
+                            };
+                            
+                            return isExternal ? (
+                                <a
+                                    key={label}
+                                    href={href}
+                                    style={style}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                                    onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                                >
+                                    {label}
+                                </a>
+                            ) : (
+                                <Link
+                                    key={label}
+                                    to={href}
+                                    style={style}
+                                    onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                                    onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                                >
+                                    {label}
+                                </Link>
+                            );
+                        })}
 
                     </div>
                 </div>
@@ -137,9 +157,9 @@ export default function PlatformLayout({ children }) {
                         <div>
                             <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>Platform</h4>
                             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <li><a href="/lab" className="footer-link">ETH Engine</a></li>
-                                <li><a href="/threat-intel" className="footer-link">Threat Intel</a></li>
-                                <li><a href="/roadmap" className="footer-link">Roadmap</a></li>
+                                <li><Link to="/lab" className="footer-link">ETH Engine</Link></li>
+                                <li><Link to="/threat-intel" className="footer-link">Threat Intel</Link></li>
+                                <li><Link to="/roadmap" className="footer-link">Roadmap</Link></li>
                             </ul>
                         </div>
 
@@ -147,10 +167,10 @@ export default function PlatformLayout({ children }) {
                         <div>
                             <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>Legal & Policy</h4>
                             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <li><a href="/privacy" className="footer-link">Privacy Policy</a></li>
-                                <li><a href="/terms" className="footer-link">Terms of Service</a></li>
-                                <li><a href="/ethics" className="footer-link">Responsible Usage</a></li>
-                                <li><a href="/disclaimer" className="footer-link">Security Disclaimer</a></li>
+                                <li><Link to="/privacy" className="footer-link">Privacy Policy</Link></li>
+                                <li><Link to="/terms" className="footer-link">Terms of Service</Link></li>
+                                <li><Link to="/ethics" className="footer-link">Responsible Usage</Link></li>
+                                <li><Link to="/disclaimer" className="footer-link">Security Disclaimer</Link></li>
                             </ul>
                         </div>
 
