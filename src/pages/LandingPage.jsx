@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // ─── Attack Chain Phases ──────────────────────────────────────────────────────
-const ATTACK_PHASES = [
+export const ATTACK_PHASES = [
     {
         num: '01', label: 'RECON',
         color: '#00aaff',
@@ -54,7 +54,7 @@ const ATTACK_PHASES = [
 ];
 
 // ─── MITRE Tactics ────────────────────────────────────────────────────────────
-const TACTICS = [
+export const TACTICS = [
     {
         id: 'TA0001', name: 'INITIAL ACCESS',
         items: ['Phishing', 'Public-Facing Apps', 'Trusted Relationship'],
@@ -82,7 +82,7 @@ const TACTICS = [
 ];
 
 // ─── Phase Card ───────────────────────────────────────────────────────────────
-function PhaseCard({ phase }) {
+export function PhaseCard({ phase, isActive }) {
     return (
         <div
             style={{
@@ -162,7 +162,7 @@ function PhaseCard({ phase }) {
 }
 
 // ─── Tactic Cell ─────────────────────────────────────────────────────────────
-function TacticCell({ tactic }) {
+export function TacticCell({ tactic }) {
     return (
         <div style={{ paddingBottom: '24px' }}>
             <span

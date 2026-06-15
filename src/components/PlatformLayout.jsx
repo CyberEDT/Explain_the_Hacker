@@ -50,8 +50,8 @@ export default function PlatformLayout({ children }) {
                     <div className="flex items-center gap-8">
                         {[
                             { label: 'ETH ENGINE', href: '/lab' },
-                            { label: 'KILL CHAIN', href: '/#killchain' },
-                            { label: 'TACTICS', href: '/#tactics' },
+                            { label: 'KILL CHAIN', href: '/killchain' },
+                            { label: 'TACTICS', href: '/tactics' },
                             { label: 'THREAT INTEL', href: '/threat-intel' },
                             { label: 'LIBRARY', href: '/library' },
                             { label: 'ROADMAP', href: '/roadmap' },

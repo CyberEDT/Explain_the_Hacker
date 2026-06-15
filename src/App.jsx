@@ -5,6 +5,8 @@ import ExplainTheHacker from '@/tools/ExplainTheHacker/ExplainTheHacker';
 import Docs from '@/pages/Docs';
 import ThreatIntel from '@/pages/ThreatIntel';
 import AttackLibrary from '@/pages/AttackLibrary';
+import KillChain from '@/pages/KillChain';
+import Tactics from '@/pages/Tactics';
 import Roadmap from '@/pages/Roadmap';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
@@ -58,12 +60,32 @@ export default function App() {
           }
         />
 
-        {/* Attack Combination Library */}
+        {/* Attack Library */}
         <Route
           path="/library"
           element={
             <PlatformLayout>
               <AttackLibrary />
+            </PlatformLayout>
+          }
+        />
+
+        {/* Kill Chain */}
+        <Route
+          path="/killchain"
+          element={
+            <PlatformLayout>
+              <KillChain />
+            </PlatformLayout>
+          }
+        />
+
+        {/* Tactics */}
+        <Route
+          path="/tactics"
+          element={
+            <PlatformLayout>
+              <Tactics />
             </PlatformLayout>
           }
         />
