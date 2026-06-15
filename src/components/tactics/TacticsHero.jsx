@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, ShieldAlert, Crosshair } from 'lucide-react';
+
 
 export default function TacticsHero() {
     return (
@@ -15,24 +15,24 @@ export default function TacticsHero() {
         }}>
             {/* Animated SVG Background */}
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, opacity: 0.15, pointerEvents: 'none' }}>
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#333" strokeWidth="0.5"/>
+                        <pattern id="grid" width="4" height="4" patternUnits="userSpaceOnUse">
+                            <path d="M 4 0 L 0 0 0 4" fill="none" stroke="#333" strokeWidth="0.05"/>
                         </pattern>
                     </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                    <circle cx="20%" cy="30%" r="3" fill="#ff0033" />
-                    <circle cx="50%" cy="60%" r="3" fill="#ffaa00" />
-                    <circle cx="80%" cy="40%" r="3" fill="#00ff9d" />
-                    <path d="M 20% 30% L 50% 60% L 80% 40%" fill="none" stroke="#ffaa00" strokeWidth="1" strokeDasharray="4 4" />
+                    <rect width="100" height="100" fill="url(#grid)" />
+                    <circle cx="20" cy="30" r="0.5" fill="#ff0033" />
+                    <circle cx="50" cy="60" r="0.5" fill="#ffaa00" />
+                    <circle cx="80" cy="40" r="0.5" fill="#00ff9d" />
+                    <path d="M 20 30 L 50 60 L 80 40" fill="none" stroke="#ffaa00" strokeWidth="0.2" strokeDasharray="1 1" />
                 </svg>
             </div>
 
             <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 32px', position: 'relative', zIndex: 1, width: '100%' }}>
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
                     <div className="terminal-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Target size={14} /> MITRE ATT&CK EXPERIENCE
+                         MITRE ATT&CK EXPERIENCE
                     </div>
                 </div>
 

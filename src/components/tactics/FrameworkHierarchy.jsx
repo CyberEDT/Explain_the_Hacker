@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Network, Server, FileCode, TerminalSquare } from 'lucide-react';
+
 
 const HIERARCHY = [
     {
         id: 'tactic',
         label: 'TACTIC',
-        icon: <Network size={20} />,
         question: 'Why?',
         definition: 'The adversary\'s tactical goal. The reason for performing an action. Example: The attacker needs to maintain access to the network.',
         example: 'Persistence (TA0003)'
@@ -13,7 +12,6 @@ const HIERARCHY = [
     {
         id: 'technique',
         label: 'TECHNIQUE',
-        icon: <Server size={20} />,
         question: 'How?',
         definition: 'The means by which adversaries achieve a tactical goal. Example: The attacker modifies a system process to run their code.',
         example: 'Create or Modify System Process (T1543)'
@@ -21,7 +19,6 @@ const HIERARCHY = [
     {
         id: 'subtechnique',
         label: 'SUB-TECHNIQUE',
-        icon: <FileCode size={20} />,
         question: 'How exactly?',
         definition: 'A more specific description of the behavior used to achieve a goal. Example: The attacker specifically modifies a Windows service.',
         example: 'Windows Service (T1543.003)'
@@ -29,7 +26,6 @@ const HIERARCHY = [
     {
         id: 'procedure',
         label: 'PROCEDURE',
-        icon: <TerminalSquare size={20} />,
         question: 'What did they type?',
         definition: 'The exact step-by-step instructions, tools, or commands the adversary used. This is what defenders actually observe in the logs.',
         example: 'sc.exe create malicious_svc binPath= "C:\\malware.exe"'
@@ -70,7 +66,7 @@ export default function FrameworkHierarchy() {
                                             zIndex: 2,
                                             cursor: 'pointer'
                                         }} onClick={() => setActiveId(item.id)}>
-                                            {item.icon}
+                                            {item.id.charAt(0).toUpperCase()}
                                         </div>
                                         {index !== HIERARCHY.length - 1 && (
                                             <div style={{ width: '2px', height: '60px', background: isActive ? '#ff0033' : '#222', transition: 'background 0.3s ease' }} />

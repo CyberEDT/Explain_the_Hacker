@@ -1,7 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell } from 'recharts';
 import { MITRE_TACTICS, ATTACK_TIMELINE } from '../../data/tacticsData';
-import { Activity } from 'lucide-react';
+
 
 const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -49,14 +49,14 @@ export default function TacticsVisualizations() {
                     {/* Bar Chart */}
                     <div style={{ background: '#050505', border: '1px solid #1a1a1a', padding: '32px' }}>
                         <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Activity size={16} color="#ff0033" /> MOST ABUSED TACTICS (LAST 30 DAYS)
+                             MOST ABUSED TACTICS (LAST 30 DAYS)
                         </h3>
                         <div style={{ height: '300px' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                                     <XAxis dataKey="name" stroke="#444" fontSize={10} tickFormatter={(val) => val.substring(0, 4) + '.'} />
                                     <YAxis stroke="#444" fontSize={10} />
-                                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+                                    <Tooltip cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
                                     <Bar dataKey="popularity" radius={[2, 2, 0, 0]}>
                                         {barData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={index < 3 ? '#ff0033' : '#ffaa00'} />
@@ -70,7 +70,7 @@ export default function TacticsVisualizations() {
                     {/* Radar Chart */}
                     <div style={{ background: '#050505', border: '1px solid #1a1a1a', padding: '32px' }}>
                         <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Activity size={16} color="#00aaff" /> TECHNIQUE DISTRIBUTION (APT-41)
+                             TECHNIQUE DISTRIBUTION (APT-41)
                         </h3>
                         <div style={{ height: '300px' }}>
                             <ResponsiveContainer width="100%" height="100%">

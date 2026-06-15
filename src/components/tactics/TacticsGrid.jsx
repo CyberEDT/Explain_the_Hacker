@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MITRE_TACTICS } from '../../data/tacticsData';
-import { X, ChevronRight, Activity, ShieldAlert, Key } from 'lucide-react';
+
 
 export default function TacticsGrid() {
     const [selectedTactic, setSelectedTactic] = useState(null);
@@ -57,7 +57,7 @@ export default function TacticsGrid() {
                                 {tactic.objective}
                             </p>
                             <div style={{ display: 'flex', alignItems: 'center', marginTop: '16px', color: '#00aaff', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                DEEP DIVE <ChevronRight size={14} style={{ marginLeft: '4px' }} />
+                                DEEP DIVE 
                             </div>
                         </div>
                     ))}
@@ -115,7 +115,7 @@ function TacticDrawer({ tactic, onClose }) {
                 {/* Attacker Mindset */}
                 <div>
                     <div className="terminal-label" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Activity size={14} color="#ffaa00" /> ATTACKER MINDSET
+                         ATTACKER MINDSET
                     </div>
                     <div style={{ padding: '20px', background: '#0a0a0a', borderLeft: '3px solid #ffaa00' }}>
                         <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.95rem', color: '#fff', fontStyle: 'italic', lineHeight: 1.6 }}>
@@ -135,7 +135,7 @@ function TacticDrawer({ tactic, onClose }) {
                 {/* Top Techniques */}
                 <div>
                     <div className="terminal-label" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Key size={14} color="#00aaff" /> TOP TECHNIQUES
+                         TOP TECHNIQUES
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {tactic.topTechniques.map((tech, i) => (
@@ -152,7 +152,7 @@ function TacticDrawer({ tactic, onClose }) {
                 {/* ETH Perspective */}
                 <div>
                     <div className="terminal-label" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <ShieldAlert size={14} color="#ff0033" /> ETH PERSPECTIVE
+                         ETH PERSPECTIVE
                     </div>
                     <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.95rem', color: '#ccc', lineHeight: 1.6 }}>
                         {tactic.ethPerspective}
