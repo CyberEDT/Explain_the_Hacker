@@ -3,6 +3,22 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, 
 import { MITRE_TACTICS, ATTACK_TIMELINE } from '../../data/tacticsData';
 import { Activity } from 'lucide-react';
 
+const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div style={{ background: '#0a0a0a', border: '1px solid #333', padding: '12px' }}>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#fff', marginBottom: '4px' }}>
+                    {payload[0].payload.name}
+                </p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#ff0033' }}>
+                    FREQ: {payload[0].value}%
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
+
 export default function TacticsVisualizations() {
     const barData = MITRE_TACTICS.map(t => ({
         name: t.name,
@@ -14,22 +30,6 @@ export default function TacticsVisualizations() {
         A: t.techniquesSpread,
         fullMark: 20,
     }));
-
-    const CustomTooltip = ({ active, payload }) => {
-        if (active && payload && payload.length) {
-            return (
-                <div style={{ background: '#0a0a0a', border: '1px solid #333', padding: '12px' }}>
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#fff', marginBottom: '4px' }}>
-                        {payload[0].payload.name}
-                    </p>
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#ff0033' }}>
-                        FREQ: {payload[0].value}%
-                    </p>
-                </div>
-            );
-        }
-        return null;
-    };
 
     return (
         <section style={{ padding: '80px 32px', background: '#0a0a0a', borderBottom: '1px solid #111' }}>

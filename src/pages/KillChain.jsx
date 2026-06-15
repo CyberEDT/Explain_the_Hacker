@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ATTACK_PHASES, PhaseCard } from './LandingPage';
+import { ATTACK_PHASES } from '../data/landingData';
+import { PhaseCard } from './LandingPage';
 
 export default function KillChain() {
     const W = { maxWidth: '1400px', margin: '0 auto' };
