@@ -1,6 +1,24 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 export default function PlatformLayout({ children }) {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const location = useLocation();
+
+    // Close mobile menu on route change
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [location]);
+
+    const navLinks = [
+        { label: 'ETH ENGINE', href: '/lab' },
+        { label: 'KILL CHAIN', href: '/killchain' },
+        { label: 'TACTICS', href: '/tactics' },
+        { label: 'THREAT INTEL', href: '/threat-intel' },
+        { label: 'LIBRARY', href: '/library' },
+        { label: 'ROADMAP', href: '/roadmap' },
+        { label: 'CYBEREDT', href: 'https://www.cyberedt.com' },
+    ];
 
     return (
         <div
@@ -16,13 +34,13 @@ export default function PlatformLayout({ children }) {
                 }}
             >
                 <div
-                    className="mx-auto px-8 flex items-center justify-between"
+                    className="mx-auto px-4 md:px-8 flex items-center justify-between"
                     style={{ maxWidth: '1400px', height: '56px' }}
                 >
                     {/* Logo: EXPLAIN_THE_HACKER_ with blinking cursor */}
                     <Link
                         to="/"
-                        className="flex items-center"
+                        className="flex items-center flex-shrink-0"
                         style={{
                             fontFamily: 'var(--font-mono)',
                             fontSize: '0.85rem',
@@ -46,17 +64,9 @@ export default function PlatformLayout({ children }) {
                         />
                     </Link>
 
-                    {/* Nav links */}
-                    <div className="flex items-center gap-8">
-                        {[
-                            { label: 'ETH ENGINE', href: '/lab' },
-                            { label: 'KILL CHAIN', href: '/killchain' },
-                            { label: 'TACTICS', href: '/tactics' },
-                            { label: 'THREAT INTEL', href: '/threat-intel' },
-                            { label: 'LIBRARY', href: '/library' },
-                            { label: 'ROADMAP', href: '/roadmap' },
-                            { label: 'CYBEREDT', href: 'https://www.cyberedt.com' },
-                        ].map(({ label, href }) => {
+                    {/* Desktop Nav links */}
+                    <div className="hidden lg:flex items-center gap-8">
+                        {navLinks.map(({ label, href }) => {
                             const isExternal = href.startsWith('http');
                             const style = {
                                 fontFamily: 'var(--font-mono)',
@@ -93,9 +103,45 @@ export default function PlatformLayout({ children }) {
                                 </Link>
                             );
                         })}
-
                     </div>
+
+                    {/* Mobile Menu Toggle Button */}
+                    <button
+                        className="lg:hidden flex items-center justify-center"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid #333',
+                            color: '#fff',
+                            padding: '6px 10px',
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '0.7rem',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        {isMobileMenuOpen ? 'CLOSE' : 'MENU'}
+                    </button>
                 </div>
+
+                {/* Mobile Nav Dropdown */}
+                {isMobileMenuOpen && (
+                    <div className="lg:hidden flex flex-col bg-[#050505] border-b border-[#1a1a1a] px-4 py-4 gap-4 absolute w-full left-0 top-[56px] shadow-2xl">
+                        {navLinks.map(({ label, href }) => {
+                            const isExternal = href.startsWith('http');
+                            const className = "text-[#888] hover:text-[#fff] font-mono text-xs tracking-widest uppercase transition-colors";
+                            
+                            return isExternal ? (
+                                <a key={label} href={href} className={className} target="_blank" rel="noopener noreferrer">
+                                    {label}
+                                </a>
+                            ) : (
+                                <Link key={label} to={href} className={className}>
+                                    {label}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                )}
             </nav>
 
             {/* ── Ticker ──────────────────────────────────────────────────── */}
