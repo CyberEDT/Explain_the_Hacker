@@ -107,6 +107,11 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Weak service account passwords',
     'Hardcoded secrets in source code',
     'Admin panel exposed to internet',
+    'Anonymous Authentication Allowed',
+    'Admin Interface with Unchanged Default Password',
+    'No Account Lockout + Weak Password Policy',
+    'No Account Lockout / No fail2ban / Unlimited Login Attempts',
+    'User postgres with password "postgres"',
     
     // Network & Services
     'Telnet enabled',
@@ -116,6 +121,19 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'NFS mount exposed',
     'Cleartext protocols (HTTP, FTP) used',
     'Lack of network segmentation',
+    'Anonymous Share Access Enabled',
+    'Telnet Service Active (deprecated since 2002)',
+    'PermitRootLogin yes in sshd_config',
+    'VNC Server Running Without Password',
+    'Community String: "public" or "private"',
+    'No Relay Restrictions Configured',
+    'Management Interface Accessible Without VPN/Firewall',
+    'SMBv1 Protocol Active (MS17-010)',
+    'LDAP Anonymous Bind Allowed',
+    'WinRM HTTP Enabled with Weak Password',
+    'MFA Not Enforced on Remote Desktop',
+    'SMB Signing Not Required on Domain Members',
+    'AXFR Allowed from Any Source',
     
     // Cloud & Infrastructure
     'Public S3 bucket',
@@ -126,6 +144,11 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Unauthenticated Redis',
     'Unauthenticated MongoDB',
     'Unauthenticated Elasticsearch/Kibana',
+    'MySQL Bound to 0.0.0.0 with No Root Password',
+    'No requirepass / No bind restriction',
+    'MongoDB started without --auth flag',
+    'xpack.security.enabled: false (default in older versions)',
+    'Memcached Exposed on UDP Port 11211 (No Auth)',
     
     // Active Directory
     'Unconstrained delegation',
@@ -136,6 +159,9 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Jenkins script console enabled',
     'Docker socket exposed',
     'Kubernetes dashboard public',
+    'Groovy Script Console Accessible (Manage Jenkins → Script Console)',
+    'Docker Daemon Exposed on TCP 2375 Without TLS',
+    'NFS Export with *(rw,no_root_squash)',
     
     // Web Application & Security
     'Open CORS policy',
@@ -147,6 +173,14 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Outdated third-party dependencies',
     'Insecure direct object references (IDOR)',
     'SSRF protection missing',
+    'autoindex On (Web Server Directory Browsing)',
+    'Application Running in DEBUG=True (Django/Flask/Rails)',
+    'Access-Control-Allow-Origin: * with credentials',
+    '.git Directory Publicly Accessible on Web Server',
+    'Unparameterized Database Queries (No Prepared Statements)',
+    'No SSRF Protection + IMDSv1 Cloud Metadata',
+    'Swagger/OpenAPI UI Publicly Accessible',
+    'CVE-2020-14882 / Java Deserialization via T3 Protocol',
     
     // Operations & Monitoring
     'Unpatched OS',
@@ -160,4 +194,5 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Git repository directory (.git) publicly exposed',
     'Exposed API Swagger documentation or hardcoded secrets',
     'Default SNMP community strings configured',
+    'Notebook Started Without --NotebookApp.token or password',
 ];

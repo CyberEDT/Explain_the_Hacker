@@ -268,8 +268,10 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
     const [inputError, setInputError] = useState('');
     const [suggestionsOpen, setSuggestionsOpen] = useState(false);
     const [focused, setFocused] = useState(false);
+    const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const inputRef = useRef(null);
     const wrapperRef = useRef(null);
+    const suggestionsRef = useRef(null);
 
     useEffect(() => {
         if (!suggestionsOpen) return;
@@ -278,23 +280,63 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
         return () => document.removeEventListener('mousedown', close);
     }, [suggestionsOpen]);
 
+    useEffect(() => {
+        // Reset highlight when input changes
+        setHighlightedIndex(-1);
+    }, [inputValue]);
+
+    const filtered = MISCONFIGURATION_SUGGESTIONS.filter(
+        s => !misconfigs.includes(s) && (!inputValue.trim() || s.toLowerCase().includes(inputValue.toLowerCase()))
+    ).slice(0, 50); // Limit to 50 items
+
     const tryAdd = useCallback((val = inputValue) => {
         const trimmed = val.trim();
         if (!trimmed) return;
         const err = onAdd(trimmed);
         if (err) { setInputError(err); }
-        else { setInputValue(''); setInputError(''); setSuggestionsOpen(false); }
+        else { setInputValue(''); setInputError(''); setSuggestionsOpen(false); setHighlightedIndex(-1); }
     }, [inputValue, onAdd]);
 
     const handleKeyDown = (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); tryAdd(); }
-        if (e.key === 'Escape') setSuggestionsOpen(false);
-        if (e.key === 'Backspace' && !inputValue && misconfigs.length > 0) onRemove(misconfigs[misconfigs.length - 1]);
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (!suggestionsOpen) {
+                setSuggestionsOpen(true);
+            } else {
+                setHighlightedIndex(prev => {
+                    const next = Math.min(prev + 1, filtered.length - 1);
+                    // scroll into view roughly
+                    if (suggestionsRef.current) {
+                        const el = suggestionsRef.current.children[next];
+                        if (el) el.scrollIntoView({ block: 'nearest' });
+                    }
+                    return next;
+                });
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setHighlightedIndex(prev => {
+                const next = Math.max(prev - 1, -1);
+                if (suggestionsRef.current && next >= 0) {
+                    const el = suggestionsRef.current.children[next];
+                    if (el) el.scrollIntoView({ block: 'nearest' });
+                }
+                return next;
+            });
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (suggestionsOpen && highlightedIndex >= 0 && highlightedIndex < filtered.length) {
+                tryAdd(filtered[highlightedIndex]);
+            } else {
+                tryAdd();
+            }
+        } else if (e.key === 'Escape') {
+            setSuggestionsOpen(false);
+            setHighlightedIndex(-1);
+        } else if (e.key === 'Backspace' && !inputValue && misconfigs.length > 0) {
+            onRemove(misconfigs[misconfigs.length - 1]);
+        }
     };
-
-    const filtered = MISCONFIGURATION_SUGGESTIONS.filter(
-        s => !misconfigs.includes(s) && (!inputValue.trim() || s.toLowerCase().includes(inputValue.toLowerCase()))
-    );
 
     return (
         <div ref={wrapperRef} className="ml-0 md:ml-9">
@@ -341,27 +383,28 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
 
                     {/* Suggestions dropdown */}
                     {suggestionsOpen && filtered.length > 0 && (
-                        <div style={{
+                        <div ref={suggestionsRef} style={{
                             position: 'absolute', left: 0, top: '100%', width: '100%', zIndex: 50,
                             background: '#0a0a0a', border: '1px solid #2a2a2a',
                             maxHeight: '240px', overflowY: 'auto',
                             boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
                         }}>
-                            {filtered.map(s => (
+                            {filtered.map((s, idx) => (
                                 <button
                                     type="button"
                                     key={s}
-                                    onMouseDown={e => { e.preventDefault(); onAdd(s); setInputValue(''); setSuggestionsOpen(false); inputRef.current?.focus(); }}
+                                    onMouseDown={e => { e.preventDefault(); tryAdd(s); inputRef.current?.focus(); }}
+                                    onMouseEnter={() => setHighlightedIndex(idx)}
                                     style={{
                                         display: 'block', width: '100%', textAlign: 'left',
                                         padding: '10px 14px',
-                                        background: 'transparent', border: 'none',
+                                        background: highlightedIndex === idx ? '#1a0005' : 'transparent',
+                                        border: 'none',
                                         borderBottom: '1px solid #141414',
-                                        fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#888',
+                                        fontFamily: 'var(--font-mono)', fontSize: '0.78rem',
+                                        color: highlightedIndex === idx ? '#fff' : '#888',
                                         cursor: 'pointer', transition: 'background 0.1s, color 0.1s',
                                     }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = '#111'; e.currentTarget.style.color = '#ddd'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#888'; }}
                                 >
                                     {s}
                                 </button>
@@ -374,7 +417,7 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
                 <button
                     type="button"
                     id="add-misconfig-btn"
-                    onClick={() => { tryAdd(); setSuggestionsOpen(false); }}
+                    onClick={() => { tryAdd(); setSuggestionsOpen(false); inputRef.current?.focus(); }}
                     style={{
                         display: 'inline-flex', alignItems: 'center', gap: '5px',
                         padding: '10px 16px',
