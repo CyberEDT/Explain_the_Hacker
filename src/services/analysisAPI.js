@@ -2320,7 +2320,7 @@ export async function runAttackSimulationMock(payload, signal) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function analyzeAttackChain(payload, signal) {
-    if (import.meta.env.VITE_USE_MOCK === 'true') {
+    if (import.meta.env.VITE_USE_MOCK !== 'false') {
         return runAttackSimulationMock(payload, signal);
     }
     return runAttackSimulation(payload, signal);
