@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 function SectionHeading({ title, subtitle }) {
     return (
@@ -15,30 +16,6 @@ function SectionHeading({ title, subtitle }) {
     );
 }
 
-function TermCard({ term, definition, usage, ethContext }) {
-    return (
-        <div style={{ border: '1px solid #222', background: '#0a0a0a', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem', color: 'var(--color-accent)', fontWeight: 700, margin: 0, borderBottom: '1px solid #222', paddingBottom: '12px' }}>
-                {term}
-            </h3>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#666', textTransform: 'uppercase' }}>Definition</span>
-                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: '#ccc', margin: '4px 0 0', lineHeight: 1.5 }}>{definition}</p>
-                </div>
-                <div>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#666', textTransform: 'uppercase' }}>Attacker Usage</span>
-                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#aaa', margin: '4px 0 0', lineHeight: 1.5 }}>{usage}</p>
-                </div>
-            </div>
-            <div style={{ background: '#111', padding: '12px', borderLeft: '2px solid var(--color-info)', marginTop: 'auto' }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--color-info)', textTransform: 'uppercase' }}>Why ETH Cares</span>
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#999', margin: '4px 0 0', lineHeight: 1.4 }}>{ethContext}</p>
-            </div>
-        </div>
-    );
-}
-
 function PipelineStep({ step, title, desc, arrow }) {
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
@@ -48,7 +25,7 @@ function PipelineStep({ step, title, desc, arrow }) {
                 <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#888', margin: 0, lineHeight: 1.4 }}>{desc}</p>
             </div>
             {arrow && (
-                <div style={{ color: '#555', fontSize: '1.5rem' }}>→</div>
+                <div style={{ color: '#555', fontSize: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>→</div>
             )}
         </div>
     );
@@ -82,77 +59,47 @@ export default function ThreatIntel() {
                 <div style={{ ...W }}>
                     <div className="terminal-label" style={{ marginBottom: '24px', color: 'var(--color-accent)' }}>SOC EDUCATIONAL HUB</div>
                     <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(40px, 5vw, 64px)', lineHeight: 0.9, textTransform: 'uppercase', marginBottom: '24px' }}>
-                        Threat Intel <span style={{ color: 'var(--color-text-muted)' }}>// HANDBOOK</span>
+                        Engine Methodology <span style={{ color: 'var(--color-text-muted)' }}>// HANDBOOK</span>
                     </h1>
                     <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.1rem', color: '#aaa', lineHeight: 1.6, maxWidth: '800px', marginBottom: '32px' }}>
-                        Bridging the gap between raw data and actionable intelligence. This hub explains how the ETH engine thinks, what cybersecurity terminology means, and how to interpret complex threat landscapes.
+                        Bridging the gap between raw data and actionable intelligence. This hub explains how the ETH engine parses telemetry, classifies evidence, and constructs predictive threat models.
                     </p>
                 </div>
             </section>
 
-            {/* 1. TERMINOLOGY HUB */}
-            <section style={{ borderBottom: '1px solid var(--color-border)', background: '#050505' }}>
-                <div style={{ ...W }}>
-                    <SectionHeading 
-                        title="1. Terminology Hub" 
-                        subtitle="Key concepts you'll encounter in ETH analysis reports." 
-                    />
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-                        <TermCard 
-                            term="Lateral Movement"
-                            definition="Techniques used by attackers to progressively move through a network after gaining initial access."
-                            usage="Attackers compromise one weak machine (like an employee's laptop) and pivot to reach domain controllers or sensitive databases."
-                            ethContext="ETH looks for exposed internal ports (like SMB/445 or RDP/3389) that would allow an attacker to spread if the perimeter is breached."
-                        />
-                        <TermCard 
-                            term="Command & Control (C2)"
-                            definition="A server controlled by an attacker used to send commands to compromised systems and receive stolen data."
-                            usage="Malware 'phones home' to a C2 server (like Cobalt Strike) to download secondary payloads or await instructions."
-                            ethContext="ETH parses telemetry for known C2 beaconing patterns, flagging them as high-confidence Indicators of Compromise (IOCs)."
-                        />
-                        <TermCard 
-                            term="Indicators of Compromise (IOCs)"
-                            definition="Digital forensics artifacts (like IPs, domains, or file hashes) that indicate a network has been breached."
-                            usage="Security teams use IOCs to hunt for threats and write firewall rules to block malicious traffic."
-                            ethContext="ETH extracts and validates IOCs from the logs you provide, scoring them based on structural validity and threat severity."
-                        />
-                        <TermCard 
-                            term="MITRE ATT&CK"
-                            definition="A globally accessible knowledge base of adversary tactics and techniques based on real-world observations."
-                            usage="Used as a standard taxonomy to describe how an attack unfolded (e.g., T1110 - Brute Force)."
-                            ethContext="ETH maps every identified risk directly to a MITRE ATT&CK technique to ensure standardized, analyst-grade reporting."
-                        />
-                        <TermCard 
-                            term="Privilege Escalation"
-                            definition="The process of gaining higher-level permissions (like 'root' or 'Administrator') on a system than initially granted."
-                            usage="Attackers exploit unpatched software or abuse misconfigurations to become administrators, giving them full control."
-                            ethContext="ETH flags unpatched systems or weak configurations as Privilege Escalation risks, assuming an attacker with a foothold will try to elevate."
-                        />
-                        <TermCard 
-                            term="Exfiltration"
-                            definition="The unauthorized transfer of sensitive data out of a network."
-                            usage="Ransomware gangs steal data before encrypting files to demand payment (double extortion)."
-                            ethContext="ETH monitors logs for large outbound transfers or specific tools (curl, wget) used maliciously to steal data."
-                        />
+            {/* LEARNING DIRECTORY BANNER */}
+            <section style={{ borderBottom: '1px solid var(--color-border)', background: '#0a0a0a', padding: '24px 0' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-warning)', border: '1px solid var(--color-warning)', padding: '4px 8px', fontSize: '0.75rem', fontWeight: 'bold' }}>LOOKING FOR TERMINOLOGY?</span>
+                        <span style={{ fontFamily: 'var(--font-sans)', color: '#ccc', fontSize: '0.95rem' }}>Explore attacker behaviors, TTPs, and definitions in our interactive matrix pages:</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                        <Link to="/killchain" style={{ background: '#111', color: '#fff', border: '1px solid #333', padding: '8px 16px', fontFamily: 'var(--font-mono)', fontSize: '0.85rem', textDecoration: 'none', transition: 'all 0.2s', ':hover': { background: '#222', borderColor: '#555' } }}>
+                            EXPLORE KILL CHAIN →
+                        </Link>
+                        <Link to="/tactics" style={{ background: '#111', color: '#fff', border: '1px solid #333', padding: '8px 16px', fontFamily: 'var(--font-mono)', fontSize: '0.85rem', textDecoration: 'none', transition: 'all 0.2s', ':hover': { background: '#222', borderColor: '#555' } }}>
+                            ENTERPRISE TACTICS →
+                        </Link>
                     </div>
                 </div>
             </section>
 
-            {/* 2. HOW ETH WORKS */}
-            <section style={{ borderBottom: '1px solid var(--color-border)' }}>
+            {/* 1. HOW ETH WORKS */}
+            <section style={{ borderBottom: '1px solid var(--color-border)', background: '#050505' }}>
                 <div style={{ ...W }}>
                     <SectionHeading 
-                        title="2. How ETH Thinks" 
+                        title="1. How ETH Thinks" 
                         subtitle="The 6-Layer Intelligence Architecture driving the engine." 
                     />
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '48px' }}>
-                        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                        <div className="flex flex-col lg:flex-row gap-4">
                             <PipelineStep step="1" title="Data Acquisition" desc="The engine parses provided ports, misconfigurations, and raw log text into structured data." arrow={true} />
                             <PipelineStep step="2" title="Evidence Validation" desc="Hashes are validated, IPs are extracted, and false positives are filtered out." arrow={true} />
                             <PipelineStep step="3" title="Threat Correlation" desc="Independent findings (e.g., Port 3389 + No MFA) are linked into realistic threat scenarios." arrow={false} />
                         </div>
-                        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                        <div className="flex flex-col lg:flex-row gap-4 mt-8 lg:mt-0">
                             <PipelineStep step="4" title="MITRE Mapping" desc="Validated threats are mapped to strict MITRE ATT&CK tactics (e.g., TA0001, T1110)." arrow={true} />
                             <PipelineStep step="5" title="Attack Generation" desc="A standardized 7-phase cyber kill chain is assembled, separating facts from predictions." arrow={true} />
                             <PipelineStep step="6" title="Risk Scoring" desc="A final dynamic score is calculated based on exposure, exploitability, and telemetry." arrow={false} />
@@ -171,11 +118,11 @@ export default function ThreatIntel() {
                 </div>
             </section>
 
-            {/* 3. VERIFIED VS INFERRED */}
-            <section style={{ borderBottom: '1px solid var(--color-border)', background: '#050505' }}>
+            {/* 2. VERIFIED VS INFERRED */}
+            <section style={{ borderBottom: '1px solid var(--color-border)' }}>
                 <div style={{ ...W }}>
                     <SectionHeading 
-                        title="3. Evidence Classification" 
+                        title="2. Evidence Classification" 
                         subtitle="How ETH separates hard facts from threat modeling." 
                     />
                     
@@ -208,14 +155,14 @@ export default function ThreatIntel() {
                 </div>
             </section>
 
-            {/* 4. READING THE OUTPUT & 5. INPUT QUALITY */}
-            <section style={{ borderBottom: '1px solid var(--color-border)' }}>
+            {/* 3. ANALYST HANDBOOK (READING & INPUT) */}
+            <section style={{ borderBottom: '1px solid var(--color-border)', background: '#050505' }}>
                 <div style={{ ...W }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px' }}>
                         
-                        {/* 4. Reading Output */}
+                        {/* 3A. Reading Output */}
                         <div>
-                            <SectionHeading title="4. Reading the Output" subtitle="Understanding your analysis report." />
+                            <SectionHeading title="3. Reading the Output" subtitle="Understanding your analysis report." />
                             <ul style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: 0, margin: 0, listStyle: 'none' }}>
                                 <li>
                                     <h4 style={{ fontFamily: 'var(--font-sans)', color: '#fff', fontSize: '1.05rem', margin: '0 0 4px 0' }}>Overall Risk Score</h4>
@@ -236,9 +183,9 @@ export default function ThreatIntel() {
                             </ul>
                         </div>
 
-                        {/* 5. Input Quality */}
+                        {/* 3B. Input Quality */}
                         <div>
-                            <SectionHeading title="5. Input Quality" subtitle="Garbage in, garbage out." />
+                            <SectionHeading title="4. Input Quality" subtitle="Garbage in, garbage out." />
                             
                             <div style={{ border: '1px solid var(--color-success)', background: 'rgba(0,255,0,0.05)', padding: '16px', marginBottom: '16px' }}>
                                 <h4 style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-success)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '8px' }}>Good Inputs</h4>
@@ -264,34 +211,34 @@ export default function ThreatIntel() {
                 </div>
             </section>
 
-            {/* 6. CORRELATION EXPLAINER */}
+            {/* 5. CORRELATION EXPLAINER */}
             <section>
                 <div style={{ ...W }}>
                     <SectionHeading 
-                        title="6. The Power of Correlation" 
+                        title="5. The Power of Correlation" 
                         subtitle="Why isolated weaknesses create critical vulnerabilities." 
                     />
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0a0a0a', border: '1px solid #222', padding: '40px', borderRadius: '4px', flexWrap: 'wrap', gap: '20px' }}>
+                    <div className="flex flex-col lg:flex-row items-center justify-between bg-[#0a0a0a] border border-[#222] p-10 rounded-md gap-5">
                         
-                        <div style={{ textAlign: 'center', flex: 1 }}>
+                        <div style={{ textAlign: 'center', flex: 1, width: '100%' }}>
                             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: '#fff', border: '1px solid #444', padding: '16px', background: '#111' }}>
                                 Port 3389 (RDP) Exposed
                             </div>
                             <span style={{ display: 'block', marginTop: '12px', fontSize: '0.8rem', color: '#666' }}>Harmless on its own?</span>
                         </div>
 
-                        <div style={{ fontSize: '2rem', color: '#444' }}>+</div>
+                        <div style={{ fontSize: '2rem', color: '#444' }} className="rotate-90 lg:rotate-0">+</div>
 
-                        <div style={{ textAlign: 'center', flex: 1 }}>
+                        <div style={{ textAlign: 'center', flex: 1, width: '100%' }}>
                             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: '#fff', border: '1px solid #444', padding: '16px', background: '#111' }}>
                                 Lack of MFA
                             </div>
                             <span style={{ display: 'block', marginTop: '12px', fontSize: '0.8rem', color: '#666' }}>Common misconfiguration</span>
                         </div>
 
-                        <div style={{ fontSize: '2rem', color: '#444' }}>=</div>
+                        <div style={{ fontSize: '2rem', color: '#444' }} className="rotate-90 lg:rotate-0">=</div>
 
-                        <div style={{ textAlign: 'center', flex: 1.2 }}>
+                        <div style={{ textAlign: 'center', flex: 1.2, width: '100%' }}>
                             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: 'var(--color-danger)', border: '1px solid var(--color-danger)', padding: '16px', background: 'rgba(255,0,0,0.05)', fontWeight: 'bold' }}>
                                 Ransomware Ingress Risk
                             </div>

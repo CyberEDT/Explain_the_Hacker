@@ -1711,12 +1711,20 @@ function TerminalSession({ steps }) {
     const endRef = useRef(null);
     const [shown, setShown] = useState(0);
     const [playing, setPlaying] = useState(true);
+    const [prevSteps, setPrevSteps] = useState(steps);
 
-    useEffect(() => { setShown(0); setPlaying(true); }, [steps]);
+    if (steps !== prevSteps) {
+        setPrevSteps(steps);
+        setShown(0);
+        setPlaying(true);
+    }
 
     useEffect(() => {
         if (!playing) return;
-        if (shown >= steps.length) { setPlaying(false); return; }
+        if (shown >= steps.length) {
+            const t = setTimeout(() => setPlaying(false), 0);
+            return () => clearTimeout(t);
+        }
         const delay = steps[shown]?.type === 'output' ? 600 : 400;
         const t = setTimeout(() => setShown(s => s + 1), delay);
         return () => clearTimeout(t);
@@ -1879,8 +1887,12 @@ const TABS = ['OVERVIEW','ATTACKER THINKING','KILL CHAIN','MITRE','REAL WORLD','
 
 function ScenarioPanel({ combo, onClose }) {
     const [tab, setTab] = useState(0);
+    const [prevComboId, setPrevComboId] = useState(combo?.id);
 
-    useEffect(() => setTab(0), [combo?.id]);
+    if (combo?.id !== prevComboId) {
+        setPrevComboId(combo?.id);
+        setTab(0);
+    }
 
     if (!combo) return null;
 

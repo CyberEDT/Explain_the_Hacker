@@ -14,7 +14,7 @@ import { ATTACK_PHASES, TACTICS } from '../data/landingData';
 
 
 // ─── Phase Card ───────────────────────────────────────────────────────────────
-export function PhaseCard({ phase, isActive }) {
+export function PhaseCard({ phase }) {
     return (
         <div
             style={{
@@ -201,13 +201,25 @@ export default function LandingPage() {
             {/* ── HERO ─────────────────────────────────────────────────────── */}
             <section
                 style={{
-                    ...W,
-                    padding: '80px 32px 0',
+                    padding: '80px 0 0',
                     position: 'relative',
                     minHeight: '520px',
+                    background: 'radial-gradient(circle at top center, #1a0005 0%, #000 80%)',
+                    overflow: 'hidden'
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '24px' }}>
+                {/* Subtle Grid Background */}
+                <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundImage: 'linear-gradient(rgba(255, 0, 51, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 0, 51, 0.04) 1px, transparent 1px)',
+                    backgroundSize: '40px 40px',
+                    backgroundPosition: 'center top',
+                    zIndex: 0,
+                }} />
+
+                <div style={{ ...W, position: 'relative', zIndex: 1, paddingBottom: '60px' }}>
+                <div className="flex flex-col lg:flex-row items-start justify-between gap-10">
                     {/* Left: Headline */}
                     <div style={{ flex: 1 }}>
                         <p
@@ -255,40 +267,76 @@ export default function LandingPage() {
                         </p>
                     </div>
 
-                    {/* Right: Status panel */}
-                    <div
-                        style={{
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '0.62rem',
-                            letterSpacing: '0.1em',
-                            textAlign: 'right',
-                            flexShrink: 0,
-                            paddingTop: '4px',
-                        }}
-                    >
-                        {[
-                            { dot: '#00ff9d', text: 'STATUS: OPERATIONAL' },
-                            { dot: '#ff0033', text: 'THREATS: 1,204' },
-                            { dot: '#ffaa00', text: 'V.1.0.0' },
-                        ].map(({ dot, text }) => (
-                            <div key={text} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
-                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, display: 'inline-block', flexShrink: 0, animation: 'pulse-dot 2s ease-in-out infinite' }} />
-                                <span style={{ color: '#555' }}>{text}</span>
-                            </div>
-                        ))}
+                    {/* Right: Status panel & CTA */}
+                    <div className="flex flex-col items-end lg:justify-between self-stretch lg:min-h-[360px]">
+                        <div
+                            style={{
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '0.62rem',
+                                letterSpacing: '0.1em',
+                                textAlign: 'right',
+                                flexShrink: 0,
+                                paddingTop: '4px',
+                            }}
+                        >
+                            {[
+                                { dot: '#00ff9d', text: 'STATUS: OPERATIONAL' },
+                                { dot: '#ff0033', text: 'THREATS: 1,204' },
+                                { dot: '#ffaa00', text: 'V.1.0.0' },
+                            ].map(({ dot, text }) => (
+                                <div key={text} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
+                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, display: 'inline-block', flexShrink: 0, animation: 'pulse-dot 2s ease-in-out infinite' }} />
+                                    <span style={{ color: '#555' }}>{text}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => navigate('/lab')}
+                            className="mt-12 lg:mt-0"
+                            style={{
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '0.78rem',
+                                fontWeight: 700,
+                                letterSpacing: '0.1em',
+                                textTransform: 'uppercase',
+                                padding: '16px 36px',
+                                background: '#ffffff',
+                                color: '#000000',
+                                border: '1px solid #ffffff',
+                                cursor: 'pointer',
+                                transition: 'background 0.15s, color 0.15s',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = '#fff'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; }}
+                        >
+                            INITIALIZE_LABS
+                        </button>
                     </div>
                 </div>
-
+                </div>
             </section>
 
             {/* ── LIVE ATTACK CHAIN VISUALIZATION ──────────────────────────────── */}
             <section id="killchain" style={{ ...W, padding: '48px 32px', borderBottom: '1px solid #111' }}>
                 {/* Section label */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-                    <div className="terminal-label">LIVE ATTACK CHAIN VISUALIZATION</div>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#333', letterSpacing: '0.08em' }}>
-                        Scenario: Advanced Persistent Threat (APT-41)
-                    </span>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <div className="terminal-label" style={{ marginBottom: '8px' }}>LIVE ATTACK CHAIN VISUALIZATION</div>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#555', letterSpacing: '0.08em' }}>
+                            Scenario: Advanced Persistent Threat (APT-41)
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => navigate('/killchain')}
+                        style={{
+                            fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#fff', background: '#ff0033', border: 'none', padding: '10px 20px', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#d4002a'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#ff0033'}
+                    >
+                        EXPLORE INTERACTIVE KILL CHAIN →
+                    </button>
                 </div>
 
                 {/* 7 phase cards */}
@@ -321,31 +369,43 @@ export default function LandingPage() {
                         >
                             TACTICS GRID
                         </h2>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-10">
                             <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#444' }}>
                                 MITRE ATT&CK Framework Alignment
                             </p>
-                            <a
-                                href="/matrix.csv"
-                                download="matrix.csv"
-                                style={{
-                                    fontFamily: 'var(--font-mono)',
-                                    fontSize: '0.62rem',
-                                    color: '#555',
-                                    background: 'transparent',
-                                    border: '1px solid #2a2a2a',
-                                    padding: '5px 12px',
-                                    cursor: 'pointer',
-                                    letterSpacing: '0.08em',
-                                    textTransform: 'uppercase',
-                                    textDecoration: 'none',
-                                    display: 'inline-block',
-                                }}
-                                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.color = '#fff'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.color = '#555'; }}
-                            >
-                                DOWNLOAD_MATRIX.CSV
-                            </a>
+                            <div className="flex flex-wrap gap-3">
+                                <button
+                                    onClick={() => navigate('/tactics')}
+                                    style={{
+                                        fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#fff', background: '#ff0033', border: 'none', padding: '5px 12px', cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase', transition: 'background 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = '#d4002a'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = '#ff0033'}
+                                >
+                                    EXPLORE ENTERPRISE TACTICS →
+                                </button>
+                                <a
+                                    href="/matrix.csv"
+                                    download="matrix.csv"
+                                    style={{
+                                        fontFamily: 'var(--font-mono)',
+                                        fontSize: '0.62rem',
+                                        color: '#555',
+                                        background: 'transparent',
+                                        border: '1px solid #2a2a2a',
+                                        padding: '5px 12px',
+                                        cursor: 'pointer',
+                                        letterSpacing: '0.08em',
+                                        textTransform: 'uppercase',
+                                        textDecoration: 'none',
+                                        display: 'inline-block',
+                                    }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.color = '#fff'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.color = '#555'; }}
+                                >
+                                    DOWNLOAD_MATRIX.CSV
+                                </a>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-[#1a1a1a]">
@@ -442,6 +502,32 @@ export default function LandingPage() {
                                     {THREAT_ARTICLES[articleIndex].p2}
                                 </p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── VALUE PROPOSITION ─────────────────────────────────────── */}
+            <section style={{ borderBottom: '1px solid #111', background: '#030303', padding: '100px 0' }}>
+                <div style={W}>
+                    <div className="mb-16">
+                        <div className="terminal-label" style={{ color: '#00aaff' }}>WHY ETH?</div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16 text-left">
+                        <div className="flex flex-col items-start border-b md:border-b-0 md:border-r border-[#1a1a1a] pb-12 md:pb-0 md:pr-12 lg:pr-16">
+                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.5rem', color: '#ff0033', marginBottom: '16px' }}>01</div>
+                            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>Raw Data to Intelligence</h3>
+                            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: '#888', lineHeight: 1.6 }}>Feed the engine raw access logs, syslog data, or exposed ports. ETH correlates these disparate signals into actionable intelligence.</p>
+                        </div>
+                        <div className="flex flex-col items-start border-b md:border-b-0 md:border-r border-[#1a1a1a] pb-12 md:pb-0 md:pr-12 lg:pr-16">
+                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.5rem', color: '#ff0033', marginBottom: '16px' }}>02</div>
+                            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>Predictive Threat Modeling</h3>
+                            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: '#888', lineHeight: 1.6 }}>Don't just see what happened—see what will happen next. ETH maps your vulnerabilities to the full Cyber Kill Chain to predict adversary movement.</p>
+                        </div>
+                        <div className="flex flex-col items-start">
+                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.5rem', color: '#ff0033', marginBottom: '16px' }}>03</div>
+                            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>Analyst-Grade Reporting</h3>
+                            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: '#888', lineHeight: 1.6 }}>Receive standardized reporting aligned strictly with the MITRE ATT&CK framework, separating hard evidence from hypothetical risks.</p>
                         </div>
                     </div>
                 </div>
@@ -587,41 +673,100 @@ function NetworkGraph() {
                 padding: '24px',
                 position: 'relative',
                 aspectRatio: '4/3',
+                overflow: 'hidden',
             }}
         >
+            {/* Subtle background glow for the container */}
+            <div style={{
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                width: '60%', height: '60%', background: 'radial-gradient(circle, rgba(255,0,51,0.05) 0%, transparent 70%)',
+                pointerEvents: 'none'
+            }} />
+
             <svg
                 viewBox="0 0 100 100"
-                style={{ width: '100%', height: '100%' }}
+                style={{ width: '100%', height: '100%', overflow: 'visible' }}
                 aria-label="Network attack graph visualization"
             >
-                {/* Edges from center to each satellite */}
+                <style>
+                    {`
+                        @keyframes pulse-glow {
+                            0% { filter: drop-shadow(0 0 2px rgba(255,0,51,0.3)); }
+                            50% { filter: drop-shadow(0 0 10px rgba(255,0,51,0.8)); }
+                            100% { filter: drop-shadow(0 0 2px rgba(255,0,51,0.3)); }
+                        }
+                        @keyframes data-flow {
+                            from { stroke-dashoffset: 10; }
+                            to { stroke-dashoffset: 0; }
+                        }
+                        .satellite-node {
+                            transition: all 0.3s ease;
+                            cursor: crosshair;
+                        }
+                        .satellite-node rect {
+                            transition: all 0.3s ease;
+                        }
+                        .satellite-node text {
+                            transition: all 0.3s ease;
+                        }
+                        .satellite-node:hover rect {
+                            stroke: #ff0033;
+                            fill: #1a0005;
+                            transform: scale(1.05);
+                            transform-origin: center;
+                        }
+                        .satellite-node:hover text {
+                            fill: #fff;
+                        }
+                    `}
+                </style>
+
+                {/* Base Edges */}
                 {nodes.slice(1).map((node) => (
                     <line
-                        key={node.id}
+                        key={`base-${node.id}`}
                         x1={center.x} y1={center.y}
                         x2={node.x} y2={node.y}
                         stroke="#ff0033"
+                        strokeWidth="0.1"
+                        strokeOpacity="0.2"
+                    />
+                ))}
+
+                {/* Animated Data Flow Edges */}
+                {nodes.slice(1).map((node, i) => (
+                    <line
+                        key={`flow-${node.id}`}
+                        x1={node.x} y1={node.y}
+                        x2={center.x} y2={center.y}
+                        stroke="#ff0033"
                         strokeWidth="0.3"
-                        strokeOpacity="0.5"
+                        strokeOpacity="0.8"
+                        strokeDasharray="1 3"
+                        style={{
+                            animation: `data-flow ${1 + (i % 3) * 0.4}s linear infinite`
+                        }}
                     />
                 ))}
 
                 {/* Satellite nodes */}
                 {nodes.slice(1).map((node) => (
-                    <g key={node.id}>
+                    <g key={node.id} className="satellite-node" style={{ transformOrigin: `${node.x}px ${node.y}px` }}>
                         <rect
-                            x={node.x - 6} y={node.y - 3.5}
-                            width={12} height={7}
+                            x={node.x - 7} y={node.y - 4}
+                            width={14} height={8}
+                            rx={1}
                             fill="#0a0a0a"
-                            stroke="#2a2a2a"
+                            stroke="#333"
                             strokeWidth="0.4"
                         />
                         <text
                             x={node.x} y={node.y + 1.2}
                             textAnchor="middle"
-                            fill="#555"
+                            fill="#888"
                             fontSize="3"
-                            fontFamily="JetBrains Mono, monospace"
+                            fontFamily="var(--font-mono)"
+                            letterSpacing="0.05em"
                         >
                             {node.id}
                         </text>
@@ -629,10 +774,13 @@ function NetworkGraph() {
                 ))}
 
                 {/* Center node — DATA */}
-                <circle cx={center.x} cy={center.y} r={10} fill="#0a0a0a" stroke="#ff0033" strokeWidth="0.5" />
-                <text x={center.x} y={center.y + 1.5} textAnchor="middle" fill="#ff0033" fontSize="4" fontFamily="JetBrains Mono, monospace" fontWeight="bold">
-                    DATA
-                </text>
+                <g style={{ animation: 'pulse-glow 3s infinite', transformOrigin: `${center.x}px ${center.y}px` }}>
+                    <circle cx={center.x} cy={center.y} r={11} fill="#050001" stroke="#ff0033" strokeWidth="0.6" />
+                    <circle cx={center.x} cy={center.y} r={9} fill="transparent" stroke="#ff0033" strokeWidth="0.2" strokeOpacity="0.5" strokeDasharray="1 1" />
+                    <text x={center.x} y={center.y + 1.5} textAnchor="middle" fill="#ff0033" fontSize="4.5" fontFamily="var(--font-mono)" fontWeight="bold" letterSpacing="0.1em">
+                        DATA
+                    </text>
+                </g>
             </svg>
         </div>
     );

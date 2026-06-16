@@ -105,7 +105,10 @@ function TacticDrawer({ tactic, onClose }) {
                     <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: '#888' }}>{tactic.category}</p>
                 </div>
                 <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px' }}>
-                    <X size={24} />
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
                 </button>
             </div>
 
