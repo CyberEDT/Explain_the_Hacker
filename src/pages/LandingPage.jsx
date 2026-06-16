@@ -238,10 +238,11 @@ export default function LandingPage() {
                         <h1
                             style={{
                                 fontFamily: 'var(--font-display)',
-                                fontSize: 'clamp(72px, 10vw, 128px)',
+                                fontSize: 'clamp(48px, 12vw, 128px)',
                                 lineHeight: 0.88,
                                 color: '#fff',
                                 margin: 0,
+                                wordBreak: 'break-word',
                             }}
                         >
                             VISUALIZING
@@ -268,7 +269,7 @@ export default function LandingPage() {
                     </div>
 
                     {/* Right: Status panel & CTA */}
-                    <div className="flex flex-col items-end lg:justify-between self-stretch lg:min-h-[360px]">
+                    <div className="flex flex-col items-start lg:items-end lg:justify-between self-stretch lg:min-h-[360px] w-full lg:w-auto">
                         <div
                             style={{
                                 fontFamily: 'var(--font-mono)',
@@ -284,7 +285,7 @@ export default function LandingPage() {
                                 { dot: '#ff0033', text: 'THREATS: 1,204' },
                                 { dot: '#ffaa00', text: 'V.1.0.0' },
                             ].map(({ dot, text }) => (
-                                <div key={text} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', marginBottom: '8px' }}>
+                                <div key={text} className="flex items-center justify-start lg:justify-end gap-2 mb-2">
                                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, display: 'inline-block', flexShrink: 0, animation: 'pulse-dot 2s ease-in-out infinite' }} />
                                     <span style={{ color: '#555' }}>{text}</span>
                                 </div>
@@ -330,7 +331,8 @@ export default function LandingPage() {
                     <button
                         onClick={() => navigate('/killchain')}
                         style={{
-                            fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#fff', background: '#ff0033', border: 'none', padding: '10px 20px', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, transition: 'background 0.2s'
+                            fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#fff', background: '#ff0033', border: 'none', padding: '10px 20px', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, transition: 'background 0.2s',
+                            wordBreak: 'break-word', whiteSpace: 'normal', textAlign: 'center', width: '100%', maxWidth: '400px'
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.background = '#d4002a'}
                         onMouseLeave={(e) => e.currentTarget.style.background = '#ff0033'}
@@ -377,7 +379,8 @@ export default function LandingPage() {
                                 <button
                                     onClick={() => navigate('/tactics')}
                                     style={{
-                                        fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#fff', background: '#ff0033', border: 'none', padding: '5px 12px', cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase', transition: 'background 0.2s'
+                                        fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#fff', background: '#ff0033', border: 'none', padding: '5px 12px', cursor: 'pointer', letterSpacing: '0.08em', textTransform: 'uppercase', transition: 'background 0.2s',
+                                        wordBreak: 'break-word', whiteSpace: 'normal', textAlign: 'center'
                                     }}
                                     onMouseEnter={(e) => e.currentTarget.style.background = '#d4002a'}
                                     onMouseLeave={(e) => e.currentTarget.style.background = '#ff0033'}
