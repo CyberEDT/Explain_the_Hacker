@@ -321,13 +321,14 @@ export default function ExplainTheHacker() {
                         {/* Reference: text-5xl md:text-7xl font-extrabold uppercase tracking-tighter leading-[0.9] */}
                         <h1 style={{
                             fontFamily: 'var(--font-display)',
-                            fontSize: 'clamp(2.8rem, 8vw, 5.5rem)',
+                            fontSize: 'clamp(2rem, 8vw, 5.5rem)',
                             fontWeight: 800,
                             textTransform: 'uppercase',
                             letterSpacing: '-0.03em',
                             lineHeight: 0.9,
                             margin: 0,
                             color: '#fff',
+                            wordBreak: 'break-word'
                         }}>
                             Threat Simulation
                         </h1>

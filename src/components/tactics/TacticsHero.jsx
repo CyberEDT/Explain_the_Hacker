@@ -38,11 +38,12 @@ export default function TacticsHero() {
 
                 <h1 style={{ 
                     fontFamily: 'var(--font-display)', 
-                    fontSize: 'clamp(60px, 8vw, 100px)', 
+                    fontSize: 'clamp(40px, 8vw, 100px)', 
                     lineHeight: 0.9, 
                     textTransform: 'uppercase', 
                     marginBottom: '24px',
-                    color: '#fff'
+                    color: '#fff',
+                    wordBreak: 'break-word'
                 }}>
                     UNDERSTANDING<br />
                     ATTACKER<br />

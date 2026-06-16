@@ -1419,9 +1419,9 @@ function LibraryHero({ onScrollToGrid }) {
 
                 {/* Main title */}
                 <h1 style={{
-                    fontFamily:T.disp, fontSize:'clamp(56px,9vw,104px)',
+                    fontFamily:T.disp, fontSize:'clamp(32px,9vw,104px)',
                     lineHeight:0.88, textTransform:'uppercase',
-                    marginBottom:'24px', letterSpacing:'-0.01em',
+                    marginBottom:'24px', letterSpacing:'-0.01em', wordBreak: 'break-word'
                 }}>
                     <span style={{ color:T.white, display:'block' }}>ATTACK</span>
                     <span style={{ color:T.muted, display:'block' }}>COMBINATION</span>

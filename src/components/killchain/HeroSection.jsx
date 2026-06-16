@@ -28,12 +28,13 @@ export default function HeroSection() {
                     </div>
                     <h1 style={{ 
                         fontFamily: 'var(--font-display)', 
-                        fontSize: 'clamp(48px, 8vw, 96px)', 
+                        fontSize: 'clamp(40px, 8vw, 96px)', 
                         lineHeight: 0.9, 
                         textTransform: 'uppercase', 
                         color: '#fff',
                         marginBottom: '24px',
-                        letterSpacing: '-0.02em'
+                        letterSpacing: '-0.02em',
+                        wordBreak: 'break-word'
                     }}>
                         Visualizing<br />
                         The Kill<br />
