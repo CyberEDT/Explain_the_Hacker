@@ -12,6 +12,7 @@ import {
     ResponsiveContainer, RadarChart, Radar, PolarGrid,
     PolarAngleAxis, PolarRadiusAxis, Legend,
 } from 'recharts';
+import ChartExplainer from '../components/ChartExplainer';
 import { useNavigate } from 'react-router-dom';
 
 // ═══════════════════════════════════════════════════════════════
@@ -1348,7 +1349,7 @@ const COMBOS = [
 // HELPER UTILITIES
 // ═══════════════════════════════════════════════════════════════
 const TIER_COLOR  = { beginner: T.green, intermediate: T.amber, advanced: T.red };
-const INTEREST_COLOR = (s) => s >= 90 ? T.red : s >= 70 ? T.amber : s >= 50 ? T.blue : T.green;
+const INTEREST_COLOR = (s) => s >= 80 ? T.red : s >= 60 ? T.amber : s >= 40 ? T.blue : T.green;
 const TIER_LABEL = { beginner:'BEGINNER', intermediate:'INTERMEDIATE', advanced:'ADVANCED' };
 
 function InterestBar({ score }) {
@@ -1655,7 +1656,7 @@ function ComboCard({ combo, onSelect, isSelected }) {
                         fontFamily:T.mono, fontSize:'0.5rem', color:INTEREST_COLOR(combo.interestScore),
                         border:`1px solid ${INTEREST_COLOR(combo.interestScore)}44`, padding:'2px 6px',
                     }}>
-                        {combo.interestScore >= 90 ? 'CRITICAL' : combo.interestScore >= 70 ? 'HIGH' : 'MEDIUM'}
+                        {combo.interestScore >= 80 ? 'CRITICAL' : combo.interestScore >= 60 ? 'HIGH' : 'MEDIUM'}
                     </span>
                     <span style={{ fontFamily:T.mono, fontSize:'0.52rem', color:T.blue, border:`1px solid ${T.blue}33`, padding:'2px 6px' }}>
                         :{combo.port}
@@ -2025,62 +2026,77 @@ function VisualizationsSection() {
                     {/* Bar Chart — Most Abused */}
                     <div style={{ background:T.bg, border:`1px solid ${T.border}`, padding:'24px' }}>
                         <p style={{ fontFamily:T.mono, fontSize:'0.62rem', color:T.muted, letterSpacing:'0.15em', marginBottom:'20px' }}>ATTACKER INTEREST RANKING</p>
-                        <ResponsiveContainer width="100%" height={340}>
-                            <BarChart data={top12.map(c => ({ name: c.name.length > 22 ? c.name.slice(0,22)+'…' : c.name, score: c.interestScore }))}
-                                layout="vertical" margin={{ left:10, right:20, top:0, bottom:0 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={T.s3} horizontal={false} />
-                                <XAxis type="number" domain={[0,100]} tick={{ fontFamily:T.mono, fontSize:9, fill:T.muted }} axisLine={false} tickLine={false} />
-                                <YAxis type="category" dataKey="name" width={160} tick={{ fontFamily:T.mono, fontSize:8, fill:T.muted }} axisLine={false} tickLine={false} />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />
-                                <Bar dataKey="score" radius={[0,2,2,0]}>
-                                    {top12.map((c, i) => (
-                                        <Cell key={i} fill={INTEREST_COLOR(c.interestScore)} opacity={0.85} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <ChartExplainer
+                            title="Attacker Interest Ranking"
+                            explanation="This chart displays the top misconfiguration combinations ranked by how attractive they are to attackers. High scores usually mean the misconfiguration is easy to exploit and provides a high payoff (e.g., direct remote code execution or admin access)."
+                        >
+                            <ResponsiveContainer width="100%" height={340}>
+                                <BarChart data={top12.map(c => ({ name: c.name.length > 22 ? c.name.slice(0,22)+'…' : c.name, score: c.interestScore }))}
+                                    layout="vertical" margin={{ left:10, right:20, top:0, bottom:0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke={T.s3} horizontal={false} />
+                                    <XAxis type="number" domain={[0,100]} tick={{ fontFamily:T.mono, fontSize:9, fill:T.muted }} axisLine={false} tickLine={false} />
+                                    <YAxis type="category" dataKey="name" width={160} tick={{ fontFamily:T.mono, fontSize:8, fill:T.muted }} axisLine={false} tickLine={false} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />
+                                    <Bar dataKey="score" radius={[0,2,2,0]}>
+                                        {top12.map((c, i) => (
+                                            <Cell key={i} fill={INTEREST_COLOR(c.interestScore)} opacity={0.85} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartExplainer>
                     </div>
 
                     {/* Radar Chart — Kill Chain Coverage */}
                     <div style={{ background:T.bg, border:`1px solid ${T.border}`, padding:'24px' }}>
                         <p style={{ fontFamily:T.mono, fontSize:'0.62rem', color:T.muted, letterSpacing:'0.15em', marginBottom:'20px' }}>KILL CHAIN COVERAGE</p>
-                        <ResponsiveContainer width="100%" height={340}>
-                            <RadarChart data={kcCoverage}>
-                                <PolarGrid stroke={T.s3} />
-                                <PolarAngleAxis dataKey="phase" tick={{ fontFamily:T.mono, fontSize:8, fill:T.muted }} />
-                                <PolarRadiusAxis angle={90} domain={[0, Math.max(...kcCoverage.map(d=>d.count))]} tick={false} axisLine={false} />
-                                <Radar name="Coverage" dataKey="count" stroke={T.red} fill={T.red} fillOpacity={0.12} strokeWidth={1.5} />
-                                <Legend formatter={() => <span style={{ fontFamily:T.mono, fontSize:'0.6rem', color:T.muted }}>LIBRARY COVERAGE</span>} />
-                                <Tooltip content={({ active, payload }) => active && payload?.length ? (
-                                    <div style={{ background:'#111', border:`1px solid ${T.b2}`, padding:'8px 12px' }}>
-                                        <p style={{ fontFamily:T.mono, fontSize:'0.62rem', color:T.white }}>{payload[0]?.payload?.fullPhase}</p>
-                                        <p style={{ fontFamily:T.mono, fontSize:'0.65rem', color:T.red }}>{payload[0]?.value} combinations</p>
-                                    </div>
-                                ) : null} />
-                            </RadarChart>
-                        </ResponsiveContainer>
+                        <ChartExplainer
+                            title="Kill Chain Coverage"
+                            explanation="This radar graph maps the entire attack library against the standard cyber kill chain. A large spike indicates that we have many documented combinations covering that specific phase (e.g., lots of Initial Access combinations)."
+                        >
+                            <ResponsiveContainer width="100%" height={340}>
+                                <RadarChart data={kcCoverage}>
+                                    <PolarGrid stroke={T.s3} />
+                                    <PolarAngleAxis dataKey="phase" tick={{ fontFamily:T.mono, fontSize:8, fill:T.muted }} />
+                                    <PolarRadiusAxis angle={90} domain={[0, Math.max(...kcCoverage.map(d=>d.count))]} tick={false} axisLine={false} />
+                                    <Radar name="Coverage" dataKey="count" stroke={T.red} fill={T.red} fillOpacity={0.12} strokeWidth={1.5} />
+                                    <Legend formatter={() => <span style={{ fontFamily:T.mono, fontSize:'0.6rem', color:T.muted }}>LIBRARY COVERAGE</span>} />
+                                    <Tooltip content={({ active, payload }) => active && payload?.length ? (
+                                        <div style={{ background:'#111', border:`1px solid ${T.b2}`, padding:'8px 12px' }}>
+                                            <p style={{ fontFamily:T.mono, fontSize:'0.62rem', color:T.white }}>{payload[0]?.payload?.fullPhase}</p>
+                                            <p style={{ fontFamily:T.mono, fontSize:'0.65rem', color:T.red }}>{payload[0]?.value} combinations</p>
+                                        </div>
+                                    ) : null} />
+                                </RadarChart>
+                            </ResponsiveContainer>
+                        </ChartExplainer>
                     </div>
 
                     {/* Tier distribution */}
                     <div style={{ background:T.bg, border:`1px solid ${T.border}`, padding:'24px' }}>
                         <p style={{ fontFamily:T.mono, fontSize:'0.62rem', color:T.muted, letterSpacing:'0.15em', marginBottom:'20px' }}>TIER DISTRIBUTION</p>
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={[
-                                { name:'BEGINNER', count:COMBOS.filter(c=>c.tier==='beginner').length, fill:T.green },
-                                { name:'INTERMEDIATE', count:COMBOS.filter(c=>c.tier==='intermediate').length, fill:T.amber },
-                                { name:'ADVANCED', count:COMBOS.filter(c=>c.tier==='advanced').length, fill:T.red },
-                            ]}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={T.s3} vertical={false} />
-                                <XAxis dataKey="name" tick={{ fontFamily:T.mono, fontSize:9, fill:T.muted }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontFamily:T.mono, fontSize:9, fill:T.muted }} axisLine={false} tickLine={false} />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />
-                                <Bar dataKey="count" radius={[2,2,0,0]}>
-                                    {['beginner','intermediate','advanced'].map((t,i) => (
-                                        <Cell key={i} fill={TIER_COLOR[t]} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <ChartExplainer
+                            title="Tier Distribution"
+                            explanation="This simple chart shows the difficulty level of the attacks in the library. Beginner attacks are trivial to execute, whereas Advanced attacks require deep technical knowledge and multiple steps."
+                        >
+                            <ResponsiveContainer width="100%" height={200}>
+                                <BarChart data={[
+                                    { name:'BEGINNER', count:COMBOS.filter(c=>c.tier==='beginner').length, fill:T.green },
+                                    { name:'INTERMEDIATE', count:COMBOS.filter(c=>c.tier==='intermediate').length, fill:T.amber },
+                                    { name:'ADVANCED', count:COMBOS.filter(c=>c.tier==='advanced').length, fill:T.red },
+                                ]}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke={T.s3} vertical={false} />
+                                    <XAxis dataKey="name" tick={{ fontFamily:T.mono, fontSize:9, fill:T.muted }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fontFamily:T.mono, fontSize:9, fill:T.muted }} axisLine={false} tickLine={false} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />
+                                    <Bar dataKey="count" radius={[2,2,0,0]}>
+                                        {['beginner','intermediate','advanced'].map((t,i) => (
+                                            <Cell key={i} fill={TIER_COLOR[t]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartExplainer>
 
                         {/* Objective heatmap-style breakdown */}
                         <div style={{ marginTop:'20px' }}>

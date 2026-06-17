@@ -4,6 +4,7 @@ import {
     BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
     LineChart, Line
 } from 'recharts';
+import ChartExplainer from '../ChartExplainer';
 
 const COVERAGE_DATA = [
     { subject: 'Recon', coverage: 30, industry: 50 },
@@ -67,16 +68,21 @@ export default function VisualAnalytics() {
                         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', color: '#fff', marginBottom: '16px', textAlign: 'center' }}>
                             Detection Coverage
                         </h3>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={COVERAGE_DATA}>
-                                <PolarGrid stroke="#333" />
-                                <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 12, fontFamily: 'var(--font-mono)' }} />
-                                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                                <Radar name="Your Org" dataKey="coverage" stroke="#00aaff" fill="#00aaff" fillOpacity={0.3} />
-                                <Radar name="Industry Avg" dataKey="industry" stroke="#ffaa00" fill="#ffaa00" fillOpacity={0.1} />
-                                <Tooltip content={<CustomTooltip />} />
-                            </RadarChart>
-                        </ResponsiveContainer>
+                        <ChartExplainer
+                            title="Detection Coverage"
+                            explanation="This radar chart compares your organization's detection coverage across the kill chain phases against the industry average. The larger the area, the better the coverage. Look for gaps where the blue line falls inside the yellow line."
+                        >
+                            <ResponsiveContainer width="100%" height={320}>
+                                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={COVERAGE_DATA}>
+                                    <PolarGrid stroke="#333" />
+                                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 12, fontFamily: 'var(--font-mono)' }} />
+                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                                    <Radar name="Your Org" dataKey="coverage" stroke="#00aaff" fill="#00aaff" fillOpacity={0.3} />
+                                    <Radar name="Industry Avg" dataKey="industry" stroke="#ffaa00" fill="#ffaa00" fillOpacity={0.1} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                </RadarChart>
+                            </ResponsiveContainer>
+                        </ChartExplainer>
                     </div>
 
                     {/* Bar Chart */}
@@ -84,15 +90,20 @@ export default function VisualAnalytics() {
                         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', color: '#fff', marginBottom: '16px', textAlign: 'center' }}>
                             Stage Popularity in Recent Incidents
                         </h3>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={POPULARITY_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
-                                <XAxis dataKey="stage" tick={{ fill: '#888', fontSize: 11, fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fill: '#888', fontSize: 11, fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#111' }} />
-                                <Bar dataKey="value" fill="#ff0033" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <ChartExplainer
+                            title="Stage Popularity"
+                            explanation="This bar chart shows which kill chain stages are most frequently observed in recent security incidents. Taller bars indicate stages where attackers are spending more time or leaving more artifacts."
+                        >
+                            <ResponsiveContainer width="100%" height={320}>
+                                <BarChart data={POPULARITY_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+                                    <XAxis dataKey="stage" tick={{ fill: '#888', fontSize: 11, fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fill: '#888', fontSize: 11, fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ fill: '#111' }} />
+                                    <Bar dataKey="value" fill="#ff0033" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartExplainer>
                     </div>
 
                     {/* Timeline/Line Chart */}
@@ -100,18 +111,23 @@ export default function VisualAnalytics() {
                         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', color: '#fff', marginBottom: '16px', textAlign: 'center' }}>
                             Attack Velocity Pattern
                         </h3>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={PROGRESSION_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
-                                <XAxis dataKey="time" tick={{ fill: '#888', fontSize: 11, fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fill: '#888', fontSize: 11, fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Line type="monotone" dataKey="Recon" stroke="#00aaff" strokeWidth={2} dot={false} />
-                                <Line type="monotone" dataKey="Deliver" stroke="#ffaa00" strokeWidth={2} dot={false} />
-                                <Line type="monotone" dataKey="Install" stroke="#ff0033" strokeWidth={2} dot={false} />
-                                <Line type="monotone" dataKey="Impact" stroke="#fff" strokeWidth={2} dot={false} />
-                            </LineChart>
-                        </ResponsiveContainer>
+                        <ChartExplainer
+                            title="Attack Velocity Pattern"
+                            explanation="This line chart tracks the progression of an attack over time (X-axis). The Y-axis represents the intensity or volume of activity for a given phase. Notice how Recon activity drops as Install and Impact activities spike later in the timeline."
+                        >
+                            <ResponsiveContainer width="100%" height={320}>
+                                <LineChart data={PROGRESSION_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+                                    <XAxis dataKey="time" tick={{ fill: '#888', fontSize: 11, fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fill: '#888', fontSize: 11, fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Line type="monotone" dataKey="Recon" stroke="#00aaff" strokeWidth={2} dot={false} />
+                                    <Line type="monotone" dataKey="Deliver" stroke="#ffaa00" strokeWidth={2} dot={false} />
+                                    <Line type="monotone" dataKey="Install" stroke="#ff0033" strokeWidth={2} dot={false} />
+                                    <Line type="monotone" dataKey="Impact" stroke="#fff" strokeWidth={2} dot={false} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </ChartExplainer>
                     </div>
 
                 </div>

@@ -14,6 +14,7 @@ import {
     ComposedChart, Area, Scatter, CartesianGrid, ReferenceLine,
     PieChart, Pie, LineChart, Line,
 } from 'recharts';
+import ChartExplainer from '../../components/ChartExplainer';
 
 function useThemeColors() {
     return useMemo(() => {
@@ -83,7 +84,7 @@ function EvidencePill({ type, colors }) {
     );
 }
 
-function ChartCard({ title, subtitle, children, minHeight }) {
+function ChartCard({ title, subtitle, explanation, children, minHeight }) {
     return (
         <div className="card overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', minHeight }}>
             <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface-2)' }}>
@@ -97,7 +98,13 @@ function ChartCard({ title, subtitle, children, minHeight }) {
                 )}
             </div>
             <div style={{ padding: '16px', background: 'var(--color-surface)' }}>
-                {children}
+                {explanation ? (
+                    <ChartExplainer explanation={explanation}>
+                        {children}
+                    </ChartExplainer>
+                ) : (
+                    children
+                )}
             </div>
         </div>
     );
@@ -202,6 +209,7 @@ function RiskGaugeSection({ result, colors }) {
         <ChartCard
             title="Exposure Risk Gauge"
             subtitle="Overall score based on exposure, likelihood, complexity, business impact, blast radius, and internet accessibility."
+            explanation="The Risk Gauge indicates the overall severity of the target's exposure. A score above 80 is CRITICAL, representing a highly exploitable attack surface. Scores between 60-79 are HIGH."
         >
             <div style={{ position: 'relative' }}>
                 <RiskGaugeChart score={score} colors={colors} />
@@ -240,6 +248,7 @@ function RiskDimensionHeatmap({ result, colors }) {
         <ChartCard
             title="Risk Heatmap"
             subtitle="Exposure dimensions ranked by severity so analysts can quickly see what drives the score."
+            explanation="This heatmap breaks down the components that contribute to the overall risk score. It highlights whether the primary risk comes from Authentication weaknesses, Network Exposure, or Business Impact, allowing you to prioritize the root cause."
         >
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 8 }}>
                 {dimensions.slice(0, 9).map((d) => {
@@ -289,6 +298,7 @@ function AttackProbabilitySection({ phaseData, colors }) {
         <ChartCard
             title="Attack Likelihood by Phase"
             subtitle="Dependency-aware phase likelihood; high scores indicate feasible attack transitions, not confirmed compromise."
+            explanation="This chart visualizes the probability of an attacker successfully completing each phase of the attack lifecycle. A high likelihood in the 'Install' or 'C2' phases suggests that early-stage controls (like Recon and Deliver) are failing."
         >
             <StageBarChart data={phaseData} colors={colors} />
         </ChartCard>
@@ -333,6 +343,7 @@ function AttackFlowSection({ phaseData, colors }) {
         <ChartCard
             title="Kill-Chain Timeline"
             subtitle="Likelihood and confidence move separately so analysts can distinguish feasible paths from evidence strength."
+            explanation="The blue area shows how likely the attack is to progress across phases. The green line shows how confident the system is in this assessment based on the provided logs and evidence. A gap between the two means high theoretical risk but low observed evidence."
         >
             <AttackFlowChart data={phaseData} colors={colors} />
         </ChartCard>
@@ -345,6 +356,7 @@ function EvidenceDistribution({ evidenceData, colors }) {
         <ChartCard
             title="Evidence Distribution"
             subtitle="Separates verified, inferred, and potential intelligence across the generated attack path."
+            explanation="This pie chart categorizes the evidence. VERIFIED means the activity was explicitly found in logs. INFERRED means it's highly likely based on related activity. POTENTIAL means the attacker could theoretically perform this action based on current misconfigurations."
         >
             <div className="grid grid-cols-1 sm:grid-cols-[150px_1fr] gap-4 items-center">
                 <ResponsiveContainer width="100%" height={150}>
@@ -381,6 +393,7 @@ function ConfidenceDistribution({ phaseData, colors }) {
         <ChartCard
             title="Confidence Distribution"
             subtitle="Shows how much of the modeled path is backed by strong evidence versus lower-confidence inference."
+            explanation="This shows the system's certainty in its analysis. If most items are 'High', the threat intelligence mapping is strongly supported by the provided data. If most are 'Low', the system is extrapolating potential risks from limited inputs."
         >
             <ResponsiveContainer width="100%" height={175}>
                 <BarChart data={buckets} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
@@ -432,6 +445,7 @@ function AttackGraph({ result, phaseData, colors }) {
         <ChartCard
             title="Attack Graph"
             subtitle="Nodes show exposed services and attack phases; edge color/weight indicates path feasibility."
+            explanation="This graph maps the structural path an attacker would take. It starts at the Internet (source), moves through vulnerable services, and connects to subsequent attack phases. Thicker, red lines indicate highly probable and dangerous attack paths."
         >
             <div style={{ overflowX: 'auto' }}>
                 <svg viewBox="0 0 105 95" role="img" aria-label="Attack graph" style={{ width: '100%', minWidth: 620, height: 420, display: 'block' }}>
@@ -482,6 +496,7 @@ function AttackCoverageMatrix({ coverage, colors }) {
         <ChartCard
             title="MITRE ATT&CK Coverage"
             subtitle="Tactics are highlighted only where the engine generated evidence-backed mappings."
+            explanation="This matrix highlights which MITRE ATT&CK tactics the current threat covers. Active squares indicate that techniques belonging to that tactic were either observed in logs or are possible due to the target's exposed misconfigurations."
         >
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 8 }}>
                 {coverage.map((item) => {
@@ -514,6 +529,7 @@ function ExposureTopology({ result, colors }) {
         <ChartCard
             title="Exposure Topology"
             subtitle="Summarizes where exposure starts, how blast radius grows, and where segmentation should be reviewed."
+            explanation="This section highlights structural vulnerabilities in your network. Blast Radius indicates how far an attacker could spread after initial compromise. Segmentation Weakness highlights the lack of internal barriers between services."
         >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <TopologyMetric label="Blast Radius" score={blast} colors={colors} />
@@ -553,6 +569,7 @@ function RemediationPriorityChart({ data, colors }) {
         <ChartCard
             title="Remediation Priority"
             subtitle="Prioritized controls based on urgency, exposure reduction value, and remediation sequence."
+            explanation="This chart ranks actionable fixes. The longer the bar, the more critical the remediation is for reducing overall risk. Fix the items at the top first to eliminate the most significant exposure points."
         >
             <ResponsiveContainer width="100%" height={Math.max(data.length * 38 + 20, 170)}>
                 <BarChart data={data} layout="vertical" margin={{ top: 0, right: 44, bottom: 0, left: 0 }}>

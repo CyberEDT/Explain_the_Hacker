@@ -1,5 +1,7 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, RadialBarChart, RadialBar, Legend } from 'recharts';
+import { BrainCircuit, Cpu, Target, Network, Layers, ShieldAlert, Sparkles, Activity } from 'lucide-react';
+import ChartExplainer from '../components/ChartExplainer';
 
 // ─── DATA FOR CHARTS ────────────────────────────────────────────────────────
 const evolutionData = [
@@ -131,33 +133,38 @@ export default function Roadmap() {
                         subtitle="Platform evolution across accuracy, explainability, and AI integration over time." 
                     />
                     
-                    <div style={{ width: '100%', height: '400px', background: '#0a0a0a', border: '1px solid #1a1a1a', padding: '24px', paddingTop: '40px' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={evolutionData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="colorAcc" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="var(--color-success)" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="var(--color-success)" stopOpacity={0}/>
-                                    </linearGradient>
-                                    <linearGradient id="colorExp" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="var(--color-warning)" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="var(--color-warning)" stopOpacity={0}/>
-                                    </linearGradient>
-                                    <linearGradient id="colorAI" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="var(--color-info)" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="var(--color-info)" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#111" vertical={false} />
-                                <XAxis dataKey="phase" stroke="#444" tick={{fill: '#888', fontSize: 12, fontFamily: 'monospace'}} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#444" tick={{fill: '#888', fontSize: 12, fontFamily: 'monospace'}} tickLine={false} axisLine={false} />
-                                <RechartsTooltip content={<CustomTooltip />} />
-                                <Legend wrapperStyle={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }} />
-                                <Area type="monotone" dataKey="accuracy" name="Engine Accuracy" stroke="var(--color-success)" fillOpacity={1} fill="url(#colorAcc)" />
-                                <Area type="monotone" dataKey="explainability" name="Explainability Score" stroke="var(--color-warning)" fillOpacity={1} fill="url(#colorExp)" />
-                                <Area type="monotone" dataKey="ai" name="AI Integration Level" stroke="var(--color-info)" fillOpacity={1} fill="url(#colorAI)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                    <div style={{ width: '100%', background: '#0a0a0a', border: '1px solid #1a1a1a', padding: '24px', paddingTop: '10px' }}>
+                        <ChartExplainer
+                            title="Intelligence Maturity over Time"
+                            explanation="This chart visualizes the platform's evolution. As we progress through the roadmap, you can see Engine Accuracy and AI Integration climbing, significantly boosting the overall Explainability Score of the threat intelligence."
+                        >
+                            <ResponsiveContainer width="100%" height={360}>
+                                <AreaChart data={evolutionData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorAcc" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="var(--color-success)" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="var(--color-success)" stopOpacity={0}/>
+                                        </linearGradient>
+                                        <linearGradient id="colorExp" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="var(--color-warning)" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="var(--color-warning)" stopOpacity={0}/>
+                                        </linearGradient>
+                                        <linearGradient id="colorAI" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="var(--color-info)" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="var(--color-info)" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#111" vertical={false} />
+                                    <XAxis dataKey="phase" stroke="#444" tick={{fill: '#888', fontSize: 12, fontFamily: 'monospace'}} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#444" tick={{fill: '#888', fontSize: 12, fontFamily: 'monospace'}} tickLine={false} axisLine={false} />
+                                    <RechartsTooltip content={<CustomTooltip />} />
+                                    <Legend wrapperStyle={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }} />
+                                    <Area type="monotone" dataKey="accuracy" name="Engine Accuracy" stroke="var(--color-success)" fillOpacity={1} fill="url(#colorAcc)" />
+                                    <Area type="monotone" dataKey="explainability" name="Explainability Score" stroke="var(--color-warning)" fillOpacity={1} fill="url(#colorExp)" />
+                                    <Area type="monotone" dataKey="ai" name="AI Integration Level" stroke="var(--color-info)" fillOpacity={1} fill="url(#colorAI)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </ChartExplainer>
                     </div>
                 </div>
             </section>
@@ -249,18 +256,23 @@ export default function Roadmap() {
                             </p>
                         </div>
                         
-                        <div style={{ height: '300px', background: '#0a0a0a', border: '1px solid #1a1a1a', padding: '24px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={sophisticationData} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#111" vertical={false} />
-                                    <XAxis dataKey="time" stroke="#444" tick={{fill: '#888', fontSize: 12, fontFamily: 'monospace'}} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#444" tick={{fill: '#888', fontSize: 12, fontFamily: 'monospace'}} tickLine={false} axisLine={false} />
-                                    <RechartsTooltip content={<CustomTooltip />} />
-                                    <Legend wrapperStyle={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }} />
-                                    <Line type="monotone" dataKey="reactive" name="Reactive Alerts" stroke="#e8183a" strokeWidth={2} dot={{ fill: '#e8183a', r: 4 }} activeDot={{ r: 6 }} />
-                                    <Line type="monotone" dataKey="predictive" name="Predictive Modeling" stroke="#00aaff" strokeWidth={2} dot={{ fill: '#00aaff', r: 4 }} activeDot={{ r: 6 }} />
-                                </LineChart>
-                            </ResponsiveContainer>
+                        <div style={{ background: '#0a0a0a', border: '1px solid #1a1a1a', padding: '24px', paddingTop: '10px' }}>
+                            <ChartExplainer
+                                title="Sophistication Matrix"
+                                explanation="This line chart contrasts reactive alerts with proactive threat modeling over the lifespan of our roadmap. The blue line demonstrates our goal to predict threats before they materialize."
+                            >
+                                <ResponsiveContainer width="100%" height={260}>
+                                    <LineChart data={sophisticationData} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#111" vertical={false} />
+                                        <XAxis dataKey="time" stroke="#444" tick={{fill: '#888', fontSize: 12, fontFamily: 'monospace'}} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#444" tick={{fill: '#888', fontSize: 12, fontFamily: 'monospace'}} tickLine={false} axisLine={false} />
+                                        <RechartsTooltip content={<CustomTooltip />} />
+                                        <Legend wrapperStyle={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }} />
+                                        <Line type="monotone" dataKey="reactive" name="Reactive Alerts" stroke="#e8183a" strokeWidth={2} dot={{ fill: '#e8183a', r: 4 }} activeDot={{ r: 6 }} />
+                                        <Line type="monotone" dataKey="predictive" name="Predictive Modeling" stroke="#00aaff" strokeWidth={2} dot={{ fill: '#00aaff', r: 4 }} activeDot={{ r: 6 }} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </ChartExplainer>
                         </div>
 
                     </div>

@@ -569,7 +569,7 @@ function PhaseRow({ phase, index }) {
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '4px' }}>
                             {phase.supportingEvidence.map((e, i) => (
                                 <span key={i} style={{
-                                    fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#555',
+                                    fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#fff',
                                     background: '#060606', border: '1px solid #1a1a1a',
                                     padding: '2px 8px', letterSpacing: '0.04em',
                                 }}>
@@ -579,12 +579,12 @@ function PhaseRow({ phase, index }) {
                         </div>
                     )}
                     {phase.prerequisites?.length > 0 && (
-                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#444', margin: 0, letterSpacing: '0.04em' }}>
+                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#fff', margin: 0, letterSpacing: '0.04em' }}>
                             Prerequisites: {phase.prerequisites.join(' | ')}
                         </p>
                     )}
                     {phase.generatedBecause?.length > 0 && (
-                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#444', margin: 0, letterSpacing: '0.04em' }}>
+                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#fff', margin: 0, letterSpacing: '0.04em' }}>
                             Generated because: {phase.generatedBecause.join(' | ')}
                         </p>
                     )}
@@ -595,12 +595,12 @@ function PhaseRow({ phase, index }) {
                                 <EvidenceBadge type={t.evidenceType} small />
                             </div>
                             <div style={{ flex: 1 }}>
-                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#666', lineHeight: 1.6 }}>
-                                    {t.name ? <strong style={{ color: '#999', marginRight: '6px' }}>{t.name}:</strong> : null}
+                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#fff', lineHeight: 1.6 }}>
+                                    {t.name ? <strong style={{ color: '#fff', marginRight: '6px' }}>{t.name}:</strong> : null}
                                     {t.description}
                                 </span>
                                 {t.generatedBecause?.length > 0 && (
-                                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#333', marginTop: '4px', letterSpacing: '0.04em' }}>
+                                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#fff', marginTop: '4px', letterSpacing: '0.04em' }}>
                                         Generated because: {t.generatedBecause.join('; ')}
                                     </p>
                                 )}

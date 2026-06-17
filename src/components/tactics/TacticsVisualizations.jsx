@@ -1,6 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell } from 'recharts';
 import { MITRE_TACTICS, ATTACK_TIMELINE } from '../../data/tacticsData';
+import ChartExplainer from '../ChartExplainer';
 
 
 const CustomTooltip = ({ active, payload }) => {
@@ -51,20 +52,25 @@ export default function TacticsVisualizations() {
                         <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                              MOST ABUSED TACTICS (LAST 30 DAYS)
                         </h3>
-                        <div style={{ height: '300px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                                    <XAxis dataKey="name" stroke="#444" fontSize={10} tickFormatter={(val) => val.substring(0, 4) + '.'} />
-                                    <YAxis stroke="#444" fontSize={10} />
-                                    <Tooltip cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
-                                    <Bar dataKey="popularity" radius={[2, 2, 0, 0]}>
-                                        {barData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={index < 3 ? '#ff0033' : '#ffaa00'} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
+                        <ChartExplainer
+                            title="Most Abused Tactics"
+                            explanation="This bar chart highlights the most frequently leveraged MITRE ATT&CK tactics in recent global incidents. Tactics shown in red represent the most common entry or execution methods used by threat actors."
+                        >
+                            <div style={{ height: '300px' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                        <XAxis dataKey="name" stroke="#444" fontSize={10} tickFormatter={(val) => val.substring(0, 4) + '.'} />
+                                        <YAxis stroke="#444" fontSize={10} />
+                                        <Tooltip cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+                                        <Bar dataKey="popularity" radius={[2, 2, 0, 0]}>
+                                            {barData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={index < 3 ? '#ff0033' : '#ffaa00'} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </ChartExplainer>
                     </div>
 
                     {/* Radar Chart */}
@@ -72,16 +78,21 @@ export default function TacticsVisualizations() {
                         <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#fff', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                              TECHNIQUE DISTRIBUTION (APT-41)
                         </h3>
-                        <div style={{ height: '300px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                                    <PolarGrid stroke="#333" />
-                                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 9, fontFamily: 'monospace' }} />
-                                    <PolarRadiusAxis angle={30} domain={[0, 20]} tick={false} axisLine={false} />
-                                    <Radar name="Techniques" dataKey="A" stroke="#00aaff" fill="#00aaff" fillOpacity={0.2} />
-                                </RadarChart>
-                            </ResponsiveContainer>
-                        </div>
+                        <ChartExplainer
+                            title="Technique Distribution (APT-41)"
+                            explanation="This radar chart illustrates the distribution of techniques used by a specific threat actor (APT-41) across different tactics. A wider spread indicates a more diverse arsenal of techniques for that particular phase."
+                        >
+                            <div style={{ height: '300px' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                                        <PolarGrid stroke="#333" />
+                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 9, fontFamily: 'monospace' }} />
+                                        <PolarRadiusAxis angle={30} domain={[0, 20]} tick={false} axisLine={false} />
+                                        <Radar name="Techniques" dataKey="A" stroke="#00aaff" fill="#00aaff" fillOpacity={0.2} />
+                                    </RadarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </ChartExplainer>
                     </div>
 
                 </div>

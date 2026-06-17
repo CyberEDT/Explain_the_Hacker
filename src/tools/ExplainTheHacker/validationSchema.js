@@ -100,7 +100,6 @@ export const PORT_PRESETS = [
 // ─── Common misconfiguration suggestions ─────────────────────────────────────
 
 export const MISCONFIGURATION_SUGGESTIONS = [
-    // Authentication & Access
     'Default credentials not changed',
     'MFA not enforced',
     'Weak password policies',
@@ -111,9 +110,8 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Admin Interface with Unchanged Default Password',
     'No Account Lockout + Weak Password Policy',
     'No Account Lockout / No fail2ban / Unlimited Login Attempts',
-    'User postgres with password "postgres"',
-    
-    // Network & Services
+    'User postgres with password ',
+    '',
     'Telnet enabled',
     'FTP anonymous access',
     'SMBv1 enabled',
@@ -125,7 +123,8 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Telnet Service Active (deprecated since 2002)',
     'PermitRootLogin yes in sshd_config',
     'VNC Server Running Without Password',
-    'Community String: "public" or "private"',
+    'Community String: ',
+    ' or ',
     'No Relay Restrictions Configured',
     'Management Interface Accessible Without VPN/Firewall',
     'SMBv1 Protocol Active (MS17-010)',
@@ -134,13 +133,9 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'MFA Not Enforced on Remote Desktop',
     'SMB Signing Not Required on Domain Members',
     'AXFR Allowed from Any Source',
-    
-    // Cloud & Infrastructure
     'Public S3 bucket',
     'Overly permissive IAM roles',
     'Unencrypted data at rest',
-    
-    // Databases & Cache
     'Unauthenticated Redis',
     'Unauthenticated MongoDB',
     'Unauthenticated Elasticsearch/Kibana',
@@ -149,21 +144,15 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'MongoDB started without --auth flag',
     'xpack.security.enabled: false (default in older versions)',
     'Memcached Exposed on UDP Port 11211 (No Auth)',
-    
-    // Active Directory
     'Unconstrained delegation',
     'Weak Kerberos encryption',
     'Excessive privileges for service accounts',
-    
-    // Containers & CI/CD
     'Jenkins script console enabled',
     'Docker socket exposed',
     'Kubernetes dashboard public',
     'Groovy Script Console Accessible (Manage Jenkins → Script Console)',
     'Docker Daemon Exposed on TCP 2375 Without TLS',
     'NFS Export with *(rw,no_root_squash)',
-    
-    // Web Application & Security
     'Open CORS policy',
     'Debug mode enabled',
     'Weak TLS (SSLv3/TLS 1.0)',
@@ -181,13 +170,9 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'No SSRF Protection + IMDSv1 Cloud Metadata',
     'Swagger/OpenAPI UI Publicly Accessible',
     'CVE-2020-14882 / Java Deserialization via T3 Protocol',
-    
-    // Operations & Monitoring
     'Unpatched OS',
     'Wildcard DNS record',
     'Lack of log monitoring/alerting',
-    
-    // New Additions
     'Jupyter Notebook running without token or authentication',
     'Kubernetes Kubelet or API server allows anonymous unauthenticated access',
     'Permissive NFS export',
@@ -195,4 +180,19 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Exposed API Swagger documentation or hardcoded secrets',
     'Default SNMP community strings configured',
     'Notebook Started Without --NotebookApp.token or password',
+    'Community String: "public" or "private"',
+    'User postgres with password "postgres"',
+    '--anonymous-auth=true on API Server',
+    'xp_cmdshell Stored Procedure Enabled for App User',
+    '--anonymous-auth=true on Kubelet',
+    'Service Accounts with Weak Kerberos Ticket Passwords + SPNs',
+    'Computer or Service Account Configured for Unconstrained Kerberos Delegation',
+    'NTLM Authentication Enabled + No Credential Guard',
+    'Unpatched Exchange Server with Internet-Accessible OWA',
+    'VPN Gateway Without MFA + Reused Credentials',
+    'Exposed RDP + Weak Creds + No MFA + SMBv1 + No Backup Strategy',
+    'IMDSv1 Enabled on AWS EC2 (Token-Optional Mode)',
+    'Anonymous Kubelet + Privileged Container + Host Path Mount',
+    'Pre-Authentication Disabled on User Accounts',
+    'Open Recursive Resolver + No DNS Query Monitoring'
 ];
