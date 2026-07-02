@@ -1,5 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { MISCONFIGURATION_SUGGESTIONS } from './validationSchema';
+import Editor from 'react-simple-code-editor';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-clike';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-markup';
+import 'prismjs/themes/prism-tomorrow.css';
 
 // ─── Quick-add port numbers ───────────────────────────────────────────────────
 const QUICK_PORTS = ['22', '80', '443', '3389', '8080', '5432'];
@@ -88,6 +95,67 @@ function SectionHeader({ number, title, subtitle, count, max }) {
                 </p>
             )}
         </>
+    );
+}
+
+// ─── Intelligence Level Selector ──────────────────────────────────────────────
+
+function IntelligenceLevelSelector({ value, onChange }) {
+    const levels = [
+        { id: 'LOW', label: 'LOW', desc: 'Beginner-friendly, minimal jargon' },
+        { id: 'MEDIUM', label: 'MEDIUM', desc: 'Operational security context' },
+        { id: 'HIGH', label: 'HIGH', desc: 'Research-grade threat intel' },
+        { id: 'LE', label: 'LAW ENFORCEMENT', desc: 'Investigation & forensics focus' }
+    ];
+
+    return (
+        <div style={{ background: '#000', padding: '24px', borderBottom: '1px solid #1a1a1a' }}>
+            <SectionHeader
+                number="00"
+                title="Intelligence Level"
+                subtitle="Select the depth and complexity of the resulting intelligence report."
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+                {levels.map(level => {
+                    const isSelected = value === level.id;
+                    return (
+                        <button
+                            key={level.id}
+                            type="button"
+                            onClick={() => onChange(level.id)}
+                            style={{
+                                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px',
+                                padding: '16px', textAlign: 'left',
+                                background: isSelected ? 'rgba(0, 170, 255, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                                border: `1px solid ${isSelected ? '#00aaff' : '#222'}`,
+                                color: isSelected ? '#fff' : '#888',
+                                cursor: 'pointer', transition: 'all 0.2s ease-in-out',
+                                outline: 'none'
+                            }}
+                            onMouseEnter={e => {
+                                if (!isSelected) {
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    e.currentTarget.style.borderColor = '#444';
+                                }
+                            }}
+                            onMouseLeave={e => {
+                                if (!isSelected) {
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                                    e.currentTarget.style.borderColor = '#222';
+                                }
+                            }}
+                        >
+                            <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.05em' }}>
+                                {level.label}
+                            </span>
+                            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.7rem', color: isSelected ? '#aaa' : '#666' }}>
+                                {level.desc}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
     );
 }
 
@@ -447,33 +515,93 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
 
 // ─── Section 3: Log Snippet ───────────────────────────────────────────────────
 // Reference: textarea ml-0 lg:ml-9 w-... min-h-[180px] bg-white/5 border border-border focus:border-accent ...
+const toolbarBtnStyle = {
+    background: '#222', color: '#ccc', border: 'none', padding: '6px 12px',
+    fontFamily: 'var(--font-mono)', fontSize: '0.7rem', cursor: 'pointer',
+    textTransform: 'uppercase', letterSpacing: '0.05em', transition: 'background 0.2s'
+};
+
 function LogSnippetTextarea({ value, onChange, error }) {
-    const MAX = 5000;
+    const MAX = 500000;
     const [focused, setFocused] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            onChange(evt.target.result);
+        };
+        reader.readAsText(file);
+    };
+
+    const handleFormatJSON = () => {
+        try {
+            const parsed = JSON.parse(value);
+            onChange(JSON.stringify(parsed, null, 2));
+        } catch {
+            alert('Could not format: Invalid JSON. Please make sure the input is valid JSON.');
+        }
+    };
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(value);
+        alert('Copied to clipboard!');
+    };
+
+    const handleClear = () => {
+        onChange('');
+    };
 
     return (
         <div>
-            <textarea
-                id="log-snippet-input"
-                rows={8}
-                value={value}
-                onChange={e => onChange(e.target.value)}
-                onFocus={() => setFocused(true)}
-                onBlur={() => setFocused(false)}
-                placeholder="Paste raw log output here (auth logs, syslog, IDS alerts, firewall drops…)"
-                maxLength={MAX}
-                className="w-full ml-0 md:w-[calc(100%-36px)] md:ml-9"
-                style={{
-                    boxSizing: 'border-box',
-                    background: 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${focused ? '#e8183a' : '#222'}`,
-                    outline: 'none',
-                    fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#888',
-                    padding: '12px', resize: 'vertical', minHeight: '180px',
-                    lineHeight: 1.6, display: 'block',
-                    transition: 'border-color 0.15s',
-                }}
-            />
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', marginLeft: '0', flexWrap: 'wrap' }} className="md:ml-9">
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    style={{ display: 'none' }} 
+                    onChange={handleFileUpload} 
+                    accept=".txt,.log,.json,.csv"
+                />
+                <button type="button" onClick={() => fileInputRef.current?.click()} style={toolbarBtnStyle}
+                        onMouseEnter={e => e.currentTarget.style.background = '#444'} onMouseLeave={e => e.currentTarget.style.background = '#222'}>
+                    Upload File
+                </button>
+                <button type="button" onClick={handleFormatJSON} style={toolbarBtnStyle}
+                        onMouseEnter={e => e.currentTarget.style.background = '#444'} onMouseLeave={e => e.currentTarget.style.background = '#222'}>
+                    Format JSON
+                </button>
+                <button type="button" onClick={handleCopy} style={toolbarBtnStyle}
+                        onMouseEnter={e => e.currentTarget.style.background = '#444'} onMouseLeave={e => e.currentTarget.style.background = '#222'}>
+                    Copy
+                </button>
+                <button type="button" onClick={handleClear} style={toolbarBtnStyle}
+                        onMouseEnter={e => e.currentTarget.style.background = '#e8183a'} onMouseLeave={e => e.currentTarget.style.background = '#222'}>
+                    Clear
+                </button>
+            </div>
+            <div className="w-full ml-0 md:w-[calc(100%-36px)] md:ml-9" style={{
+                boxSizing: 'border-box',
+                background: 'rgba(255,255,255,0.04)',
+                border: `1px solid ${focused ? '#e8183a' : '#222'}`,
+                transition: 'border-color 0.15s',
+                position: 'relative',
+                maxHeight: '400px',
+                overflow: 'auto'
+            }}>
+                <textarea
+                    value={value || ''}
+                    onChange={(e) => onChange(e.target.value)}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    className="w-full h-full"
+                    style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#888',
+                        minHeight: '180px', lineHeight: 1.6, background: 'transparent', border: 'none', outline: 'none'
+                    }}
+                />
+            </div>
             {/* Reference: font-mono text-[10px] text-muted-foreground mt-2 uppercase tracking-widest */}
             <div className="flex justify-between items-center mt-2 ml-0 md:ml-9">
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#444', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
@@ -488,7 +616,6 @@ function LogSnippetTextarea({ value, onChange, error }) {
     );
 }
 
-// ─── Root Form ────────────────────────────────────────────────────────────────
 export default function AttackSimulationForm({
     formValues,
     fieldErrors,
@@ -498,10 +625,11 @@ export default function AttackSimulationForm({
     onAddMisconfiguration,
     onRemoveMisconfiguration,
     onLogSnippetChange,
+    onIntelligenceLevelChange,
     onSubmit,
     onReset,
 }) {
-    const { openPorts, misconfigurations, logSnippet } = formValues;
+    const { openPorts, misconfigurations, logSnippet, intelligenceLevel } = formValues;
     const isEmpty = openPorts.length === 0 && misconfigurations.length === 0 && !logSnippet.trim();
 
     // Status summary
@@ -512,6 +640,11 @@ export default function AttackSimulationForm({
     return (
         <form id="attack-simulation-form" onSubmit={onSubmit} noValidate
             style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#1a1a1a' }}>
+
+            <IntelligenceLevelSelector 
+                value={intelligenceLevel} 
+                onChange={onIntelligenceLevelChange} 
+            />
 
             {/* ── Section 01: Open Ports ── reference: bg-background p-6 ─────── */}
             <div style={{ background: '#000', padding: '24px' }}>

@@ -1,14 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import useDevice from '@/hooks/useDevice';
+import MobileTabBar from '@/components/MobileTabBar';
 
 export default function PlatformLayout({ children }) {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
-
-    // Close mobile menu on route change
-    useEffect(() => {
-        setIsMobileMenuOpen(false);
-    }, [location]);
+    const { isMobile, isIOS } = useDevice();
 
     const navLinks = [
         { label: 'ETH ENGINE', href: '/lab' },
@@ -22,127 +19,97 @@ export default function PlatformLayout({ children }) {
 
     return (
         <div
-            className="min-h-screen flex flex-col"
-            style={{ background: 'var(--color-bg)', color: 'var(--color-text-primary)' }}
+            className="min-h-screen flex flex-col relative"
+            style={{ 
+                background: 'var(--color-bg)', 
+                color: 'var(--color-text-primary)',
+                // Ensure content isn't hidden behind the fixed bottom bar on mobile
+                paddingBottom: isMobile ? (isIOS ? 'calc(60px + env(safe-area-inset-bottom))' : '60px') : '0px'
+            }}
         >
-            {/* ── Navbar ──────────────────────────────────────────────────── */}
-            <nav
-                className="sticky top-0 z-50"
-                style={{
-                    background: '#000',
-                    borderBottom: '1px solid var(--color-border)',
-                }}
-            >
-                <div
-                    className="mx-auto px-4 md:px-8 flex items-center justify-between"
-                    style={{ maxWidth: '1400px', height: '56px' }}
+            {/* ── Navbar (Desktop Only) ──────────────────────────────────────────────────── */}
+            {!isMobile && (
+                <nav
+                    className="sticky top-0 z-50"
+                    style={{
+                        background: '#000',
+                        borderBottom: '1px solid var(--color-border)',
+                    }}
                 >
-                    {/* Logo: EXPLAIN_THE_HACKER_ with blinking cursor */}
-                    <Link
-                        to="/"
-                        className="flex items-center flex-shrink-0"
-                        style={{
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '0.85rem',
-                            fontWeight: 700,
-                            color: '#fff',
-                            letterSpacing: '0.05em',
-                            textDecoration: 'none',
-                        }}
+                    <div
+                        className="mx-auto px-4 md:px-8 flex items-center justify-between"
+                        style={{ maxWidth: '1400px', height: '56px' }}
                     >
-                        EXPLAIN_THE_HACKER
-                        <span
+                        {/* Logo: EXPLAIN_THE_HACKER_ with blinking cursor */}
+                        <Link
+                            to="/"
+                            className="flex items-center flex-shrink-0"
                             style={{
-                                display: 'inline-block',
-                                width: '8px',
-                                height: '14px',
-                                background: 'var(--color-accent)',
-                                marginLeft: '2px',
-                                animation: 'blink 1s step-end infinite',
-                                verticalAlign: 'middle',
-                            }}
-                        />
-                    </Link>
-
-                    {/* Desktop Nav links */}
-                    <div className="hidden lg:flex items-center gap-8">
-                        {navLinks.map(({ label, href }) => {
-                            const isExternal = href.startsWith('http');
-                            const style = {
                                 fontFamily: 'var(--font-mono)',
-                                fontSize: '0.7rem',
-                                fontWeight: 600,
-                                color: 'var(--color-text-secondary)',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.1em',
+                                fontSize: '0.85rem',
+                                fontWeight: 700,
+                                color: '#fff',
+                                letterSpacing: '0.05em',
                                 textDecoration: 'none',
-                                transition: 'color 0.2s ease',
-                            };
-                            
-                            return isExternal ? (
-                                <a
-                                    key={label}
-                                    href={href}
-                                    style={style}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
-                                    onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
-                                >
-                                    {label}
-                                </a>
-                            ) : (
-                                <Link
-                                    key={label}
-                                    to={href}
-                                    style={style}
-                                    onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
-                                    onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
-                                >
-                                    {label}
-                                </Link>
-                            );
-                        })}
-                    </div>
+                            }}
+                        >
+                            EXPLAIN_THE_HACKER
+                            <span
+                                style={{
+                                    display: 'inline-block',
+                                    width: '8px',
+                                    height: '14px',
+                                    background: 'var(--color-accent)',
+                                    marginLeft: '2px',
+                                    animation: 'blink 1s step-end infinite',
+                                    verticalAlign: 'middle',
+                                }}
+                            />
+                        </Link>
 
-                    {/* Mobile Menu Toggle Button */}
-                    <button
-                        className="lg:hidden flex items-center justify-center"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        style={{
-                            background: 'transparent',
-                            border: '1px solid #333',
-                            color: '#fff',
-                            padding: '6px 10px',
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '0.7rem',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        {isMobileMenuOpen ? 'CLOSE' : 'MENU'}
-                    </button>
-                </div>
-
-                {/* Mobile Nav Dropdown */}
-                {isMobileMenuOpen && (
-                    <div className="lg:hidden flex flex-col bg-[#050505] border-b border-[#1a1a1a] px-4 py-4 gap-4 absolute w-full left-0 top-[56px] shadow-2xl">
-                        {navLinks.map(({ label, href }) => {
-                            const isExternal = href.startsWith('http');
-                            const className = "text-[#888] hover:text-[#fff] font-mono text-xs tracking-widest uppercase transition-colors";
-                            
-                            return isExternal ? (
-                                <a key={label} href={href} className={className} target="_blank" rel="noopener noreferrer">
-                                    {label}
-                                </a>
-                            ) : (
-                                <Link key={label} to={href} className={className}>
-                                    {label}
-                                </Link>
-                            );
-                        })}
+                        {/* Desktop Nav links */}
+                        <div className="flex items-center gap-8">
+                            {navLinks.map(({ label, href }) => {
+                                const isExternal = href.startsWith('http');
+                                const style = {
+                                    fontFamily: 'var(--font-mono)',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                    color: 'var(--color-text-secondary)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    textDecoration: 'none',
+                                    transition: 'color 0.2s ease',
+                                };
+                                
+                                return isExternal ? (
+                                    <a
+                                        key={label}
+                                        href={href}
+                                        style={style}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                                        onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                                    >
+                                        {label}
+                                    </a>
+                                ) : (
+                                    <Link
+                                        key={label}
+                                        to={href}
+                                        style={style}
+                                        onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                                        onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                                    >
+                                        {label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     </div>
-                )}
-            </nav>
+                </nav>
+            )}
 
             {/* ── Ticker ──────────────────────────────────────────────────── */}
             <div
@@ -261,6 +228,7 @@ export default function PlatformLayout({ children }) {
                     }
                 `}} />
             </footer>
+            {isMobile && <MobileTabBar />}
         </div>
     );
 }

@@ -150,11 +150,13 @@ function sanitizePriority(value) {
 // that UI components can rely on — even if the AI returns partial/malformed data.
 
 /**
- * Normalize and sanitize the raw API response into a AnalysisResult object.
+ * Normalize and sanitize the raw API response into an AnalysisResult object.
  * Any missing or invalid fields are replaced with safe defaults.
+ * This function guarantees UI stability (preventing undefined crashes in ResultsPanel)
+ * even during high-intensity chaos scans or malformed engine outputs.
  *
  * @param {unknown} raw  Raw response from analyzeAttackChain()
- * @returns {AnalysisResult}  Normalized, sanitized result
+ * @returns {AnalysisResult}  Normalized, sanitized result ready for the UI layer
  */
 function normalizeResult(raw) {
     if (!raw || typeof raw !== 'object') {
@@ -174,28 +176,16 @@ function normalizeResult(raw) {
     const summary = typeof raw.summary === 'string' ? raw.summary.trim() : 'No summary returned by the analysis engine.';
 
     // ── Attack Chain ──────────────────────────────────────────────────────────
-    const attackChain = Array.isArray(raw.attackChain)
-        ? raw.attackChain.map((phase, i) => ({
+    const sanitizeChain = (chain) => Array.isArray(chain)
+        ? chain.map((phase, i) => ({
             phase:             sanitizeText(phase?.phase, `Phase ${i + 1}`),
-            tactic:            sanitizeText(phase?.tactic, ''),
-            mitreId:           sanitizeText(phase?.mitreId, ''),
-            riskLevel:         sanitizeRiskLevel(phase?.riskLevel),
-            timeEstimate:      sanitizeText(phase?.timeEstimate, 'Unknown'),
+            status:            sanitizeText(phase?.status, 'NOT OBSERVED'),
+            explanation:       sanitizeText(phase?.explanation, ''),
             confidence:        sanitizeNumber(phase?.confidence, { min: 0, max: 100, fallback: 0 }),
-            likelihoodScore:   sanitizeNumber(phase?.likelihoodScore, { min: 0, max: 100, fallback: 0 }),
-            // Evidence classification (new fields)
-            evidenceType:      ['observed', 'inferred', 'hypothetical'].includes(phase?.evidenceType)
-                                ? phase.evidenceType : 'inferred',
-            confidenceLevel:   ['low', 'medium', 'high'].includes(phase?.confidenceLevel)
-                                ? phase.confidenceLevel : 'medium',
+            evidenceType:      ['observed', 'inferred', 'hypothetical', 'none'].includes(phase?.evidenceType)
+                                ? phase.evidenceType : 'none',
             supportingEvidence: Array.isArray(phase?.supportingEvidence)
                                 ? phase.supportingEvidence.map(s => sanitizeText(s, '')).filter(Boolean)
-                                : [],
-            prerequisites:     Array.isArray(phase?.prerequisites)
-                                ? phase.prerequisites.map(s => sanitizeText(s, '')).filter(Boolean)
-                                : [],
-            generatedBecause:  Array.isArray(phase?.generatedBecause)
-                                ? phase.generatedBecause.map(s => sanitizeText(s, '')).filter(Boolean)
                                 : [],
             techniques: Array.isArray(phase?.techniques)
                 ? phase.techniques.map((t) => ({
@@ -204,7 +194,6 @@ function normalizeResult(raw) {
                     tactic:           sanitizeText(t?.tactic, ''),
                     description:      sanitizeText(t?.description, ''),
                     confidence:       sanitizeNumber(t?.confidence, { min: 0, max: 100, fallback: 0 }),
-                    // Evidence classification on technique level
                     evidenceType:     ['observed', 'inferred', 'hypothetical'].includes(t?.evidenceType)
                                         ? t.evidenceType : 'inferred',
                     generatedBecause: Array.isArray(t?.generatedBecause)
@@ -214,6 +203,8 @@ function normalizeResult(raw) {
                 : [],
         }))
         : [];
+
+    const killChain = sanitizeChain(raw.killChain);
 
 
     // ── IOC List ──────────────────────────────────────────────────────────────
@@ -282,7 +273,28 @@ function normalizeResult(raw) {
     const verifiedFindings = Array.isArray(raw.verifiedFindings) ? sanitizeJson(raw.verifiedFindings) : [];
     const inferredRisks = Array.isArray(raw.inferredRisks) ? sanitizeJson(raw.inferredRisks) : [];
     const hypotheticalScenarios = Array.isArray(raw.hypotheticalScenarios) ? sanitizeJson(raw.hypotheticalScenarios) : [];
-    const attackPaths = Array.isArray(raw.attackPaths) ? sanitizeJson(raw.attackPaths) : attackChain;
+
+    const defaultAccuracy = {
+        serviceAccuracy: 50,
+        mitreAccuracy: 50,
+        exploitValidation: 30,
+        attackChainConsistency: 50,
+        falsePositiveResistance: 50,
+        overallAccuracy: 50
+    };
+    
+    const accuracyAssessment = raw.accuracyAssessment && typeof raw.accuracyAssessment === 'object' 
+        ? {
+            serviceAccuracy: sanitizeNumber(raw.accuracyAssessment.serviceAccuracy, {min: 0, max: 100, fallback: 50}),
+            mitreAccuracy: sanitizeNumber(raw.accuracyAssessment.mitreAccuracy, {min: 0, max: 100, fallback: 50}),
+            exploitValidation: sanitizeNumber(raw.accuracyAssessment.exploitValidation, {min: 0, max: 100, fallback: 30}),
+            attackChainConsistency: sanitizeNumber(raw.accuracyAssessment.attackChainConsistency, {min: 0, max: 100, fallback: 50}),
+            falsePositiveResistance: sanitizeNumber(raw.accuracyAssessment.falsePositiveResistance, {min: 0, max: 100, fallback: 50}),
+            overallAccuracy: sanitizeNumber(raw.accuracyAssessment.overallAccuracy, {min: 0, max: 100, fallback: 50})
+        }
+        : defaultAccuracy;
+
+    const attackPaths = Array.isArray(raw.attackPaths) ? sanitizeJson(raw.attackPaths) : killChain;
     const ATTACKMappings = Array.isArray(raw.ATTACKMappings) ? sanitizeJson(raw.ATTACKMappings) : [];
     const riskAssessment = raw.riskAssessment && typeof raw.riskAssessment === 'object' ? sanitizeJson(raw.riskAssessment) : {};
     const remediationPriority = Array.isArray(raw.remediationPriority) ? sanitizeJson(raw.remediationPriority) : mitigations;
@@ -301,13 +313,17 @@ function normalizeResult(raw) {
         hasUnknownEntities:  Boolean(rawPIS.hasUnknownEntities),
     } : { knownPorts: [], unknownPorts: [], unmatchedMisconfigs: [], allPortsUnknown: false, hasUnknownEntities: false };
 
+    const serviceIntelligence = Array.isArray(raw.serviceIntelligence) ? sanitizeJson(raw.serviceIntelligence) : [];
+
     return {
         id,
         timestamp,
         riskScore,
         confidenceScore,
+        intelligenceLevel: raw.intelligenceLevel || 'LOW',
+        accuracyAssessment,
         summary,
-        attackChain,
+        killChain,
         iocList,
         mitigations,
         riskBreakdown,
@@ -319,12 +335,12 @@ function normalizeResult(raw) {
         verifiedFindings,
         inferredRisks,
         hypotheticalScenarios,
-        attackPaths,
         ATTACKMappings,
         riskAssessment,
         remediationPriority,
         frameworkWarnings,
         portIntelStatus,
+        serviceIntelligence,
     };
 
 }
@@ -432,6 +448,10 @@ export default function useExplainHacker() {
         const safe = stripScripts(value);
         setFormValues((prev) => ({ ...prev, logSnippet: safe }));
         setFieldErrors((prev) => { const n = { ...prev }; delete n.logSnippet; return n; });
+    }, []);
+
+    const setIntelligenceLevel = useCallback((level) => {
+        setFormValues(prev => ({ ...prev, intelligenceLevel: level }));
     }, []);
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -580,6 +600,7 @@ export default function useExplainHacker() {
 
         // ── Log snippet ──────────────────────────────────────────────────────
         setLogSnippet,
+        setIntelligenceLevel,
 
         // ── Lifecycle actions ────────────────────────────────────────────────
         handleSubmit,

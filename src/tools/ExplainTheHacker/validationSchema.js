@@ -50,13 +50,16 @@ export const attackSimulationSchema = z.object({
         .max(20, 'Maximum 20 misconfiguration entries allowed.')
         .default([]),
 
-    // Log Snippet: textarea — strip scripts, max 5000 chars
+    // Log Snippet: editor — strip scripts, max 500000 chars
     logSnippet: z
         .string()
-        .max(5000, 'Log snippet must be under 5000 characters.')
+        .max(500000, 'Log snippet must be under 500000 characters.')
         .transform(stripScripts)
         .optional()
         .or(z.literal('')),
+
+    // Intelligence Level (LOW, MEDIUM, HIGH, LE)
+    intelligenceLevel: z.enum(['LOW', 'MEDIUM', 'HIGH', 'LE']).default('LOW'),
 });
 
 // ─── Default Form Values ──────────────────────────────────────────────────────
@@ -65,6 +68,7 @@ export const defaultFormValues = {
     openPorts: [],   // string[]
     misconfigurations: [],  // string[]
     logSnippet: '',   // string
+    intelligenceLevel: 'LOW', // 'LOW' | 'MEDIUM' | 'HIGH' | 'LE'
 };
 
 // ─── Preset port lists for quick-add ─────────────────────────────────────────

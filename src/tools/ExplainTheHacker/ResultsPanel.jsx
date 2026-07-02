@@ -2,8 +2,17 @@
  * ResultsPanel.jsx
  * Matches reference site result panel design.
  * Security: Zero dangerouslySetInnerHTML. All text via React nodes.
+ *
+ * ┌─ Intelligence Level Rendering Architecture ────────────────────────────────┐
+ * │ LOW (Executive) : Hides MITRE Matrix, Evidence, and Complex Correlations.  │
+ * │                   Shows simple Kill Chain and basic risk gauge.            │
+ * │ MEDIUM (Analyst): Shows MITRE Matrix, Correlation paths, and logic.        │
+ * │ HIGH (Engineer) : Full technical visibility, deep context, all IOCs.       │
+ * │ LE (Law Enforce): Prioritizes Evidence, IOCs, and Attack Story generation. │
+ * └────────────────────────────────────────────────────────────────────────────┘
  */
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { mitreIntelligenceData } from '../../data/mitreIntelligenceData';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function Ico({ d, size = 16, strokeWidth = 2 }) {
@@ -178,7 +187,7 @@ function TopSummaryBar({ result, onNewAnalysis }) {
 
                         {/* Stats grid — reference: grid gap-px bg-border */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#1a1a1a] w-fit">
-                            <StatCell value={result.attackChain.length} label="Attack Phases" />
+                            <StatCell value={result.killChain?.length || 0} label="Kill Chain Phases" />
                             <StatCell value={result.iocList.length}     label="IOCs Found" />
                             <StatCell value={result.mitigations.length} label="Mitigations" />
                             <StatCell value={`${result.confidenceScore}%`} label="Confidence" />
@@ -353,52 +362,86 @@ function FrameworkWarningBanner({ frameworkWarnings, portIntelStatus }) {
     );
 }
 
-// ─── Priority Action Banner ────────────────────────────────────────────────────
-// Replaces "Next Likely Move" — uses evidence-aware language, shows the highest-
-// confidence observed or inferred finding rather than a fictional predicted action.
-function PriorityActionBanner({ attackChain }) {
-    // Prefer phases with direct evidence, then highest severity
-    const phase = attackChain.find(p => p.evidenceType === 'observed' && p.riskLevel === 'critical')
-        || attackChain.find(p => p.evidenceType === 'observed')
-        || attackChain.find(p => p.riskLevel === 'critical')
-        || attackChain.find(p => p.riskLevel === 'high')
-        || attackChain[0];
-    if (!phase) return null;
-    const tech = phase.techniques?.[0];
-    const isObserved = phase.evidenceType === 'observed';
-    const borderColor = isObserved ? '#e8183a' : '#ffaa00';
-    const headerLabel = isObserved ? 'TELEMETRY ALERT' : 'PRIORITY EXPOSURE';
+
+// ─── Service Intelligence Profile ─────────────────────────────────────────────
+function ServiceIntelligenceSection({ serviceIntelligence, intelligenceLevel }) {
+    if (!serviceIntelligence?.length) return null;
+
     return (
-        <div style={{
-            borderLeft: `2px solid ${borderColor}`,
-            background: isObserved ? 'rgba(232,24,58,0.07)' : 'rgba(255,170,0,0.05)',
-            padding: '16px 24px',
-            marginBottom: '40px',
-            display: 'flex', flexDirection: 'column', gap: '8px',
-        }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: borderColor, letterSpacing: '0.15em', fontWeight: 700, textTransform: 'uppercase', margin: 0 }}>
-                    {headerLabel} • {phase.phase}
-                </p>
-                <EvidenceBadge type={phase.evidenceType} small />
+        <div style={{ marginBottom: '56px' }}>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', color: '#fff', margin: 0, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
+                Service Intelligence Profile
+            </h3>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#444', marginBottom: '24px', letterSpacing: '0.08em' }}>
+                Detailed threat analysis of exposed services based on real-world attacker behavior
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {serviceIntelligence.map((item, idx) => {
+                    const intel = item.intel;
+                    return (
+                        <div key={idx} style={{ background: '#1a1a1a', borderLeft: '3px solid #00aaff', padding: '20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
+                                <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.2rem', fontWeight: 700, color: '#fff', margin: 0 }}>
+                                    {item.service}
+                                </h4>
+                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#00aaff', background: 'rgba(0,170,255,0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                                    PORT {item.port}
+                                </span>
+                                {intel.Category && (
+                                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#888' }}>
+                                        {intel.Category}
+                                    </span>
+                                )}
+                            </div>
+                            
+                            {intel.Description && (
+                                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#bbb', lineHeight: 1.6, marginBottom: '16px' }}>
+                                    {intel.Description}
+                                </p>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {intelligenceLevel !== 'LOW' && intel['Why Attackers Target It'] && (
+                                    <div>
+                                        <h5 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#ffaa00', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>
+                                            Why Attackers Target It
+                                        </h5>
+                                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#888', margin: 0, whiteSpace: 'pre-wrap' }}>
+                                            {intel['Why Attackers Target It']}
+                                        </p>
+                                    </div>
+                                )}
+                                {intelligenceLevel !== 'LOW' && intel['Common Attacker Actions'] && (
+                                    <div>
+                                        <h5 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#e8183a', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>
+                                            Common Attacker Actions
+                                        </h5>
+                                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#888', margin: 0, whiteSpace: 'pre-wrap' }}>
+                                            {intel['Common Attacker Actions']}
+                                        </p>
+                                    </div>
+                                )}
+                                {(intelligenceLevel === 'HIGH' || intelligenceLevel === 'LE') && intel['Real World Abuse Examples'] && (
+                                    <div className="md:col-span-2 mt-2" style={{ borderTop: '1px solid #333', paddingTop: '12px' }}>
+                                        <h5 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#00ff9d', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>
+                                            Real World Abuse Examples
+                                        </h5>
+                                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#aaa', margin: 0, whiteSpace: 'pre-wrap' }}>
+                                            {intel['Real World Abuse Examples']}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
-            {tech && (
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.88rem', color: '#888', margin: 0, lineHeight: 1.6 }}>
-                    {tech.id && <span style={{ color: '#00aaff', fontWeight: 700, fontFamily: 'var(--font-mono)', marginRight: '8px' }}>{tech.id}</span>}
-                    {tech.description}
-                </p>
-            )}
-            {phase.supportingEvidence?.length > 0 && (
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#444', margin: 0, letterSpacing: '0.06em' }}>
-                    Evidence: {phase.supportingEvidence.slice(0, 2).join(' • ')}
-                </p>
-            )}
         </div>
     );
 }
 
 // ─── Analysis Summary ─────────────────────────────────────────────────────────
-function AnalysisSummary({ summary, confidenceScore, detectionDifficulty, estimatedDwellTime, confidenceMetrics }) {
+function AnalysisSummary({ summary, confidenceScore, detectionDifficulty, estimatedDwellTime, confidenceMetrics, intelligenceLevel }) {
     const sections = summary.split('\n\n').filter(s => s.trim());
 
     return (
@@ -460,151 +503,16 @@ function AnalysisSummary({ summary, confidenceScore, detectionDifficulty, estima
                     </p>
                 )}
             </div>
-            <div className="flex flex-col min-w-[220px] lg:border-l lg:border-[#1a1a1a] lg:pl-10">
-                {[
-                    { label: 'ASSESSMENT CONFIDENCE', value: `${confidenceScore}%`, color: '#00aaff' },
-                    { label: 'DWELL TIME',             value: estimatedDwellTime || 'Unknown', color: '#fff' },
-                    { label: 'DETECTION STATUS',       value: detectionDifficulty || 'Unknown', color: '#fff' },
-                ].map(({ label, value, color }) => (
-                    <div key={label} style={{ padding: '14px 0', borderBottom: '1px solid #111' }}>
-                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#444', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '4px' }}>{label}</p>
-                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', fontWeight: 700, color, margin: 0 }}>{value}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-// ─── Attack Chain Row (expandable) ───────────────────────────────────────────
-function PhaseRow({ phase, index }) {
-    const [expanded, setExpanded] = useState(false);
-    const sc = severityColor(phase.riskLevel);
-    const [hovered, setHovered] = useState(false);
-
-    return (
-        <div style={{ borderBottom: '1px solid #111' }}>
-            {/* Main row */}
-            <div
-                onClick={() => setExpanded(e => !e)}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-                style={{
-                    display: 'flex', alignItems: 'center', gap: '16px',
-                    padding: '14px 0', cursor: 'pointer',
-                    background: hovered ? 'rgba(255,255,255,0.02)' : 'transparent',
-                    transition: 'background 0.15s',
-                }}>
-
-                {/* Number badge */}
-                <div style={{
-                    background: sc.bg, color: sc.text,
-                    width: '28px', height: '28px', flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.75rem',
-                }}>
-                    {index + 1}
-                </div>
-
-                {/* Phase name + MITRE tactic */}
-                <div style={{ width: '240px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '0.88rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-                        {phase.phase}
-                    </span>
-                    {phase.mitreId && (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#00aaff', border: '1px solid rgba(0,170,255,0.35)', padding: '2px 6px', flexShrink: 0 }}>
-                            {phase.mitreId}
-                        </span>
-                    )}
-                </div>
-
-                {/* Technique ID pills */}
-                <div style={{ flex: 1, display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                    {phase.techniques?.map(t => (
-                        <span key={t.id || t.name} style={{
-                            fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#666',
-                            background: '#0a0a0a', border: '1px solid #1f1f1f', padding: '3px 7px',
-                        }}>
-                            {t.id}
-                        </span>
-                    ))}
-                </div>
-
-                {/* Evidence badge + Time + severity + toggle */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                    <EvidenceBadge type={phase.evidenceType} small />
-                    {phase.timeEstimate && (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#444' }}>
-                            {phase.timeEstimate}
-                        </span>
-                    )}
-                    {typeof phase.confidence === 'number' && phase.confidence > 0 && (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#777', border: '1px solid #222', padding: '3px 7px' }}>
-                            C {phase.confidence}%
-                        </span>
-                    )}
-                    {typeof phase.likelihoodScore === 'number' && phase.likelihoodScore > 0 && (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#777', border: '1px solid #222', padding: '3px 7px' }}>
-                            L {phase.likelihoodScore}
-                        </span>
-                    )}
-                    <span style={{
-                        background: sc.bg, color: sc.text,
-                        fontFamily: 'var(--font-mono)', fontSize: '0.58rem', fontWeight: 700,
-                        padding: '3px 10px', letterSpacing: '0.08em',
-                    }}>
-                        {phase.riskLevel?.toUpperCase()}
-                    </span>
-                    <span style={{ color: expanded ? '#00aaff' : '#333', transition: 'color 0.15s' }}>
-                        {expanded ? <MinusIcon /> : <PlusIcon />}
-                    </span>
-                </div>
-            </div>
-
-            {/* Expanded detail */}
-            {expanded && phase.techniques?.length > 0 && (
-                <div style={{ padding: '4px 0 16px 44px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {/* Supporting evidence strip */}
-                    {phase.supportingEvidence?.length > 0 && (
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '4px' }}>
-                            {phase.supportingEvidence.map((e, i) => (
-                                <span key={i} style={{
-                                    fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#fff',
-                                    background: '#060606', border: '1px solid #1a1a1a',
-                                    padding: '2px 8px', letterSpacing: '0.04em',
-                                }}>
-                                    ▸ {e}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                    {phase.prerequisites?.length > 0 && (
-                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#fff', margin: 0, letterSpacing: '0.04em' }}>
-                            Prerequisites: {phase.prerequisites.join(' | ')}
-                        </p>
-                    )}
-                    {phase.generatedBecause?.length > 0 && (
-                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#fff', margin: 0, letterSpacing: '0.04em' }}>
-                            Generated because: {phase.generatedBecause.join(' | ')}
-                        </p>
-                    )}
-                    {phase.techniques.map(t => (
-                        <div key={t.id || t.name} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0, minWidth: '70px' }}>
-                                {t.id && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#00aaff' }}>{t.id}</span>}
-                                <EvidenceBadge type={t.evidenceType} small />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#fff', lineHeight: 1.6 }}>
-                                    {t.name ? <strong style={{ color: '#fff', marginRight: '6px' }}>{t.name}:</strong> : null}
-                                    {t.description}
-                                </span>
-                                {t.generatedBecause?.length > 0 && (
-                                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#fff', marginTop: '4px', letterSpacing: '0.04em' }}>
-                                        Generated because: {t.generatedBecause.join('; ')}
-                                    </p>
-                                )}
-                            </div>
+            {intelligenceLevel !== 'LOW' && (
+                <div className="flex flex-col min-w-[220px] lg:border-l lg:border-[#1a1a1a] lg:pl-10">
+                    {[
+                        { label: 'ASSESSMENT CONFIDENCE', value: `${confidenceScore}%`, color: '#00aaff' },
+                        { label: 'DWELL TIME',             value: estimatedDwellTime || 'Unknown', color: '#fff' },
+                        { label: 'DETECTION STATUS',       value: detectionDifficulty || 'Unknown', color: '#fff' },
+                    ].map(({ label, value, color }) => (
+                        <div key={label} style={{ padding: '14px 0', borderBottom: '1px solid #111' }}>
+                            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#444', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '4px' }}>{label}</p>
+                            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', fontWeight: 700, color, margin: 0 }}>{value}</p>
                         </div>
                     ))}
                 </div>
@@ -613,33 +521,190 @@ function PhaseRow({ phase, index }) {
     );
 }
 
-function AttackStagesSection({ attackChain }) {
-    if (!attackChain?.length) return null;
+// ─── Cyber Kill Chain V4 Row (expandable) ───────────────────────────────────────────
+function KillChainRowV4({ phase, index, intelligenceLevel }) {
+    const [expanded, setExpanded] = useState(false);
+    const [hovered, setHovered] = useState(false);
+    
+    // Status colors
+    const st = phase.status;
+    const isNotObserved = st === 'NOT OBSERVED';
+    let borderColor = '#333';
+    let bgHover = 'rgba(255,255,255,0.02)';
+    let textCol = '#fff';
+    
+    if (st === 'OBSERVED') { borderColor = '#e8183a'; textCol = '#ff4d6a'; }
+    else if (st === 'INFERRED') { borderColor = '#ffaa00'; textCol = '#ffbf40'; }
+    else if (st === 'HYPOTHETICAL') { borderColor = '#00aaff'; textCol = '#4dc3ff'; }
+    else { textCol = '#555'; } // NOT OBSERVED
+
+    return (
+        <div style={{ borderBottom: '1px solid #111', opacity: isNotObserved ? 0.6 : 1 }}>
+            <div
+                onClick={() => setExpanded(e => !e)}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                style={{
+                    display: 'flex', alignItems: 'center', gap: '16px',
+                    padding: '14px 0', cursor: 'pointer',
+                    background: hovered ? bgHover : 'transparent',
+                    transition: 'background 0.15s',
+                }}>
+                <div style={{
+                    background: isNotObserved ? '#111' : borderColor,
+                    color: isNotObserved ? '#444' : (st === 'INFERRED' ? '#000' : '#fff'),
+                    width: '28px', height: '28px', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.75rem',
+                }}>
+                    0{index + 1}
+                </div>
+
+                <div style={{ width: '240px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '0.88rem', color: textCol, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                        {phase.phase}
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: isNotObserved ? '#555' : borderColor, border: `1px solid ${isNotObserved ? '#333' : borderColor}`, padding: '2px 6px', flexShrink: 0, opacity: 0.8 }}>
+                        {phase.status}
+                    </span>
+                </div>
+
+                <div style={{ flex: 1, display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.82rem', color: isNotObserved ? '#666' : '#bbb', lineHeight: 1.5 }}>
+                        {phase.explanation}
+                    </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                    {!isNotObserved && <EvidenceBadge type={phase.evidenceType} small />}
+                    <span style={{ color: expanded ? '#00aaff' : '#333', transition: 'color 0.15s' }}>
+                        {expanded ? <MinusIcon /> : <PlusIcon />}
+                    </span>
+                </div>
+            </div>
+
+            {expanded && (
+                <div style={{ padding: '4px 0 16px 44px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {intelligenceLevel !== 'LOW' && phase.supportingEvidence?.length > 0 && (
+                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#fff', margin: 0, letterSpacing: '0.04em' }}>
+                            Evidence: {phase.supportingEvidence.join(' | ')}
+                        </p>
+                    )}
+                    
+                    {phase.techniques?.length > 0 ? phase.techniques.map(t => {
+                        const intel = mitreIntelligenceData[t.id] || mitreIntelligenceData[t.id?.split('.')[0]];
+                        return (
+                        <div key={t.id || t.name} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginTop: '8px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0, minWidth: '70px' }}>
+                                {(intelligenceLevel !== 'LOW' && t.id) && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#00aaff' }}>{t.id}</span>}
+                                <EvidenceBadge type={t.evidenceType} small />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#fff', lineHeight: 1.6 }}>
+                                    {t.name ? <strong style={{ color: '#fff', marginRight: '6px' }}>{intel?.['Technique Name'] || t.name}:</strong> : null}
+                                    {intel?.Description || t.description}
+                                </span>
+                                {intel?.['Attacker Perspective'] && (
+                                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#999', marginTop: '8px', fontStyle: 'italic', borderLeft: '2px solid #333', paddingLeft: '8px' }}>
+                                        {intel['Attacker Perspective']}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        );
+                    }) : (
+                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#666', fontStyle: 'italic', margin: '4px 0' }}>
+                            No specific MITRE techniques mapped for this phase.
+                        </p>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+/**
+ * KillChainV4Visualizer
+ * Renders the 7-stage Cyber Kill Chain progression.
+ * Adapts visual complexity based on the selected Intelligence Level.
+ * - LOW: Shows only the stages that are POSSIBLE, POTENTIAL, LIKELY, or OBSERVED.
+ * - HIGH/MEDIUM: Shows all 7 stages to provide full architectural context.
+ */
+function KillChainV4Visualizer({ killChain, intelligenceLevel }) {
+    if (!killChain?.length) return null;
+
     return (
         <div style={{ marginBottom: '56px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '20px' }}>
-                {/* Reference: font-extrabold uppercase tracking-tighter style */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
-                    Attack Chain
+                    ETH Kill Chain
                 </h3>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.58rem', color: '#444', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-                    MITRE ATT&amp;CK
-                </span>
             </div>
+            
             <div style={{ borderTop: '1px solid #1a1a1a' }}>
-                {attackChain.map((phase, i) => <PhaseRow key={i} phase={phase} index={i} />)}
+                {killChain.map((phase, i) => <KillChainRowV4 key={i} phase={phase} index={i} intelligenceLevel={intelligenceLevel} />)}
+            </div>
+        </div>
+    );
+}
+
+function MitreATTACKMatrix({ attackMappings, intelligenceLevel }) {
+    if (intelligenceLevel === 'LOW' || !attackMappings?.length) return null;
+
+    const groupedMappings = useMemo(() => {
+        const grouped = {};
+        attackMappings.forEach(mapping => {
+            const tacticName = mapping.tactic || 'Unknown Tactic';
+            if (!grouped[tacticName]) {
+                grouped[tacticName] = [];
+            }
+            grouped[tacticName].push({
+                id: mapping.mitreId || mapping.id,
+                name: mapping.technique || mapping.name
+            });
+        });
+        return Object.entries(grouped).map(([tactic, techniques]) => ({ tactic, techniques }));
+    }, [attackMappings]);
+
+    return (
+        <div style={{ marginBottom: '56px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', color: '#fff', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
+                    MITRE ATT&CK Mapping
+                </h3>
+            </div>
+            <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: '16px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {groupedMappings.map((tactic, idx) => (
+                        <div key={idx} style={{ background: '#0a0a0a', border: '1px solid #222', padding: '12px', minWidth: '200px', flex: 1 }}>
+                            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#00aaff', margin: 0, marginBottom: '8px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                                {tactic.tactic}
+                            </p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                {tactic.techniques.map(tech => (
+                                    <span key={tech.id} style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#ddd' }}>
+                                        <span style={{ color: '#888', marginRight: '6px' }}>{tech.id}</span>
+                                        {tech.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
 }
 
 // ─── Mitigations ──────────────────────────────────────────────────────────────
-function MitigationsSection({ mitigations }) {
+function MitigationsSection({ mitigations, intelligenceLevel }) {
     if (!mitigations?.length) return null;
     const order = { critical: 0, high: 1, medium: 2, low: 3 };
-    const sorted = [...mitigations].sort((a, b) =>
+    let sorted = [...mitigations].sort((a, b) =>
         (order[a.priority?.toLowerCase()] ?? 4) - (order[b.priority?.toLowerCase()] ?? 4)
     );
+    if (intelligenceLevel === 'LOW') {
+        sorted = sorted.slice(0, 5);
+    }
     return (
         <div style={{ marginBottom: '56px' }}>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', color: '#fff', margin: 0, marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
@@ -797,6 +862,36 @@ function IOCSection({ iocList }) {
     );
 }
 
+// ─── Simplified MITRE Section (For LOW Intelligence) ──────────────────────────
+function SimplifiedMitreSection({ mitreChain }) {
+    if (!mitreChain || mitreChain.length === 0) return null;
+
+    // Extract unique tactics from the killChain (ignoring NOT OBSERVED for simplified view)
+    const tactics = [...new Set(mitreChain.filter(p => p.status !== 'NOT OBSERVED').map(phase => phase.phase))];
+
+    return (
+        <div style={{ marginBottom: '40px', background: '#0a0a0a', border: '1px solid #1a1a1a', padding: '24px' }}>
+            <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '16px' }}>
+                Potential Hacker Actions (MITRE)
+            </h3>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#666', marginBottom: '16px' }}>
+                If an attacker exploits the findings above, they could perform the following types of activities:
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {tactics.map((tactic, i) => (
+                    <span key={i} style={{
+                        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                        padding: '6px 12px', borderRadius: '4px',
+                        fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#ccc'
+                    }}>
+                        {tactic}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function ResultsPanel({ result, onNewAnalysis }) {
     if (!result) return null;
@@ -807,12 +902,13 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
             <TopSummaryBar result={result} onNewAnalysis={onNewAnalysis} />
 
             {/* Unknown Port Handling Framework — warning banners */}
-            <FrameworkWarningBanner
-                frameworkWarnings={result.frameworkWarnings}
-                portIntelStatus={result.portIntelStatus}
-            />
+            {result.intelligenceLevel !== 'LOW' && (
+                <FrameworkWarningBanner
+                    frameworkWarnings={result.frameworkWarnings}
+                    portIntelStatus={result.portIntelStatus}
+                />
+            )}
 
-            <PriorityActionBanner attackChain={result.attackChain} />
 
             <AnalysisSummary
                 summary={result.summary}
@@ -820,17 +916,36 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
                 detectionDifficulty={result.detectionDifficulty}
                 estimatedDwellTime={result.estimatedDwellTime}
                 confidenceMetrics={result.confidenceMetrics}
+                intelligenceLevel={result.intelligenceLevel}
             />
 
-            <EvidenceSummarySection evidenceSummary={result.evidenceSummary} />
+            <KillChainV4Visualizer 
+                killChain={result.killChain}
+                intelligenceLevel={result.intelligenceLevel}
+            />
 
-            {result.attackChain.length > 0 && (
-                <AttackStagesSection attackChain={result.attackChain} />
+            {result.intelligenceLevel === 'LOW' ? (
+                <SimplifiedMitreSection mitreChain={result.killChain} />
+            ) : (
+                <MitreATTACKMatrix 
+                    attackMappings={result.ATTACKMappings}
+                    intelligenceLevel={result.intelligenceLevel}
+                />
             )}
 
-            <MitigationsSection mitigations={result.mitigations} />
+            {(result.intelligenceLevel === 'HIGH' || result.intelligenceLevel === 'LE') && (
+                <EvidenceSummarySection 
+                    evidenceSummary={result.evidenceSummary} 
+                />
+            )}
 
-            <IOCSection iocList={result.iocList} />
+            <MitigationsSection mitigations={result.mitigations} intelligenceLevel={result.intelligenceLevel} />
+
+            {(result.intelligenceLevel === 'HIGH' || result.intelligenceLevel === 'LE') && (
+                <IOCSection iocList={result.iocList} />
+            )}
         </div>
     );
 }
+
+

@@ -282,6 +282,7 @@ export default function ExplainTheHacker() {
         addPort, addPorts, removePort,
         addMisconfiguration, removeMisconfiguration,
         setLogSnippet,
+        setIntelligenceLevel,
         handleSubmit, resetForm, clearResult, cancelAnalysis, loadHistoryItem,
     } = useExplainHacker();
 
@@ -398,6 +399,7 @@ export default function ExplainTheHacker() {
                         onAddMisconfiguration={addMisconfiguration}
                         onRemoveMisconfiguration={removeMisconfiguration}
                         onLogSnippetChange={setLogSnippet}
+                        onIntelligenceLevelChange={setIntelligenceLevel}
                         onSubmit={handleSubmit}
                         onReset={resetForm}
                     />

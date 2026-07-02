@@ -111,26 +111,32 @@ function ChartCard({ title, subtitle, explanation, children, minHeight }) {
 }
 
 function buildPhaseData(result) {
-    const riskLevelScore = { critical: 90, high: 72, medium: 52, low: 30 };
-    return (result.attackChain || []).map((phase, index) => ({
+    // Use killChain (v4 engine output) with fallback to legacy attackChain
+    const chain = result.killChain || result.attackChain || [];
+    return chain.map((phase, index) => ({
         index: index + 1,
         phase: phase.phase,
         tactic: phase.tactic || phase.phase,
         mitreId: phase.mitreId,
-        score: clampScore(phase.likelihoodScore, riskLevelScore[phase.riskLevel?.toLowerCase()] ?? 40),
-        confidence: clampScore(phase.confidence || phase.confidenceScore, 45),
-        evidenceType: phase.evidenceType || 'inferred',
+        // Use real confidence as the score for visualizing each stage
+        score: clampScore(phase.confidence || phase.likelihoodScore, 35),
+        confidence: clampScore(phase.confidence, 35),
+        evidenceType: phase.evidenceType || 'hypothetical',
+        status: phase.status || 'HYPOTHETICAL',
         prerequisites: phase.prerequisites || [],
         generatedBecause: phase.generatedBecause || phase.supportingEvidence || [],
+        techniques: phase.techniques || [],
     }));
 }
 
 function buildEvidenceData(result, colors) {
     const counts = { observed: 0, inferred: 0, hypothetical: 0 };
-    (result.attackChain || []).forEach((phase) => {
+    // Read from killChain (v4 field name)
+    const chain = result.killChain || result.attackChain || [];
+    chain.forEach((phase) => {
         const key = phase.evidenceType === 'observed' || phase.evidenceType === 'verified'
             ? 'observed'
-            : phase.evidenceType === 'hypothetical'
+            : phase.evidenceType === 'hypothetical' || phase.evidenceType === 'none'
                 ? 'hypothetical'
                 : 'inferred';
         counts[key] += 1;
@@ -155,23 +161,33 @@ function buildAttackCoverage(result) {
         'Impact',
     ];
     const mappings = result.ATTACKMappings || [];
+    // Use killChain (v4) with fallback
+    const chain = result.killChain || result.attackChain || [];
     return tactics.map((tactic) => {
         const mapped = mappings.filter(m => String(m.tactic || '').toLowerCase() === tactic.toLowerCase());
-        const chainPhase = (result.attackChain || []).find(p => String(p.tactic || p.phase || '').toLowerCase() === tactic.toLowerCase());
+        // Also search techniques within each kill chain phase
+        let chainPhase = chain.find(p => String(p.tactic || p.phase || '').toLowerCase() === tactic.toLowerCase());
+        if (!chainPhase) {
+            chainPhase = chain.find(p =>
+                (p.techniques || []).some(t => String(t.tactic || '').toLowerCase() === tactic.toLowerCase())
+            );
+        }
         const confidence = mapped.length
             ? Math.round(mapped.reduce((sum, m) => sum + clampScore(m.confidence), 0) / mapped.length)
-            : clampScore(chainPhase?.confidence || chainPhase?.confidenceScore, 0);
+            : clampScore(chainPhase?.confidence, 0);
+        const techniqueCount = mapped.length || (chainPhase ? (chainPhase.techniques?.length || 1) : 0);
         return {
             tactic,
-            count: mapped.length || (chainPhase ? chainPhase.techniques?.length || 1 : 0),
+            count: techniqueCount,
             confidence,
-            evidenceType: chainPhase?.evidenceType || 'hypothetical',
+            evidenceType: chainPhase?.evidenceType || (techniqueCount > 0 ? 'hypothetical' : 'none'),
         };
     });
 }
 
 function buildRemediationData(result) {
     const priorityScore = { critical: 95, high: 74, medium: 52, low: 28 };
+    // remediationPriority is the v4 field; mitigations is the fallback
     return (result.remediationPriority || result.mitigations || []).slice(0, 8).map((item, index) => ({
         name: item.title || item.id || `Action ${index + 1}`,
         priority: item.priority || 'medium',
@@ -638,42 +654,144 @@ export default function ThreatVisualization({ result }) {
 
     if (!result) return null;
 
+    const intelLevel = result.intelligenceLevel || 'HIGH';
+    // Only render charts if there's something meaningful to show
+    const hasPhaseData = phaseData.length > 0;
+    const hasRemediations = remediations.length > 0;
+
+    if (!hasPhaseData) return null;
+
     return (
         <div className="space-y-4 animate-fade-in-up" aria-label="Threat Visualization Charts" style={{ marginTop: 28 }}>
             <div className="flex items-center gap-3 px-1">
                 <div className="h-px flex-1" style={{ background: 'var(--color-border)' }} />
                 <span className="text-xs font-mono font-semibold uppercase tracking-wider px-3" style={{ color: 'var(--color-text-muted)' }}>
-                    Intelligence Visualization
+                    Intelligence Visualization — {intelLevel}
                 </span>
                 <div className="h-px flex-1" style={{ background: 'var(--color-border)' }} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <RiskGaugeSection result={result} colors={colors} />
-                <div className="lg:col-span-2">
-                    <RiskDimensionHeatmap result={result} colors={colors} />
-                </div>
-            </div>
+            {/*
+              LOW — Executives & Non-Technical Users
+              Goal: One clear number, one clear chart, one clear action list.
+              NO attack jargon. NO MITRE IDs. Just: "how bad?" + "fix these."
+            */}
+            {intelLevel === 'LOW' && (
+                <>
+                    {/* Row 1: Risk score front-and-center. Heatmap gives dimension without jargon. */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <RiskGaugeSection result={result} colors={colors} />
+                        <div className="lg:col-span-2">
+                            <RiskDimensionHeatmap result={result} colors={colors} />
+                        </div>
+                    </div>
+                    {/* Row 2: Simple flow (are things getting worse?) + what to fix */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <AttackFlowSection phaseData={phaseData} colors={colors} />
+                        {hasRemediations && <RemediationPriorityChart data={remediations} colors={colors} />}
+                    </div>
+                </>
+            )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <AttackProbabilitySection phaseData={phaseData} colors={colors} />
-                <AttackFlowSection phaseData={phaseData} colors={colors} />
-            </div>
+            {/*
+              MEDIUM — IT Teams, Sysadmins, Security-aware Managers
+              Goal: Show the attack chain progression + tactical coverage.
+              Introduce MITRE coverage but keep it high-level. Actionable remediations front-and-center.
+            */}
+            {intelLevel === 'MEDIUM' && (
+                <>
+                    {/* Row 1: Scores + risk dimension breakdown */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <RiskGaugeSection result={result} colors={colors} />
+                        <div className="lg:col-span-2">
+                            <RiskDimensionHeatmap result={result} colors={colors} />
+                        </div>
+                    </div>
+                    {/* Row 2: Kill chain progression — which phases are dangerous? */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <AttackProbabilitySection phaseData={phaseData} colors={colors} />
+                        <AttackFlowSection phaseData={phaseData} colors={colors} />
+                    </div>
+                    {/* Row 3: Evidence split + tactical remediation */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <EvidenceDistribution evidenceData={evidenceData} colors={colors} />
+                        <div className="lg:col-span-2">
+                            {hasRemediations && <RemediationPriorityChart data={remediations} colors={colors} />}
+                        </div>
+                    </div>
+                    {/* Row 4: MITRE coverage — which attack tactics are possible? */}
+                    <AttackCoverageMatrix coverage={coverage} colors={colors} />
+                </>
+            )}
 
-            <AttackGraph result={result} phaseData={phaseData} colors={colors} />
+            {/*
+              HIGH — SOC Analysts, Threat Hunters, Penetration Testers
+              Goal: Every dimension of the attack surface. Evidence quality, graph topology,
+              confidence distribution, full MITRE matrix, and explainability drill-down.
+            */}
+            {intelLevel === 'HIGH' && (
+                <>
+                    {/* Row 1: Risk gauge + risk heatmap */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <RiskGaugeSection result={result} colors={colors} />
+                        <div className="lg:col-span-2">
+                            <RiskDimensionHeatmap result={result} colors={colors} />
+                        </div>
+                    </div>
+                    {/* Row 2: Phase-by-phase likelihood + kill chain timeline */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <AttackProbabilitySection phaseData={phaseData} colors={colors} />
+                        <AttackFlowSection phaseData={phaseData} colors={colors} />
+                    </div>
+                    {/* Row 3: Full attack graph (network topology view) */}
+                    <AttackGraph result={result} phaseData={phaseData} colors={colors} />
+                    {/* Row 4: Evidence breakdown, confidence split, network exposure */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <EvidenceDistribution evidenceData={evidenceData} colors={colors} />
+                        <ConfidenceDistribution phaseData={phaseData} colors={colors} />
+                        <ExposureTopology result={result} colors={colors} />
+                    </div>
+                    {/* Row 5: Full MITRE ATT&CK tactic coverage matrix */}
+                    <AttackCoverageMatrix coverage={coverage} colors={colors} />
+                    {/* Row 6: Remediation priority + analyst plain-language explainability */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {hasRemediations && <RemediationPriorityChart data={remediations} colors={colors} />}
+                        <ExplainabilityPanel phaseData={phaseData} colors={colors} />
+                    </div>
+                </>
+            )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <EvidenceDistribution evidenceData={evidenceData} colors={colors} />
-                <ConfidenceDistribution phaseData={phaseData} colors={colors} />
-                <ExposureTopology result={result} colors={colors} />
-            </div>
+            {/*
+              LE — Law Enforcement / Digital Forensics & Incident Response
+              Goal: Evidence integrity above all else. Focus on what was CONFIRMED vs theorized.
+              Show chain-of-events clearly. Avoid visual noise that distracts from evidentiary weight.
+            */}
+            {intelLevel === 'LE' && (
+                <>
+                    {/* Row 1: Risk score + evidence quality split — key for court-admissible framing */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <RiskGaugeSection result={result} colors={colors} />
+                        <div className="lg:col-span-2">
+                            <EvidenceDistribution evidenceData={evidenceData} colors={colors} />
+                        </div>
+                    </div>
+                    {/* Row 2: Confidence quality distribution + explainability of top event */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <ConfidenceDistribution phaseData={phaseData} colors={colors} />
+                        <ExplainabilityPanel phaseData={phaseData} colors={colors} />
+                    </div>
+                    {/* Row 3: Full kill-chain timeline — shows sequential event flow */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <AttackProbabilitySection phaseData={phaseData} colors={colors} />
+                        <AttackFlowSection phaseData={phaseData} colors={colors} />
+                    </div>
+                    {/* Row 4: Network graph — structural path of the attack */}
+                    <AttackGraph result={result} phaseData={phaseData} colors={colors} />
+                    {/* Row 5: MITRE coverage for legal attribution framing */}
+                    <AttackCoverageMatrix coverage={coverage} colors={colors} />
+                </>
+            )}
 
-            <AttackCoverageMatrix coverage={coverage} colors={colors} />
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <RemediationPriorityChart data={remediations} colors={colors} />
-                <ExplainabilityPanel phaseData={phaseData} colors={colors} />
-            </div>
         </div>
     );
 }

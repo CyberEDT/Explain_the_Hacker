@@ -22,6 +22,9 @@
  *   CONFIRMED — only when log evidence directly supports it
  */
 
+import { serviceIntelligenceData } from '../data/serviceIntelligenceData.js';
+import { mitreIntelligenceData } from '../data/mitreIntelligenceData.js';
+import { misconfigIntelligenceData } from '../data/misconfigIntelligenceData.js';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 
@@ -141,13 +144,13 @@ const PORT_INTEL = {
 
 /** Misconfiguration pattern database */
 const MISCONFIG_DB = [
-    { id:'AUTH-001', pattern:/(default credentials?|admin:admin|admin:password|password:?123|unchanged.*default|default.*password|password.*postgres|no.*root.*password|password.*"postgres"|vnc.*without.*password)/i,
+    { id:'AUTH-001', pattern:/(default credentials?|admin:admin|admin:password|password.*123|unchanged.*default|default.*password|password.*postgres|no.*root.*password|password.*"postgres"|vnc.*without.*password|default.*tomcat|tomcat.*default|tomcat.*credentials?|credentials?.*tomcat)/i,
       category:'Authentication', risk:'critical', exploitability:0.95,
       finding:'Default or unchanged credentials identified',
       detail:'Default credentials require zero exploitation skill; direct authentication is possible with publicly documented passwords.',
       mitre:'T1078.001', amplifies:['remote-access','database','web'], severityDelta:35 },
 
-    { id:'AUTH-002', pattern:/(no mfa|without mfa|mfa.*disabled|no multi.?factor|no two.?factor|2fa.*disabled|mfa.*not.*enforced|vpn.*without.*mfa)/i,
+    { id:'AUTH-002', pattern:/(no mfa|without mfa|mfa.*disabled|no multi.?factor|no two.?factor|2fa.*disabled|mfa.*not.*enforced|vpn.*without.*mfa|missing.*mfa|mfa.*missing|mfa.*not.*enabled|mfa.*off)/i,
       category:'Authentication', risk:'high', exploitability:0.80,
       finding:'Multi-factor authentication not enforced',
       detail:'MFA absence increases credential-based initial access probability by removing the second authentication barrier.',
@@ -159,7 +162,7 @@ const MISCONFIG_DB = [
       detail:'Without rate limiting, credential brute-force attacks can proceed at high velocity against any exposed service.',
       mitre:'T1110.003', amplifies:['remote-access','web'], severityDelta:20 },
 
-    { id:'PATCH-001', pattern:/(unpatched|outdated software|old version|end.?of.?life|eol|no.*patch|missing.*patch|legacy.*software|cve-\d{4}-\d+|java.*deserialization.*via.*t3)/i,
+    { id:'PATCH-001', pattern:/(unpatched|outdated\s+\w+|outdated software|old version|end.?of.?life|eol|no.*patch|missing.*patch|legacy.*software|cve-\d{4}-\d+|java.*deserialization.*via.*t3|ms17-010|ms08-067|obsolete|unsupported\s+\w+)/i,
       category:'Patch Management', risk:'high', exploitability:0.75,
       finding:'Unpatched or end-of-life software components identified',
       detail:'Unpatched systems may be vulnerable to n-day exploits with publicly available proof-of-concept code.',
@@ -171,11 +174,11 @@ const MISCONFIG_DB = [
       detail:'Telnet transmits all data in cleartext; any network-position adversary can capture credentials and session content.',
       mitre:'T1040', amplifies:['remote-access','legacy'], severityDelta:30 },
 
-    { id:'PROTO-002', pattern:/(ftp.*anonymous|anonymous.*ftp|ftp.*no.*auth|ftp.*unauthenticated|anonymous.*share|anonymous.*authentication|ldap.*anonymous.*bind)/i,
+    { id:'PROTO-002', pattern:/(ftp.*anonymous|anonymous.*ftp|ftp.*no.*auth|ftp.*unauthenticated|anonymous.*share|anonymous.*smb|smb.*anonymous|anonymous.*authentication|ldap.*anonymous.*bind|open.*smb.*share)/i,
       category:'Insecure Protocol', risk:'high', exploitability:0.85,
-      finding:'Anonymous FTP access enabled',
-      detail:'Anonymous FTP allows unauthenticated read or write access; commonly exploited for malware staging.',
-      mitre:'T1078.004', amplifies:['legacy'], severityDelta:25 },
+      finding:'Anonymous network share or FTP access enabled',
+      detail:'Anonymous share access allows unauthenticated read or write access to network resources; commonly exploited for reconnaissance and malware staging.',
+      mitre:'T1078.004', amplifies:['legacy','windows-smb'], severityDelta:25 },
 
     { id:'PROTO-003', pattern:/(smb.?v1|smbv1|smb1|smb.*version.*1|cifs.*legacy|smb.*signing.*not.*required)/i,
       category:'Insecure Protocol', risk:'critical', exploitability:0.88,
@@ -201,7 +204,7 @@ const MISCONFIG_DB = [
       detail:'Unauthenticated NoSQL databases are ransomed or exfiltrated within hours of internet exposure (Shodan indexing).',
       mitre:'T1190', amplifies:['database'], severityDelta:35 },
 
-    { id:'NET-001', pattern:/|docker.*daemon.*exposed/i,
+    { id:'NET-001', pattern:/(no.*firewall|firewall.*disabled|docker.*daemon.*exposed|open.*to.*internet|exposed.*to.*internet|publicly.*accessible|internet.*facing.*database|public.*rdp|rdp.*internet|rdp.*open.*internet|open.*rdp|rdp.*exposed|rdp.*public)/i,
       category:'Network Security', risk:'high', exploitability:0.78,
       finding:'Permissive or absent network access controls',
       detail:'Unrestricted inbound access eliminates perimeter defense; all exposed services are directly reachable.',
@@ -219,7 +222,7 @@ const MISCONFIG_DB = [
       detail:'SSLv3 and TLS 1.0 are vulnerable to POODLE and BEAST downgrade attacks.',
       mitre:'T1040', amplifies:['web','mail'], severityDelta:18 },
 
-    { id:'APP-001', pattern:/|xp_cmdshell/i,
+    { id:'APP-001', pattern:/(debug.*mode.*enabled|debug.*on.*production|verbose.*error|stack.*trace.*exposed|xp_cmdshell|application.*debug)/i,
       category:'Application Security', risk:'medium', exploitability:0.55,
       finding:'Debug or verbose error mode active in production',
       detail:'Debug mode exposes stack traces, environment variables, and internal paths to unauthenticated users.',
@@ -261,7 +264,7 @@ const MISCONFIG_DB = [
       detail:'Weakly encrypted SPN tickets can be extracted offline and cracked, exposing privileged service account credentials (Kerberoasting).',
       mitre:'T1558.003', amplifies:['infrastructure'], severityDelta:25 },
 
-    { id:'AUTH-004', pattern:/(weak.*password|dictionary.*password|password.*policy.*weak|pre-authentication.*disabled|ntlm.*authentication.*enabled|weak.*creds)/i,
+    { id:'AUTH-004', pattern:/(weak.*password|weak.*cred|dictionary.*password|password.*policy.*weak|pre-authentication.*disabled|ntlm.*authentication.*enabled|no.*password.*complexity|password.*reuse|simple.*password|easy.*password)/i,
       category:'Authentication', risk:'high', exploitability:0.85,
       finding:'Weak password policy or easily guessable passwords in use',
       detail:'Weak passwords are highly susceptible to brute-force and credential stuffing attacks, bypassing authentication controls.',
@@ -296,6 +299,13 @@ const MISCONFIG_DB = [
       finding:'Exposed API Swagger documentation or hardcoded secrets',
       detail:'Public API documentation reveals internal service structures and query options, significantly reducing reconnaissance cost for API tampering.',
       mitre:'T1592.002', amplifies:['web'], severityDelta:22 },
+
+    // Public database exposure — critical pattern for common misconfig phrases
+    { id:'NOAUTH-004', pattern:/(public.*database|database.*public|database.*exposed|database.*internet|internet.*database|db.*exposed|exposed.*db|public.*db|mssql.*public|mysql.*public|postgres.*exposed|public.*sql|sql.*publicly|database.*no.*auth|unauthenticated.*database)/i,
+      category:'Authentication', risk:'critical', exploitability:0.88,
+      finding:'Database service exposed to the public internet',
+      detail:'Publicly accessible database services allow direct connection attempts from any internet host, enabling credential attacks and direct data access.',
+      mitre:'T1190', amplifies:['database'], severityDelta:32 },
 
     { id:'AUTH-005', pattern:/(snmp.*community.*string|snmp.*default.*public|snmp.*default.*private|community.*string.*public|community.*string)/i,
       category:'Authentication', risk:'high', exploitability:0.82,
@@ -459,6 +469,20 @@ const CORRELATION_RULES = [
         threat:'Exposed SNMP service using default community strings (like public/private) allows querying system descriptions, network interfaces, and running services.',
         likelihood:'POTENTIAL', confidenceBoost:22, riskBoost:24, mitre:'T1592',
         targetedBy:['External scanners', 'Reconnaissance campaigns'],
+    },
+    {
+        id:'CORR-023', name:'Tomcat Default Credential RCE',
+        requires: { ports:['8080','8443','80'], misconfigIds:['AUTH-001'] },
+        threat:'Apache Tomcat with default manager credentials (tomcat:tomcat, admin:admin) allows direct WAR file deployment via the /manager/html endpoint, resulting in immediate Remote Code Execution on the host.',
+        likelihood:'LIKELY', confidenceBoost:32, riskBoost:38, mitre:'T1078.001',
+        targetedBy:['Opportunistic web shell campaigns', 'Ransomware affiliates', 'Initial Access Brokers'],
+    },
+    {
+        id:'CORR-024', name:'EternalBlue + Anonymous SMB Wormable Propagation',
+        requires: { ports:['445'], misconfigIds:['PROTO-003', 'PROTO-002'] },
+        threat:'SMBv1 + MS17-010 + Anonymous SMB shares creates a zero-authentication wormable attack chain. An attacker can enumerate shares without credentials, exploit EternalBlue for SYSTEM-level RCE, and propagate laterally across the entire network segment without any user interaction — identical conditions to WannaCry and NotPetya.',
+        likelihood:'LIKELY', confidenceBoost:38, riskBoost:42, mitre:'T1210',
+        cve:'CVE-2017-0144', targetedBy:['WannaCry', 'NotPetya', 'EternalBlue mass-exploitation campaigns'],
     },
 ];
 
@@ -1390,7 +1414,12 @@ function calculateExposureRisk(portMap, matchedMisconfigs, logData, signals) {
     add('Privilege level', privilegeLevel, 'Privilege Level', 0.10, matchedMisconfigs.some(m => m.id === 'AUTH-001') ? 'Default credential weakness' : 'Privilege impact not confirmed');
     add('Blast radius', blastRadius, 'Blast Radius', 0.12, signals.hasSMB ? 'SMB exposure can increase propagation risk' : 'Blast radius depends on internal segmentation');
     add('Segmentation weakness', segmentationWeakness, 'Segmentation Weakness', 0.10, remoteOrDb.length ? 'Externally reachable administrative or data-plane service' : 'No administrative/data-plane service identified');
-    add('Authentication control weakness', Math.min(authWeakness * 30, 90), 'Authentication Risk', 0.07, `${authWeakness} authentication finding(s)`);
+    let finalAuthWeakness = Math.min(authWeakness * 30, 90);
+    if (signals.hasRemoteAccess && matchedMisconfigs.some(m => m.id === 'AUTH-002')) {
+        finalAuthWeakness = Math.max(75, Math.min(90, finalAuthWeakness));
+    }
+    
+    add('Authentication control weakness', finalAuthWeakness, 'Authentication Risk', 0.07, `${authWeakness} authentication finding(s)`);
     add('Telemetry anomaly score', telemetryAnomaly, 'Telemetry Context', 0.05, logData.hasLog ? `${logData.indicators.length} behavioral indicator(s)` : 'No telemetry provided');
 
     const score = Math.max(5, Math.min(99, Math.round(factors.reduce((sum, f) => sum + f.weightedScore, 0))));
@@ -1417,20 +1446,18 @@ function calculateConfidence(portMap, matchedMisconfigs, logData, frameworkMeta 
     // Low Confidence:     Unknown Port + Unknown/Missing Misconfig
     // No Analysis:        Nothing recognized (handled upstream by warning injection)
 
-    const allPortsUnknown = knownPortsList.length === 0 && unknownPortsList.length > 0;
+    const hasKnownPorts = knownPortsList.length > 0;
     const hasNoMisconfigs = matchedMisconfigs.length === 0;
     const hasUnmatchedMisconfigs = unmatchedMisconfigs.length > 0;
-
-    // Determine base tier
     let base;
-    if (!allPortsUnknown && !hasNoMisconfigs) {
+    if (hasKnownPorts && !hasNoMisconfigs) {
         base = 72; // Full confidence tier: known port + known misconfig
-    } else if (!allPortsUnknown && hasNoMisconfigs) {
+    } else if (hasKnownPorts && hasNoMisconfigs) {
         base = 58; // Partial confidence tier: known port, no misconfig
-    } else if (allPortsUnknown && !hasNoMisconfigs) {
+    } else if (!hasKnownPorts && !hasNoMisconfigs) {
         base = 45; // Service-driven tier: unknown port + known misconfig
     } else {
-        base = 28; // Low confidence tier: unknown port + no misconfig
+        base = 28; // Low confidence tier: unknown port + no misconfig (or completely empty input)
     }
 
     // Bonuses for known data richness
@@ -1465,19 +1492,91 @@ function strongestEvidence(items) {
     ).replace('verified', 'observed');
 }
 
-function techniqueV4({ id, name, description, tactic, evidenceType = 'inferred', generatedBecause = [], confidence = 50 }) {
+function calculateAccuracyAssessment(portMap, matchedMisconfigs, logData, signals, frameworkMeta = {}) {
+    const { unknownPortsList = [], knownPortsList = [], unmatchedMisconfigs = [] } = frameworkMeta;
+    
+    // Service Accuracy: High if known ports match, drops if unknown ports are present
+    let serviceAccuracy = 100;
+    if (unknownPortsList.length > 0) serviceAccuracy -= (unknownPortsList.length * 15);
+    if (knownPortsList.length === 0) serviceAccuracy = 40;
+    
+    // Mitre Accuracy: Requires misconfigs or logs to confidently map MITRE. 
+    // Ports alone yield hypothetical/low-accuracy mappings.
+    let mitreAccuracy = 50; 
+    if (matchedMisconfigs.length > 0) mitreAccuracy += 25;
+    if (logData.hasLog) mitreAccuracy += 25;
+    if (unmatchedMisconfigs.length > 0) mitreAccuracy -= 15;
+    
+    // Exploit Validation: NEVER 100 without explicit log telemetry indicating exploit.
+    let exploitValidation = 30; // base hypothetical
+    if (matchedMisconfigs.some(m => m.id === 'AUTH-001' || m.id === 'PROTO-001')) exploitValidation += 20; // Default creds makes it highly validated
+    if (logData.hasLog) exploitValidation += 40;
+    if (signals.hasActiveThreat) exploitValidation = 95;
+    
+    // Attack Chain Consistency: Based on Prerequisites (Ports + Misconfig + Logs = Complete Chain)
+    let attackChainConsistency = 40;
+    if (knownPortsList.length > 0) attackChainConsistency += 20;
+    if (matchedMisconfigs.length > 0) attackChainConsistency += 20;
+    if (logData.hasLog) attackChainConsistency += 20;
+    
+    // False Positive Resistance: How likely is this a false positive? (Inversely proportional to evidence)
+    let falsePositiveResistance = 40;
+    if (knownPortsList.length > 0) falsePositiveResistance += 10;
+    if (matchedMisconfigs.length > 0) falsePositiveResistance += 20;
+    if (logData.hasLog) falsePositiveResistance += 30;
+    
+    // Clamp all values between 10 and 100
+    const clamp = (val) => Math.min(Math.max(Math.round(val), 10), 100);
+    
+    serviceAccuracy = clamp(serviceAccuracy);
+    mitreAccuracy = clamp(mitreAccuracy);
+    exploitValidation = clamp(exploitValidation);
+    attackChainConsistency = clamp(attackChainConsistency);
+    falsePositiveResistance = clamp(falsePositiveResistance);
+    
+    const overallAccuracy = clamp((serviceAccuracy + mitreAccuracy + exploitValidation + attackChainConsistency + falsePositiveResistance) / 5);
+
     return {
-        id,
-        name,
-        tactic,
-        description,
-        evidenceType: evidenceType === 'verified' ? 'observed' : evidenceType,
-        generatedBecause: generatedBecause.filter(Boolean),
-        confidence: Math.max(0, Math.min(100, Math.round(confidence))),
+        serviceAccuracy,
+        mitreAccuracy,
+        exploitValidation,
+        attackChainConsistency,
+        falsePositiveResistance,
+        overallAccuracy
     };
 }
 
-function buildEnterpriseAttackChain(portMap, matchedMisconfigs, misconfigIds, logData, signals) {
+function techniqueV4({ id, name, description, tactic, evidenceType = 'inferred', generatedBecause = [], confidence = 50 }) {
+    let finalDescription = description;
+    
+    // Enrich with MITRE Intelligence Data if available
+    const baseId = id ? id.split('.')[0] : null;
+    const intel = mitreIntelligenceData[id] || (baseId && mitreIntelligenceData[baseId]);
+    if (intel && intel.Description) {
+        finalDescription = intel.Description;
+    }
+
+    let resolvedConfidence = Math.max(20, Math.min(100, Math.round(confidence)));
+    if (evidenceType === 'observed' || evidenceType === 'verified') {
+        resolvedConfidence = Math.max(90, resolvedConfidence);
+    } else if (evidenceType === 'hypothetical') {
+        resolvedConfidence = Math.min(40, resolvedConfidence);
+    } else {
+        resolvedConfidence = Math.max(30, Math.min(89, resolvedConfidence));
+    }
+
+    return {
+        id,
+        name: intel && intel['Technique Name'] ? intel['Technique Name'] : name,
+        tactic,
+        description: finalDescription,
+        evidenceType: evidenceType === 'verified' ? 'observed' : evidenceType,
+        generatedBecause: generatedBecause.filter(Boolean),
+        confidence: resolvedConfidence,
+    };
+}
+
+function buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData, signals, intelligenceLevel = 'HIGH') {
     const portCount = portMap.size;
     const exposedServices = [...portMap.entries()].map(([p, d]) => `${d.service} (${p}/tcp)`);
     const hasRemoteAccess = signals.hasRemoteAccess;
@@ -1500,294 +1599,144 @@ function buildEnterpriseAttackChain(portMap, matchedMisconfigs, misconfigIds, lo
     const hasImpactEvidence = logData.indicators.some(i => ['RANSOMWARE','EXFIL_PATTERN'].includes(i.type));
     const hasInitialAccessRoute = hasRemoteAccess || hasWeb || hasSMB || hasDatabase || hasDefaultCreds || hasUnpatched || hasNoAuthData || signals.hasBruteForce || signals.hasWebAttack;
 
-    const phases = [];
-    const addPhase = ({ phase, tactic, mitreId, techniques, prerequisites = [], generatedBecause = [], likelihoodScore, evidenceType, confidence }) => {
-        if (!techniques.length) return;
-        const support = [...new Set(techniques.flatMap(t => t.generatedBecause).concat(generatedBecause).filter(Boolean))];
-        const phaseEvidence = evidenceType || strongestEvidence(techniques);
-        const phaseConfidence = confidence ?? Math.round(techniques.reduce((sum, t) => sum + t.confidence, 0) / techniques.length);
-        phases.push({
-            phase,
-            tactic,
-            mitreId,
+    const killChain = [];
+    const addStage = ({ stageName, status, explanation, techniques, generatedBecause = [] }) => {
+        let finalConfidence = 0;
+        let finalStatus = status;
+
+        if (status !== 'NOT OBSERVED') {
+            if (techniques.length > 0) {
+                finalConfidence = Math.round(techniques.reduce((sum, t) => sum + t.confidence, 0) / techniques.length);
+            } else {
+                finalConfidence = status === 'OBSERVED' ? 95 : status === 'INFERRED' ? 75 : 30;
+            }
+        }
+
+        killChain.push({
+            phase: stageName,
+            status: finalStatus,
+            explanation,
+            confidence: finalConfidence,
+            evidenceType: finalStatus === 'NOT OBSERVED' ? 'none' : finalStatus === 'OBSERVED' ? 'observed' : finalStatus === 'INFERRED' ? 'inferred' : 'hypothetical',
             techniques,
-            confidence: Math.max(0, Math.min(100, phaseConfidence)),
-            confidenceLevel: phaseConfidence >= 75 ? 'high' : phaseConfidence >= 45 ? 'medium' : 'low',
-            confidenceScore: Math.max(0, Math.min(100, phaseConfidence)),
-            evidenceType: phaseEvidence,
-            supportingEvidence: support.slice(0, 6),
-            likelihoodScore: Math.max(0, Math.min(100, Math.round(likelihoodScore))),
-            prerequisites,
-            generatedBecause: support.slice(0, 6),
-            riskLevel: scoreToRiskLevel(likelihoodScore),
-            timeEstimate: phaseEvidence === 'observed' ? 'Observed in provided telemetry' : 'Scenario-dependent',
+            supportingEvidence: generatedBecause.filter(Boolean)
         });
     };
 
-    addPhase({
-        phase:'Reconnaissance',
-        tactic:'Reconnaissance',
-        mitreId:'TA0043',
-        likelihoodScore: portCount > 0 ? 72 : 28,
-        prerequisites:['Externally discoverable asset or submitted telemetry'],
-        generatedBecause: [
-            portCount > 0 ? `${portCount} publicly reachable service(s): ${exposedServices.slice(0, 4).join(', ')}` : null,
-            logData.indicators.some(i => i.type === 'SCANNER_ACTIVITY') ? 'Scanner signatures observed in log data' : null,
-        ],
-        techniques:[
-            ...(portCount > 0 ? [techniqueV4({
-                id:'T1595.001', name:'Scanning IP Blocks', tactic:'Reconnaissance',
-                description:'Publicly reachable services can be enumerated by internet-wide scanners and targeted reconnaissance.',
-                evidenceType:'inferred', confidence:68,
-                generatedBecause:[`${portCount} externally exposed service(s) identified`],
-            })] : []),
-            ...(logData.indicators.some(i => i.type === 'SCANNER_ACTIVITY') ? [techniqueV4({
-                id:'T1595', name:'Active Scanning', tactic:'Reconnaissance',
-                description:'Log telemetry includes scanner or assessment tool signatures, indicating active probing.',
-                evidenceType:'observed', confidence:88,
-                generatedBecause:['Scanner tool signatures present in logs'],
-            })] : []),
-            ...(portCount === 0 && !logData.indicators.some(i => i.type === 'SCANNER_ACTIVITY') ? [techniqueV4({
-                id:'T1592', name:'Gather Victim Host Information', tactic:'Reconnaissance',
-                description:'Reconnaissance is represented as a prerequisite phase; no external scanning evidence was provided.',
-                evidenceType:'hypothetical', confidence:28,
-                generatedBecause:['No externally exposed port or scanner telemetry was supplied'],
-            })] : []),
-        ],
+    // 01 RECONNAISSANCE
+    const reconTechs = [];
+    if (portCount > 0) reconTechs.push(techniqueV4({ id:'T1595.001', name:'Scanning IP Blocks', tactic:'Reconnaissance', description:'Publicly reachable services can be enumerated by internet-wide scanners.', evidenceType:'inferred', confidence:68 }));
+    if (logData.indicators.some(i => i.type === 'SCANNER_ACTIVITY')) reconTechs.push(techniqueV4({ id:'T1595', name:'Active Scanning', tactic:'Reconnaissance', description:'Scanner signatures observed in telemetry.', evidenceType:'observed', confidence:95 }));
+    if (reconTechs.length === 0) reconTechs.push(techniqueV4({ id:'T1595', name:'Active Scanning', tactic:'Reconnaissance', description:'Opportunistic scanning to identify exposed attack surfaces.', evidenceType:'hypothetical', confidence:35 }));
+    
+    addStage({
+        stageName: 'RECONNAISSANCE',
+        status: logData.indicators.some(i => i.type === 'SCANNER_ACTIVITY') ? 'OBSERVED' : portCount > 0 ? 'INFERRED' : 'HYPOTHETICAL',
+        explanation: portCount > 0 ? `Attackers can discover these ${portCount} services using internet-wide scanning platforms.` : 'No externally exposed port or scanner telemetry was supplied.',
+        techniques: reconTechs,
+        generatedBecause: [portCount > 0 ? `${portCount} publicly reachable service(s) exposed.` : null, logData.indicators.some(i => i.type === 'SCANNER_ACTIVITY') ? 'Scanner signatures observed in logs.' : null]
     });
 
-    if (!hasInitialAccessRoute) return phases;
+    // 02 WEAPONIZATION
+    const weapTechs = [];
+    if (hasCredentialEvidence || hasNoRateLimit || hasNoMFA) weapTechs.push(techniqueV4({ id:'T1110', name:'Brute Force', tactic:'Credential Access', description:'Attackers prepare credential stuffing or brute force payloads.', evidenceType:hasCredentialEvidence?'observed':'inferred', confidence:hasCredentialEvidence?85:60 }));
+    if (hasUnpatched) weapTechs.push(techniqueV4({ id:'T1588.005', name:'Exploits', tactic:'Resource Development', description:'Attackers acquire exploit code for exposed vulnerabilities.', evidenceType:'inferred', confidence:70 }));
+    if (weapTechs.length === 0) weapTechs.push(techniqueV4({ id:'T1588', name:'Obtain Capabilities', tactic:'Resource Development', description:'Attackers acquire tools to exploit discovered attack surface.', evidenceType:'hypothetical', confidence:30 }));
 
-    addPhase({
-        phase:'Initial Access',
-        tactic:'Initial Access',
-        mitreId:'TA0001',
-        likelihoodScore: Math.max(
-            signals.hasWebAttack ? 82 : 0,
-            signals.hasBruteForce ? 78 : 0,
-            hasDefaultCreds ? 86 : 0,
-            hasNoAuthData ? 84 : 0,
-            hasRemoteAccess ? 62 : 0,
-            hasWeb && hasUnpatched ? 74 : 0,
-            hasSMBv1 ? 80 : 0,
-            42
-        ),
-        prerequisites:['Reconnaissance has identified a reachable service or credential entry point'],
-        generatedBecause:[
-            signals.hasWebAttack ? 'Web attack patterns observed in telemetry' : null,
-            signals.hasBruteForce ? 'Authentication failure pattern observed in telemetry' : null,
-            hasDefaultCreds ? 'Default credential weakness identified' : null,
-            hasRemoteAccess ? 'Remote access service exposed to the internet' : null,
-            hasNoAuthData ? 'Unauthenticated data service exposure identified' : null,
-        ],
-        techniques:[
-            ...(signals.hasWebAttack || (hasWeb && hasUnpatched) ? [techniqueV4({
-                id:'T1190', name:'Exploit Public-Facing Application', tactic:'Initial Access',
-                description:'Public web exposure with exploitation telemetry or patch weakness supports an initial-access path through the application tier.',
-                evidenceType: signals.hasWebAttack ? 'observed' : 'inferred', confidence: signals.hasWebAttack ? 86 : 70,
-                generatedBecause:[signals.hasWebAttack ? 'SQL injection or traversal patterns in logs' : null, hasUnpatched ? 'Unpatched web-facing component reported' : null],
-            })] : []),
-            ...(hasRemoteAccess || signals.hasBruteForce ? [techniqueV4({
-                id:'T1133', name:'External Remote Services', tactic:'Initial Access',
-                description:'Exposed SSH, RDP, VNC, or similar services provide a direct ingress path when authentication controls are weak.',
-                evidenceType: signals.hasBruteForce ? 'observed' : 'inferred', confidence: signals.hasBruteForce ? 82 : 64,
-                generatedBecause:[hasRemoteAccess ? 'External remote access port exposed' : null, signals.hasBruteForce ? 'Repeated authentication failures observed' : null, hasNoMFA ? 'MFA not enforced' : null],
-            })] : []),
-            ...(hasDefaultCreds ? [techniqueV4({
-                id:'T1078.001', name:'Default Accounts', tactic:'Initial Access',
-                description:'Default or unchanged credentials can allow authenticated access without exploit success.',
-                evidenceType:'inferred', confidence:84,
-                generatedBecause:['Default or unchanged credentials reported'],
-            })] : []),
-            ...(hasSMBv1 || (hasSMB && hasUnpatched) ? [techniqueV4({
-                id:'T1210', name:'Exploitation of Remote Services', tactic:'Lateral Movement',
-                description:'SMB exposure with legacy protocol or patch weakness creates a viable remote-service exploitation path.',
-                evidenceType:'inferred', confidence:78,
-                generatedBecause:[hasSMB ? 'SMB service exposed' : null, hasSMBv1 ? 'SMBv1 / CVE-2017-0144 condition reported' : null],
-            })] : []),
-        ],
+    addStage({
+        stageName: 'WEAPONIZATION',
+        status: hasCredentialEvidence ? 'OBSERVED' : (hasInitialAccessRoute ? 'INFERRED' : 'HYPOTHETICAL'),
+        explanation: hasInitialAccessRoute ? 'Attackers prepare payloads or credential lists targeting exposed surfaces.' : 'No exposed surface requires payload preparation.',
+        techniques: weapTechs,
+        generatedBecause: [hasCredentialEvidence ? 'Authentication attacks observed.' : null, hasUnpatched ? 'Vulnerabilities require exploit preparation.' : null]
     });
 
-    const accessLikely = phases.at(-1)?.likelihoodScore >= 55 || logData.indicators.length > 0;
-    if (!accessLikely) return phases;
+    // 03 DELIVERY
+    const delivTechs = [];
+    if (signals.hasWebAttack) delivTechs.push(techniqueV4({ id:'T1190', name:'Exploit Public-Facing Application', tactic:'Initial Access', description:'Payloads delivered via web exploitation.', evidenceType:'observed', confidence:92 }));
+    if (hasRemoteAccess || signals.hasBruteForce) delivTechs.push(techniqueV4({ id:'T1133', name:'External Remote Services', tactic:'Initial Access', description:'Payloads delivered over remote services (e.g. SSH/RDP).', evidenceType:signals.hasBruteForce?'observed':'inferred', confidence:signals.hasBruteForce?88:65 }));
+    if (delivTechs.length === 0) delivTechs.push(techniqueV4({ id:'T1190', name:'Exploit Public-Facing Application', tactic:'Initial Access', description:'Delivery of exploit payload across the network.', evidenceType:'hypothetical', confidence:30 }));
 
-    addPhase({
-        phase:'Execution',
-        tactic:'Execution',
-        mitreId:'TA0002',
-        likelihoodScore: hasExecutionEvidence ? 90 : (signals.hasWebAttack || hasDefaultCreds || hasNoAuthData || hasSMBv1 ? 66 : 38),
-        prerequisites:['Initial access path exists', 'Attacker can deliver commands, exploit payloads, or authenticated actions'],
-        generatedBecause:[
-            hasExecutionEvidence ? 'Command interpreter strings observed in telemetry' : null,
-            signals.hasWebAttack ? 'Web exploitation attempts may lead to server-side execution' : null,
-            hasDefaultCreds ? 'Authenticated service access can enable administrative command execution' : null,
-        ],
-        techniques:[
-            techniqueV4({
-                id:'T1059', name:'Command and Scripting Interpreter', tactic:'Execution',
-                description: hasExecutionEvidence
-                    ? 'Command interpreter invocation appears in the submitted telemetry.'
-                    : 'Execution is modelled only after an initial-access path; no command execution success is assumed.',
-                evidenceType: hasExecutionEvidence ? 'observed' : 'hypothetical',
-                confidence: hasExecutionEvidence ? 92 : 42,
-                generatedBecause:[hasExecutionEvidence ? 'cmd, PowerShell, or shell invocation in logs' : 'Execution depends on successful initial access'],
-            }),
-        ],
+    addStage({
+        stageName: 'DELIVERY',
+        status: signals.hasWebAttack || signals.hasBruteForce ? 'OBSERVED' : hasInitialAccessRoute ? 'INFERRED' : 'HYPOTHETICAL',
+        explanation: hasInitialAccessRoute ? 'Delivery of payloads or login attempts across exposed network boundaries.' : 'No delivery paths observed.',
+        techniques: delivTechs,
+        generatedBecause: [signals.hasWebAttack ? 'Web exploitation telemetry observed.' : null, hasRemoteAccess ? 'Remote access services exposed.' : null]
     });
 
-    addPhase({
-        phase:'Persistence',
-        tactic:'Persistence',
-        mitreId:'TA0003',
-        likelihoodScore: hasPersistenceEvidence ? 88 : (hasRemoteAccess || signals.hasWebAttack || hasNoAuthData ? 52 : 30),
-        prerequisites:['Execution or authenticated administrative access is available'],
-        generatedBecause:[
-            hasPersistenceEvidence ? 'Persistence mechanism patterns observed' : null,
-            signals.hasWebAttack ? 'Web-facing exploitation commonly enables web shell persistence if successful' : null,
-            hasRemoteAccess ? 'Remote administration exposure can support account or key persistence after access' : null,
-        ],
-        techniques:[
-            ...(hasPersistenceEvidence ? [techniqueV4({
-                id:'T1053', name:'Scheduled Task/Job', tactic:'Persistence',
-                description:'Telemetry includes scheduled task, cron, service, startup, or related persistence terms.',
-                evidenceType:'observed', confidence:88,
-                generatedBecause:['Persistence-related strings in logs'],
-            })] : []),
-            techniqueV4({
-                id: signals.hasWebAttack ? 'T1505.003' : 'T1098.004',
-                name: signals.hasWebAttack ? 'Server Software Component: Web Shell' : 'Account Manipulation: SSH Authorized Keys',
-                tactic:'Persistence',
-                description:'Persistence is represented as a follow-on risk gated behind execution or authenticated access, not as a confirmed event.',
-                evidenceType: hasPersistenceEvidence ? 'observed' : 'hypothetical',
-                confidence: hasPersistenceEvidence ? 78 : 38,
-                generatedBecause:['Post-access persistence requires prior execution or administrative access'],
-            }),
-        ],
+    // 04 EXPLOITATION
+    // P2 fix: SMBv1 + PATCH-001 + port 445 = strong inference of exploitation viability (EternalBlue)
+    const hasEternalBlueConditions = hasSMBv1 && hasUnpatched && portMap.has('445');
+    const exploitTechs = [];
+    if (hasExecutionEvidence) exploitTechs.push(techniqueV4({ id:'T1059', name:'Command and Scripting Interpreter', tactic:'Execution', description:'Successful execution of arbitrary commands.', evidenceType:'observed', confidence:95 }));
+    if (hasEternalBlueConditions) exploitTechs.push(techniqueV4({ id:'T1210', name:'Exploitation of Remote Services (EternalBlue)', tactic:'Lateral Movement', description:'SMBv1 + MS17-010 + port 445 creates conditions directly exploited by WannaCry/NotPetya. RCE without credentials is achievable.', evidenceType:'inferred', confidence:85, generatedBecause:['SMBv1 active on port 445', 'Unpatched MS17-010 (CVE-2017-0144)'] }));
+    if (hasPrivilegeEvidence || (hasUnpatched && !hasEternalBlueConditions)) exploitTechs.push(techniqueV4({ id:hasUnpatched?'T1068':'T1548', name:'Exploitation for Privilege Escalation', tactic:'Privilege Escalation', description:'Escalation of privileges post-compromise.', evidenceType:hasPrivilegeEvidence?'observed':'hypothetical', confidence:hasPrivilegeEvidence?92:35 }));
+    if (exploitTechs.length === 0) exploitTechs.push(techniqueV4({ id:'T1059', name:'Command and Scripting Interpreter', tactic:'Execution', description:'Execution of malicious payload post-delivery.', evidenceType:'hypothetical', confidence:25 }));
+
+    addStage({
+        stageName: 'EXPLOITATION',
+        // Escalate to INFERRED when EternalBlue conditions are met — not merely hypothetical
+        status: hasExecutionEvidence || hasPrivilegeEvidence ? 'OBSERVED' : (hasEternalBlueConditions || hasInitialAccessRoute) ? 'INFERRED' : 'HYPOTHETICAL',
+        explanation: hasExecutionEvidence ? 'Direct evidence of command execution observed.' : hasEternalBlueConditions ? 'SMBv1 + MS17-010 + port 445 co-present. EternalBlue exploitation is strongly inferred — exploit code is publicly available with no skill barrier.' : hasInitialAccessRoute ? 'Exploitation is possible via exposed access routes but unconfirmed.' : 'No evidence supports execution.',
+        techniques: exploitTechs,
+        generatedBecause: [hasExecutionEvidence ? 'Execution patterns in logs.' : null, hasEternalBlueConditions ? 'SMBv1 + unpatched MS17-010 + open port 445.' : null, hasPrivilegeEvidence ? 'Privilege escalation strings in logs.' : null]
     });
 
-    addPhase({
-        phase:'Privilege Escalation',
-        tactic:'Privilege Escalation',
-        mitreId:'TA0004',
-        likelihoodScore: hasPrivilegeEvidence ? 90 : (hasUnpatched || hasDefaultCreds ? 58 : 34),
-        prerequisites:['Code execution or authenticated foothold exists', 'Local privilege boundary or privileged account path is present'],
-        generatedBecause:[
-            hasPrivilegeEvidence ? 'Privilege escalation indicators observed' : null,
-            hasUnpatched ? 'Unpatched software increases local exploit likelihood' : null,
-            hasDefaultCreds ? 'Default credentials may already provide elevated privileges' : null,
-        ],
-        techniques:[
-            techniqueV4({
-                id: hasUnpatched ? 'T1068' : 'T1548',
-                name: hasUnpatched ? 'Exploitation for Privilege Escalation' : 'Abuse Elevation Control Mechanism',
-                tactic:'Privilege Escalation',
-                description:'Privilege escalation is assessed only after an execution foothold and is not used to inflate confirmed compromise.',
-                evidenceType: hasPrivilegeEvidence ? 'observed' : 'hypothetical',
-                confidence: hasPrivilegeEvidence ? 90 : (hasUnpatched ? 55 : 34),
-                generatedBecause:[hasPrivilegeEvidence ? 'Privilege escalation strings in logs' : null, hasUnpatched ? 'Patch weakness reported' : null],
-            }),
-        ],
-    });
-
-    addPhase({
-        phase:'Credential Access',
-        tactic:'Credential Access',
-        mitreId:'TA0006',
-        likelihoodScore: hasCredentialEvidence ? 82 : (hasNoMFA || hasNoRateLimit || hasDefaultCreds ? 64 : 36),
-        prerequisites:['Initial access, exposed authentication surface, or access to credential material'],
-        generatedBecause:[
-            hasCredentialEvidence ? 'Authentication telemetry observed' : null,
-            hasNoRateLimit ? 'No rate limiting reported' : null,
-            hasNoMFA ? 'MFA not enforced' : null,
-            hasDefaultCreds ? 'Default credentials reported' : null,
-        ],
-        techniques:[
-            techniqueV4({
-                id: hasCredentialEvidence || hasNoRateLimit || hasNoMFA ? 'T1110' : 'T1555',
-                name: hasCredentialEvidence || hasNoRateLimit || hasNoMFA ? 'Brute Force' : 'Credentials from Password Stores',
-                tactic:'Credential Access',
-                description:'Credential-access mapping is generated only where authentication evidence or prerequisite access makes it plausible.',
-                evidenceType: hasCredentialEvidence ? 'observed' : 'inferred',
-                confidence: hasCredentialEvidence ? 82 : 56,
-                generatedBecause:[hasCredentialEvidence ? 'Authentication failures or successes in logs' : null, hasNoMFA ? 'Weak authentication control' : null, hasNoRateLimit ? 'Rate limiting absent' : null],
-            }),
-        ],
-    });
-
-    addPhase({
-        phase:'Discovery',
-        tactic:'Discovery',
-        mitreId:'TA0007',
-        likelihoodScore: hasDiscoveryEvidence ? 86 : 50,
-        prerequisites:['A foothold or authenticated session exists'],
-        generatedBecause:[hasDiscoveryEvidence ? 'Host/user/network discovery commands observed' : 'Discovery is a normal post-access step after foothold establishment'],
-        techniques:[
-            techniqueV4({
-                id:'T1082', name:'System Information Discovery', tactic:'Discovery',
-                description:'Discovery is included after access-oriented phases because attackers commonly enumerate host, user, and domain context before moving laterally.',
-                evidenceType: hasDiscoveryEvidence ? 'observed' : 'hypothetical',
-                confidence: hasDiscoveryEvidence ? 86 : 40,
-                generatedBecause:[hasDiscoveryEvidence ? 'whoami, hostname, systeminfo, id, or similar commands in logs' : 'Requires successful foothold'],
-            }),
-        ],
-    });
-
-    if (hasSMB || hasRemoteAccess || hasLateralEvidence) {
-        addPhase({
-            phase:'Lateral Movement',
-            tactic:'Lateral Movement',
-            mitreId:'TA0008',
-            likelihoodScore: hasLateralEvidence ? 90 : (hasSMB ? 64 : 48),
-            prerequisites:['Credential access or privileged foothold exists', 'Reachable internal services are available'],
-            generatedBecause:[
-                hasLateralEvidence ? 'Lateral movement tooling observed' : null,
-                hasSMB ? 'SMB exposure supports Windows lateral movement if credentials are obtained' : null,
-                hasRemoteAccess ? 'Remote services can become lateral movement targets after credential access' : null,
-            ],
-            techniques:[
-                techniqueV4({
-                    id:'T1021', name:'Remote Services', tactic:'Lateral Movement',
-                    description:'Lateral movement is gated behind credentials or privileged access; exposure alone does not imply internal propagation.',
-                    evidenceType: hasLateralEvidence ? 'observed' : 'hypothetical',
-                    confidence: hasLateralEvidence ? 90 : 42,
-                    generatedBecause:[hasLateralEvidence ? 'PsExec, WMI, pass-the-hash, or similar strings in logs' : 'Requires credentials and internal reachability'],
-                }),
-            ],
-        });
+    // 05 INSTALLATION
+    const installTechs = [];
+    if (hasPersistenceEvidence) installTechs.push(techniqueV4({ id:'T1053', name:'Scheduled Task/Job', tactic:'Persistence', description:'Persistence mechanism established.', evidenceType:'observed', confidence:90 }));
+    if (!hasPersistenceEvidence && signals.hasWebAttack) installTechs.push(techniqueV4({ id:'T1505.003', name:'Web Shell', tactic:'Persistence', description:'Potential web shell installation post-exploitation.', evidenceType:'hypothetical', confidence:35 }));
+    // P3 fix: Add T1135 + T1021.002 when anonymous SMB shares are present (share-based lateral spread)
+    if (misconfigIds.has('PROTO-002') && hasSMB) {
+        installTechs.push(techniqueV4({ id:'T1135', name:'Network Share Discovery', tactic:'Discovery', description:'Anonymous SMB shares allow unauthenticated enumeration of all shared directories across the network.', evidenceType:'inferred', confidence:72, generatedBecause:['Anonymous SMB shares configured', 'Port 445 exposed'] }));
+        installTechs.push(techniqueV4({ id:'T1021.002', name:'SMB/Windows Admin Shares', tactic:'Lateral Movement', description:'Anonymous SMB access enables lateral file drop and remote execution via shared network paths.', evidenceType:'inferred', confidence:68, generatedBecause:['Anonymous SMB shares active'] }));
     }
+    if (installTechs.length === 0) installTechs.push(techniqueV4({ id:'T1543', name:'Create or Modify System Process', tactic:'Persistence', description:'Attacker establishes persistence on the host.', evidenceType:'hypothetical', confidence:25 }));
 
-    const impactPossible = hasImpactEvidence || hasDatabase || hasNoAuthData || signals.activeCorrelations.some(c => ['CORR-001','CORR-002','CORR-008','CORR-011','CORR-012','CORR-015','CORR-016','CORR-017','CORR-018','CORR-019','CORR-020'].includes(c.id));
-    if (impactPossible) {
-        addPhase({
-            phase:'Impact',
-            tactic:'Impact',
-            mitreId:'TA0040',
-            likelihoodScore: hasImpactEvidence ? 92 : (hasNoAuthData ? 76 : 54),
-            prerequisites:['Prior access path exists', 'Attacker has sufficient privilege or data-plane access'],
-            generatedBecause:[
-                hasImpactEvidence ? 'Impact or exfiltration indicators observed' : null,
-                hasDatabase ? 'Database exposure creates data access risk' : null,
-                hasNoAuthData ? 'Unauthenticated data service exposure reported' : null,
-                signals.activeCorrelations.some(c => ['CORR-001','CORR-002','CORR-008','CORR-017'].includes(c.id)) ? 'Exposure pattern aligns with ransomware intrusion preconditions' : null,
-            ],
-            techniques:[
-                techniqueV4({
-                    id: logData.indicators.some(i => i.type === 'RANSOMWARE') ? 'T1486' : hasDatabase ? 'T1005' : 'T1490',
-                    name: logData.indicators.some(i => i.type === 'RANSOMWARE') ? 'Data Encrypted for Impact' : hasDatabase ? 'Data from Local System' : 'Inhibit System Recovery',
-                    tactic:'Impact',
-                    description: hasImpactEvidence
-                        ? 'Telemetry includes impact-oriented terms and requires investigation; scope and success are not assumed.'
-                        : 'Current exposure patterns align with intrusion paths commonly leveraged before data theft, extortion, or disruption.',
-                    evidenceType: hasImpactEvidence ? 'observed' : 'inferred',
-                    confidence: hasImpactEvidence ? 92 : 58,
-                    generatedBecause:[hasImpactEvidence ? 'Ransomware or exfiltration patterns in logs' : null, hasDatabase ? 'Public database exposure' : null, hasNoAuthData ? 'Unauthenticated data service' : null],
-                }),
-            ],
-        });
-    }
+    addStage({
+        stageName: 'INSTALLATION',
+        status: hasPersistenceEvidence ? 'OBSERVED' : hasExecutionEvidence ? 'INFERRED' : 'HYPOTHETICAL',
+        explanation: hasPersistenceEvidence ? 'Persistence mechanisms observed in telemetry.' : 'Attackers typically install persistence after gaining execution.',
+        techniques: installTechs,
+        generatedBecause: [hasPersistenceEvidence ? 'Persistence terms in logs.' : null, (misconfigIds.has('PROTO-002') && hasSMB) ? 'Anonymous SMB shares enable lateral file staging.' : null]
+    });
 
-    return phases;
+    // 06 COMMAND & CONTROL
+    const c2Techs = [];
+    if (logData.indicators.some(i => i.type === 'C2_TRAFFIC')) c2Techs.push(techniqueV4({ id:'T1071', name:'Application Layer Protocol', tactic:'Command and Control', description:'C2 beaconing observed.', evidenceType:'observed', confidence:95 }));
+    if (c2Techs.length === 0) c2Techs.push(techniqueV4({ id:'T1071', name:'Application Layer Protocol', tactic:'Command and Control', description:'Outbound beaconing to actor-controlled infrastructure.', evidenceType:'hypothetical', confidence:25 }));
+
+    addStage({
+        stageName: 'COMMAND & CONTROL',
+        status: logData.indicators.some(i => i.type === 'C2_TRAFFIC') ? 'OBSERVED' : 'HYPOTHETICAL',
+        explanation: logData.indicators.some(i => i.type === 'C2_TRAFFIC') ? 'Command-and-control beaconing observed.' : 'No evidence supports command-and-control activity.',
+        techniques: c2Techs,
+        generatedBecause: [logData.indicators.some(i => i.type === 'C2_TRAFFIC') ? 'C2 traffic patterns in logs.' : null]
+    });
+
+    // 07 ACTIONS ON OBJECTIVES
+    // P4 fix: Add T1486 ransomware technique when ransomware-profile correlations are present
+    const hasRansomwareProfile = signals.activeCorrelations.some(c => ['CORR-001','CORR-002','CORR-024'].includes(c.id));
+    const impactTechs = [];
+    if (hasImpactEvidence) impactTechs.push(techniqueV4({ id:logData.indicators.some(i=>i.type==='RANSOMWARE')?'T1486':'T1005', name:'Data Encrypted / Exfiltrated', tactic:'Impact', description:'Impact or exfiltration indicators observed.', evidenceType:'observed', confidence:96 }));
+    if (hasDatabase && !hasImpactEvidence) impactTechs.push(techniqueV4({ id:'T1005', name:'Data from Local System', tactic:'Collection', description:'Exposed databases are highly targeted for data theft.', evidenceType:'inferred', confidence:70 }));
+    // Add T1486 as hypothetical when ransomware threat groups are correlated (RDP + EternalBlue profiles)
+    if (hasRansomwareProfile && !hasImpactEvidence) impactTechs.push(techniqueV4({ id:'T1486', name:'Data Encrypted for Impact (Ransomware)', tactic:'Impact', description:'RDP brute-force and EternalBlue exploitation are primary ransomware delivery chains. Ransomware deployment is a probable end-objective for this exposure profile.', evidenceType:'hypothetical', confidence:38, generatedBecause:['RDP + No MFA correlation active', 'EternalBlue profile detected'] }));
+    if (impactTechs.length === 0) impactTechs.push(techniqueV4({ id:'T1005', name:'Data from Local System', tactic:'Collection', description:'Attacker gathers data or achieves objectives on the host.', evidenceType:'hypothetical', confidence:20 }));
+
+    addStage({
+        stageName: 'ACTIONS ON OBJECTIVES',
+        status: hasImpactEvidence ? 'OBSERVED' : (hasDatabase || hasRansomwareProfile) ? 'INFERRED' : 'HYPOTHETICAL',
+        explanation: hasImpactEvidence ? 'Telemetry indicates data theft or ransomware execution.' : hasDatabase ? 'Exposed data stores represent a direct path to objectives.' : hasRansomwareProfile ? 'RDP and SMB exposure profile is consistent with ransomware actor targeting.' : 'Ultimate objectives are unconfirmed.',
+        techniques: impactTechs,
+        generatedBecause: [hasImpactEvidence ? 'Impact/Exfil indicators observed.' : null, hasDatabase ? 'Database exposed to internet.' : null, hasRansomwareProfile ? 'RDP/EternalBlue ransomware correlation active.' : null]
+    });
+
+    return killChain;
 }
+
+
 
 function buildATTACKMappings(attackChain) {
     const seen = new Map();
@@ -2002,98 +1951,135 @@ function buildMitigations(portMap, matchedMisconfigs, misconfigIds, logData, sig
 // SOC NARRATIVE BUILDER
 // ─────────────────────────────────────────────────────────────────────────────
 
-function buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, activeCorrelations, frameworkMeta = {}) {
+function buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, activeCorrelations, frameworkMeta = {}, intelligenceLevel = 'LOW') {
     const { hasActiveThreat, hasBruteForce, hasWebAttack } = signals;
     const { unknownPortsList = [], knownPortsList = [], unmatchedMisconfigs = [] } = frameworkMeta;
 
     const observed = [];
     const assessed = [];
     const modelled = [];
-    const knowledgeGaps = [];
 
     portMap.forEach((d, p) => {
         if (d.isUnknownPort) {
-            observed.push(`Port ${p}/tcp (service unknown — not in ETH knowledge base) is externally reachable`);
+            observed.push(`Port ${p}/tcp (unknown service)`);
         } else {
-            observed.push(`Publicly exposed ${d.service} service on ${p}/tcp`);
+            observed.push(`${d.service} on TCP/${p}`);
         }
     });
     matchedMisconfigs.forEach(m => observed.push(m.finding));
-    logData.indicators.forEach(i => observed.push(`Log indicator: ${i.description}`));
-
-    // Track knowledge gaps for narrative transparency
-    unknownPortsList.forEach(p => knowledgeGaps.push(`Port ${p}: no service profile in ETH KB`));
-    unmatchedMisconfigs.forEach(e => knowledgeGaps.push(`Misconfiguration "${e.slice(0,50)}…": no KB match`));
+    logData.indicators.forEach(i => observed.push(`${i.description}`));
 
     if (activeCorrelations.length > 0) {
         activeCorrelations.forEach(c => assessed.push(c.threat.split('.')[0]));
     }
 
     if (!hasActiveThreat) {
-        if (portMap.has('3389') || portMap.has('22')) modelled.push('Potential attacker behaviors may include password spraying and valid account abuse targeting exposed remote access services.');
-        if (portMap.has('445')) modelled.push('Lateral movement propagation is a possible escalation path if an initial foothold is obtained.');
-        if (signals.hasDatabase) modelled.push('Data exfiltration and database dumping represent a likely secondary objective following compromise.');
-        if (unknownPortsList.length > 0 && knownPortsList.length === 0) {
-            modelled.push('Without known service identification, attacker tool selection remains indeterminate. Generic port scanning, banner grabbing, and opportunistic exploitation are the most probable initial activities.');
-        }
+        if (portMap.has('3389') || portMap.has('22')) modelled.push('Password spraying and valid account abuse targeting exposed remote access services');
+        if (portMap.has('445')) modelled.push('Lateral movement propagation if an initial foothold is obtained');
+        if (signals.hasDatabase) modelled.push('Data exfiltration and database dumping following compromise');
+    } else {
+        modelled.push('Establish persistence, deploy ransomware, or exfiltrate sensitive data');
     }
 
     let narrative = '';
 
-    // 0. KNOWLEDGE BASE STATUS (only when there are gaps)
-    if (knowledgeGaps.length > 0) {
-        narrative += '0. ETH KNOWLEDGE BASE STATUS\n';
-        narrative += 'The following submitted entities are not present in the ETH knowledge base. Analysis confidence is reduced for these items:\n';
-        narrative += '* ' + knowledgeGaps.join('\n* ') + '\n\n';
+    if (intelligenceLevel === 'LOW') {
+        narrative += '1. What ETH Found\n';
+        narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No major exposures found.\n\n';
+        
+        narrative += '2. Why It Matters\n';
+        narrative += 'These services are exposed to the public internet, which means anyone can attempt to connect to them. Misconfigured services act as open doors for attackers.\n\n';
+        
+        narrative += '3. What A Hacker Could Do\n';
+        narrative += modelled.length > 0 ? modelled.map(m => `- ${m}`).join('\n') + '\n\n' : 'Opportunistic scanning and automated exploitation.\n\n';
+        
+        narrative += '4. Risk Level\n';
+        narrative += `Score: ${riskScore}/100. This number tells us how exposed you are based on what we found.\n\n`;
+        
+        narrative += '5. How To Fix It\n';
+        narrative += 'Restrict access using a firewall, enable Multi-Factor Authentication (MFA), and apply the latest security updates immediately.';
+        return narrative;
     }
 
-    // 1. VERIFIED FINDINGS
-    narrative += '1. VERIFIED FINDINGS\n';
-    if (observed.length > 0) {
-        narrative += 'Assessment identified:\n* ' + observed.join('\n* ') + '\n\n';
-    } else {
-        narrative += 'No confirmed exposure findings verified from provided telemetry.\n\n';
+    if (intelligenceLevel === 'MEDIUM') {
+        narrative += '1. Asset Summary\n';
+        narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No confirmed exposure findings verified from provided telemetry.\n\n';
+
+        narrative += '2. Exposure Analysis\n';
+        narrative += 'The identified services increase the external attack surface. Without proper access controls, they are vulnerable to enumeration, brute-forcing, and exploitation of legacy protocols.\n\n';
+
+        narrative += '3. Attack Opportunities\n';
+        narrative += modelled.length > 0 ? modelled.map(m => `- ${m}`).join('\n') + '\n\n' : 'Automated exploitation of known CVEs.\n\n';
+
+        narrative += '4. MITRE ATT&CK Mapping\n';
+        narrative += assessed.length > 0 ? assessed.join('\n') + '\n\n' : 'Initial Access via Public-Facing Applications.\n\n';
+
+        narrative += '5. Potential Impact\n';
+        narrative += 'Successful compromise may result in unauthorized access, data exposure, or lateral movement within the network.\n\n';
+
+        narrative += '6. Remediation\n';
+        narrative += 'Implement network segmentation, enforce strong authentication (MFA), and ensure regular vulnerability scanning and patching.';
+        return narrative;
     }
 
-    // 2. THREAT ASSESSMENT
-    narrative += '2. THREAT ASSESSMENT\n';
+    if (intelligenceLevel === 'LE') {
+        narrative += '1. Investigation Summary\n';
+        if (hasActiveThreat) {
+            narrative += 'Telemetry corroborates active threat indicators. Immediate preservation of endpoint logs is recommended for chain of custody.\n\n';
+        } else {
+            narrative += 'No evidence of active compromise was identified in the submitted data. Further log review is recommended.\n\n';
+        }
+
+        narrative += '2. Observed Exposure\n';
+        narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No objective exposure findings verified from provided telemetry.\n\n';
+
+        narrative += '3. Potential Criminal Abuse\n';
+        narrative += 'Such exposure has historically been associated with unauthorized access incidents, ransomware deployment, and lateral movement activities.\n\n';
+
+        narrative += '4. Indicators Of Compromise\n';
+        narrative += logData.hasLog ? `${logData.indicators.length} behavioral indicator(s) extracted from telemetry.\n\n` : 'No log telemetry provided for IOC extraction.\n\n';
+
+        narrative += '5. MITRE Mapping\n';
+        narrative += assessed.length > 0 ? assessed.join('\n') + '\n\n' : 'T1190 - Exploit Public-Facing Application.\n\n';
+
+        narrative += '6. Evidence Notes\n';
+        narrative += `Evidentiary Confidence Score: ${riskScore}/100. Score reflects observed exposure severity based on objective telemetry.\n\n`;
+
+        narrative += '7. Recommended Actions\n';
+        narrative += 'Preserve all relevant firewall and authentication logs for forensic analysis. Subpoena access records if unauthorized intrusion is suspected.';
+        return narrative;
+    }
+
+    // Default HIGH
+    narrative += '1. Technical Assessment\n';
+    narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No confirmed exposure findings verified from provided telemetry.\n\n';
+
+    narrative += '2. Exposure Correlation\n';
     if (hasActiveThreat) {
         narrative += 'Active threat indicators and suspected compromise patterns were directly observed in telemetry. Immediate containment and incident response investigation is required.\n\n';
-    } else if (hasBruteForce || hasWebAttack) {
-        narrative += 'Log telemetry indicates active scanning, credential brute-forcing, or web exploitation attempts. These represent commonly targeted initial access vectors.\n\n';
     } else if (assessed.length > 0) {
         narrative += `Correlation of identified weaknesses suggests an elevated risk profile concerning: ${assessed.join(', ')}.\n\n`;
-    } else if (unknownPortsList.length > 0 && knownPortsList.length === 0 && matchedMisconfigs.length === 0) {
-        narrative += 'Insufficient data for specific threat correlation. All submitted ports are non-standard and no recognized misconfigurations were provided. Analysis is limited to generic network exposure principles.\n\n';
     } else {
         narrative += 'Current exposure presents standard background noise risk. No targeted threat correlation established.\n\n';
     }
 
-    // 3. MODELLED SCENARIOS
-    narrative += '3. MODELLED SCENARIOS\n';
-    if (hasActiveThreat) {
-        narrative += 'POTENTIAL: Attackers may establish persistence, deploy ransomware, or exfiltrate sensitive data if containment is not achieved.\n\n';
-    } else if (modelled.length > 0) {
-        narrative += `LIKELY: ${modelled.join(' ')}\n\n`;
-    } else {
-        narrative += 'POSSIBLE: Automated exploitation by opportunistic threat actors scanning for zero-day vulnerabilities.\n\n';
-    }
+    narrative += '3. Attack Chain Simulation\n';
+    narrative += modelled.length > 0 ? 'Initial Access -> ' + modelled.join(' -> ') + '\n\n' : 'Initial Access -> Execution -> Persistence\n\n';
 
-    // 4. RISK POSTURE
-    narrative += '4. RISK POSTURE\n';
-    narrative += `Risk Score: ${riskScore}/100\n`;
-    if (unknownPortsList.length > 0) {
-        narrative += `Note: Risk score is reduced because ${unknownPortsList.length} port(s) (${unknownPortsList.join(', ')}) could not be matched to a known service profile. Score may increase if service context is provided.\n`;
-    }
-    narrative += 'Score reflects observed exposure severity, configuration weakness, and exploit feasibility. It does NOT represent confirmation of successful exploitation.\n\n';
+    narrative += '4. MITRE ATT&CK Analysis\n';
+    narrative += assessed.length > 0 ? assessed.join('\n') + '\n\n' : 'T1190, T1078, T1110 mapped based on exposure profile.\n\n';
 
-    // 5. ANALYST NOTE
-    narrative += '5. ANALYST NOTE\n';
-    if (knowledgeGaps.length > 0) {
-        narrative += `ETH was unable to generate specific threat intelligence for ${knowledgeGaps.length} item(s) due to missing knowledge base entries. ` +
-            'No attacker behaviors have been fabricated. Returned findings are strictly evidence-based or derived from recognized service profiles. ';
-    }
-    narrative += 'This assessment represents an exposure and threat posture evaluation based on observed findings and predictive threat modeling. It should not be interpreted as confirmation of active compromise unless supported by direct telemetry or forensic evidence.';
+    narrative += '5. Threat Actor Relevance\n';
+    narrative += 'Observed exposures correlate with historical lateral movement pathways and initial access vectors leveraged by ransomware operators and APT groups.\n\n';
+
+    narrative += '6. Detection Opportunities\n';
+    narrative += 'Monitor perimeter firewall logs for sequential scanning. Deploy behavioral analytics for abnormal authentication spikes and anomalous data transfers.\n\n';
+
+    narrative += '7. Defensive Weaknesses\n';
+    narrative += 'Exposed administrative interfaces, lack of strict access controls, and potential credential weaknesses represent significant defensive gaps.\n\n';
+
+    narrative += '8. Strategic Remediation\n';
+    narrative += 'Adopt a Zero Trust architecture. Decouple administrative services from the public internet, deploy EDR across all endpoints, and mandate continuous vulnerability validation.';
 
     return narrative;
 }
@@ -2117,6 +2103,8 @@ export async function runAttackSimulationMock(payload, signal) {
     // ── L1: Data Acquisition ──────────────────────────────────────────────────
     const { portMap, matchedMisconfigs, misconfigIds, logData,
              unknownPortsList, knownPortsList, unmatchedMisconfigs } = acquireData(payload);
+    
+    const intelligenceLevel = payload.intelligenceLevel || 'LOW';
 
     // ── Framework metadata bundle — passed to all downstream layers ───────────
     const frameworkMeta = { unknownPortsList, knownPortsList, unmatchedMisconfigs };
@@ -2127,13 +2115,14 @@ export async function runAttackSimulationMock(payload, signal) {
     // ── L3: Threat Correlation ─────────────────────────────────────────────────
     const signals = correlateThreatSignals(portMap, misconfigIds, logData);
 
-    // ── L4 + L5: MITRE Mapping + Kill Chain (always 7 phases) ─────────────────
-    const attackChain = buildEnterpriseAttackChain(portMap, matchedMisconfigs, misconfigIds, logData, signals);
-    const ATTACKMappings = buildATTACKMappings(attackChain);
+    // ── L4: MITRE Mapping ─────────────────
+    const killChain = buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData, signals, intelligenceLevel);
+    const ATTACKMappings = buildATTACKMappings(killChain);
 
     // ── L6: Risk Scoring ──────────────────────────────────────────────────────
     const { score: riskScore, topFactors, riskAssessment } = calculateExposureRisk(portMap, matchedMisconfigs, logData, signals);
     const confidenceScore = calculateConfidence(portMap, matchedMisconfigs, logData, frameworkMeta);
+    const accuracyAssessment = calculateAccuracyAssessment(portMap, matchedMisconfigs, logData, signals, frameworkMeta);
 
     // ── IOC Generation ────────────────────────────────────────────────────────
     const iocList = buildIOCs(logData, validHashes);
@@ -2142,7 +2131,7 @@ export async function runAttackSimulationMock(payload, signal) {
     const mitigations = buildMitigations(portMap, matchedMisconfigs, misconfigIds, logData, signals);
 
     // ── Narrative ──────────────────────────────────────────────────────────────
-    const summary = buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, signals.activeCorrelations, frameworkMeta);
+    const summary = buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, signals.activeCorrelations, frameworkMeta, intelligenceLevel);
 
     // ── Risk Breakdown ────────────────────────────────────────────────────────
     const riskBreakdown = riskAssessment.dimensions.map(d => ({
@@ -2167,13 +2156,16 @@ export async function runAttackSimulationMock(payload, signal) {
         : 'Not determinable without endpoint telemetry';
 
     return {
-        id: `eth-v3-${Date.now()}`,
+        id: `eth-v4-${Date.now()}`,
         timestamp: new Date().toISOString(),
-        engineVersion: '3.0',
+        intelligenceLevel,
+        engineVersion: '4.0',
         riskScore,
         confidenceScore,
+        accuracyAssessment,
         summary,
-        attackChain,      // Always exactly 7 phases
+        killChain,        // The newly structured 7-stage Cyber Kill Chain
+        ATTACKMappings,   // Extracted MITRE map
         iocList,
         mitigations,
         riskBreakdown,
@@ -2211,7 +2203,7 @@ export async function runAttackSimulationMock(payload, signal) {
             generatedBecause:[c.threat],
             mitreId:c.mitre,
         })),
-        hypotheticalScenarios: attackChain
+        hypotheticalScenarios: killChain
             .filter(p => p.evidenceType === 'hypothetical')
             .map(p => ({
                 phase:p.phase,
@@ -2219,7 +2211,7 @@ export async function runAttackSimulationMock(payload, signal) {
                 prerequisites:p.prerequisites,
                 likelihoodScore:p.likelihoodScore,
             })),
-        attackPaths: attackChain,
+        attackPaths: killChain,
         ATTACKMappings,
         riskAssessment,
         remediationPriority: mitigations.map(m => ({
@@ -2239,7 +2231,7 @@ export async function runAttackSimulationMock(payload, signal) {
             inferredRisks: signals.activeCorrelations.map(c =>
                 `${c.name} [${c.likelihood}]: ${c.threat.slice(0, 120)}`
             ).slice(0, 6),
-            hypotheticalScenarios: attackChain
+            hypotheticalScenarios: killChain
                 .filter(p => p.evidenceType === 'hypothetical')
                 .map(p => `${p.phase}: ${p.techniques[0]?.description?.slice(0, 100) || 'Predictive scenario'}`)
                 .slice(0, 4),
@@ -2320,10 +2312,94 @@ export async function runAttackSimulationMock(payload, signal) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function analyzeAttackChain(payload, signal) {
+    const enrichWithIntelligence = (result) => {
+        const serviceIntelList = [];
+        if (result.portIntelStatus && Array.isArray(result.portIntelStatus.knownPorts)) {
+            const SERVICE_MAP = {
+                'WinRM HTTP': 'WinRM',
+                'WinRM HTTPS': 'WinRM',
+                'MSSQL': 'Microsoft SQL Server',
+                'MySQL': 'MySQL / MariaDB',
+                'Docker API': 'Docker Daemon',
+                'Docker TLS': 'Docker Daemon',
+                'Kubernetes API': 'Kubernetes API Server',
+                'Kubelet API': 'Kubernetes API Server',
+                'WebLogic': 'Oracle WebLogic Server',
+                'HTTP': 'Apache HTTP Server',
+                'HTTP-Alt': 'Apache HTTP Server',
+                'HTTPS': 'Apache HTTP Server',
+                'HTTPS-Alt': 'Apache HTTP Server',
+                'LDAPS': 'LDAP'
+            };
+
+            // Deduplicate ports just in case
+            const uniquePorts = [...new Set(result.portIntelStatus.knownPorts)];
+            uniquePorts.forEach(portStr => {
+                const pInt = PORT_INTEL[portStr];
+                if (pInt) {
+                    const sName = pInt.service;
+                    const mappedName = SERVICE_MAP[sName] || sName;
+                    const intel = serviceIntelligenceData[mappedName];
+                    if (intel) {
+                        serviceIntelList.push({
+                            port: portStr,
+                            service: sName,
+                            intel: intel
+                        });
+                    }
+                }
+            });
+        }
+        result.serviceIntelligence = serviceIntelList;
+
+        const misconfigIntelList = [];
+        if (result.verifiedFindings) {
+            const MISCONFIG_MAP = {
+                'AUTH-001': 'Weak Default Passwords',
+                'AUTH-002': 'No Multi-Factor Authentication (MFA)',
+                'AUTH-003': 'Lack of Account Lockout Mechanism',
+                'PROTO-001': 'Unencrypted Remote Access (SSH, Telnet)',
+                'PROTO-002': 'Anonymous Authentication',
+                'CLOUD-001': 'Public Cloud Storage Buckets',
+                'APP-001': 'Verbose Error Messages',
+                'APP-003': 'CORS Misconfiguration',
+                'DNS-001': 'DNS Zone Transfer Enabled',
+                'API-001': 'Hardcoded Credentials in Code/Configuration',
+                'SYS-004': 'Hardcoded Credentials in Code/Configuration',
+                'AUTH-004': 'Password Reuse Across Services',
+                'NOAUTH-001': 'Anonymous Authentication',
+                'NOAUTH-002': 'Anonymous Authentication',
+                'NOAUTH-003': 'Anonymous Authentication',
+                'KUBE-001': 'Anonymous Authentication',
+                'SYS-005': 'Anonymous SMB Share Access'
+            };
+
+            const misconfigs = result.verifiedFindings.filter(f => f.type === 'misconfiguration');
+            
+            // We need to look up the original ID from MISCONFIG_DB based on the finding
+            misconfigs.forEach(m => {
+                const dbEntry = MISCONFIG_DB.find(db => db.finding === m.finding);
+                if (dbEntry) {
+                    const mappedName = MISCONFIG_MAP[dbEntry.id];
+                    if (mappedName && misconfigIntelligenceData[mappedName]) {
+                        misconfigIntelList.push({
+                            finding: m.finding,
+                            category: m.evidence,
+                            intel: misconfigIntelligenceData[mappedName]
+                        });
+                    }
+                }
+            });
+        }
+        result.misconfigIntelligence = misconfigIntelList;
+
+        return result;
+    };
+
     if (import.meta.env.VITE_USE_MOCK !== 'false') {
-        return runAttackSimulationMock(payload, signal);
+        return runAttackSimulationMock(payload, signal).then(enrichWithIntelligence);
     }
-    return runAttackSimulation(payload, signal);
+    return runAttackSimulation(payload, signal).then(enrichWithIntelligence);
 }
 
 export default apiClient;

@@ -6,14 +6,12 @@
  * ports + services + misconfigurations into attack paths.
  */
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell,
-    ResponsiveContainer, RadarChart, Radar, PolarGrid,
-    PolarAngleAxis, PolarRadiusAxis, Legend,
-} from 'recharts';
-import ChartExplainer from '../components/ChartExplainer';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, Filter, Shield, AlertTriangle, Zap, Target, Crosshair, Map, Activity, ShieldAlert, BrainCircuit, TerminalSquare, Eye, Lock, Globe, Server, Database, Network } from 'lucide-react';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Cell, Area, AreaChart } from 'recharts';
+import { mitreIntelligenceData } from '../data/mitreIntelligenceData.js';
+import ChartExplainer from '../components/ChartExplainer';
 
 // ═══════════════════════════════════════════════════════════════
 // DESIGN TOKENS (match ETH exactly)
@@ -1836,19 +1834,31 @@ function MitreTab({ combo }) {
             </div>
             <p style={{ fontFamily:T.mono, fontSize:'0.58rem', color:T.muted, letterSpacing:'0.12em' }}>TECHNIQUES MAPPED</p>
             <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
-                {combo.mitreTechniques.map(t => (
-                    <div key={t.id} style={{ display:'flex', alignItems:'center', gap:'12px', background:T.s2, padding:'10px 14px', border:`1px solid ${T.border}` }}>
-                        <span style={{ fontFamily:T.mono, fontSize:'0.65rem', color:T.red, fontWeight:700, flexShrink:0, minWidth:'80px' }}>{t.id}</span>
-                        <span style={{ fontFamily:T.sans, fontSize:'0.85rem', color:'#ccc' }}>{t.name}</span>
-                        <a href={`https://attack.mitre.org/techniques/${t.id.replace('.','/')}`} target="_blank" rel="noreferrer"
-                            style={{ marginLeft:'auto', fontFamily:T.mono, fontSize:'0.52rem', color:T.muted, textDecoration:'none', whiteSpace:'nowrap' }}
-                            onMouseEnter={e => e.currentTarget.style.color=T.blue}
-                            onMouseLeave={e => e.currentTarget.style.color=T.muted}
-                        >
-                            VIEW ON MITRE →
-                        </a>
+                {combo.mitreTechniques.map(t => {
+                    const baseId = t.id.split('.')[0];
+                    const intel = mitreIntelligenceData[t.id] || mitreIntelligenceData[baseId];
+                    return (
+                    <div key={t.id} style={{ display:'flex', flexDirection:'column', gap:'8px', background:T.s2, padding:'14px', border:`1px solid ${T.border}` }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                            <span style={{ fontFamily:T.mono, fontSize:'0.65rem', color:T.red, fontWeight:700, flexShrink:0, minWidth:'80px' }}>{t.id}</span>
+                            <span style={{ fontFamily:T.sans, fontSize:'0.85rem', color:'#ccc' }}>{intel?.['Technique Name'] || t.name}</span>
+                            <a href={`https://attack.mitre.org/techniques/${t.id.replace('.','/')}`} target="_blank" rel="noreferrer"
+                                style={{ marginLeft:'auto', fontFamily:T.mono, fontSize:'0.52rem', color:T.muted, textDecoration:'none', whiteSpace:'nowrap' }}
+                                onMouseEnter={e => e.currentTarget.style.color=T.blue}
+                                onMouseLeave={e => e.currentTarget.style.color=T.muted}
+                            >
+                                VIEW ON MITRE →
+                            </a>
+                        </div>
+                        {intel && intel.Description && (
+                            <div style={{ paddingLeft: '92px' }}>
+                                <p style={{ fontFamily:T.sans, fontSize:'0.8rem', color:'#999', margin:0, lineHeight: 1.5 }}>
+                                    {intel.Description}
+                                </p>
+                            </div>
+                        )}
                     </div>
-                ))}
+                )})}
             </div>
         </div>
     );
