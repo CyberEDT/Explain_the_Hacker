@@ -1,21 +1,41 @@
 import React from 'react';
+import SEO from '@/components/SEO';
 
 export default function Docs() {
     const W = { maxWidth: '1000px', margin: '0 auto', padding: '64px 32px' };
 
+    const schemaOrg = {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Explain The Hacker - Platform Documentation",
+        "description": "Comprehensive guide on utilizing the threat simulation engine to analyze network vulnerabilities, parse misconfigurations, and visualize MITRE ATT&CK kill chains.",
+        "author": {
+            "@type": "Organization",
+            "name": "CyberEDT",
+            "url": "https://www.cyberedt.com/"
+        }
+    };
+
     return (
-        <div style={{ minHeight: '100vh', background: '#050505', color: '#fff', paddingBottom: '100px' }}>
+        <main style={{ minHeight: '100vh', background: '#050505', color: '#fff', paddingBottom: '100px' }}>
+            <SEO 
+                title="Platform Documentation"
+                description="Comprehensive guide on utilizing the ETH threat simulation engine by CyberEDT."
+                canonicalUrl="/docs"
+                schema={schemaOrg}
+            />
+
             {/* Header Section */}
-            <section style={{ borderBottom: '1px solid #111', paddingTop: '40px' }}>
-                <div style={{ ...W }}>
-                    <div className="terminal-label" style={{ marginBottom: '24px' }}>PLATFORM DOCUMENTATION</div>
-                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(40px, 5vw, 64px)', lineHeight: 0.9, textTransform: 'uppercase', marginBottom: '24px' }}>
+            <section aria-labelledby="docs-title" style={{ borderBottom: '1px solid #111', paddingTop: '40px' }}>
+                <header style={{ ...W }}>
+                    <div aria-hidden="true" className="terminal-label" style={{ marginBottom: '24px' }}>PLATFORM DOCUMENTATION</div>
+                    <h1 id="docs-title" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(40px, 5vw, 64px)', lineHeight: 0.9, textTransform: 'uppercase', marginBottom: '24px' }}>
                         Explain The Hacker <span style={{ color: '#e8183a' }}>// DOCS</span>
                     </h1>
                     <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#666', lineHeight: 1.6, maxWidth: '600px', marginBottom: '24px' }}>
                         Comprehensive guide on utilizing the threat simulation engine to analyze network vulnerabilities, parse misconfigurations, and visualize MITRE ATT&CK kill chains.
                     </p>
-                </div>
+                </header>
             </section>
 
             {/* Section 1: Running a Simulation */}
@@ -71,6 +91,6 @@ export default function Docs() {
                     </div>
                 </div>
             </section>
-        </div>
+        </main>
     );
 }

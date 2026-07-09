@@ -12,6 +12,7 @@ import { Search, Filter, Shield, AlertTriangle, Zap, Target, Crosshair, Map, Act
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Cell, Area, AreaChart } from 'recharts';
 import { mitreIntelligenceData } from '../data/mitreIntelligenceData.js';
 import ChartExplainer from '../components/ChartExplainer';
+import SEO from '@/components/SEO';
 
 // ═══════════════════════════════════════════════════════════════
 // DESIGN TOKENS (match ETH exactly)
@@ -2282,10 +2283,26 @@ export default function AttackLibrary() {
         gridRef.current?.scrollIntoView({ behavior:'smooth', block:'start' });
     }, []);
 
+    const schemaOrg = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Attack Combination Library",
+        "description": "Educational flagship page teaching how attackers combine ports, services, and misconfigurations into attack paths.",
+        "author": {
+            "@type": "Organization",
+            "name": "CyberEDT",
+            "url": "https://www.cyberedt.com/"
+        }
+    };
+
     return (
-        <div style={{ minHeight:'100vh', background:T.bg, color:T.white }}>
-            {/* SEO */}
-            <title>Attack Combination Library — Explain The Hacker</title>
+        <main style={{ minHeight:'100vh', background:T.bg, color:T.white }}>
+            <SEO 
+                title="Attack Combination Library" 
+                description="Educational library teaching how attackers combine ports, services, and misconfigurations into attack paths."
+                canonicalUrl="/library"
+                schema={schemaOrg}
+            />
 
             <LibraryHero onScrollToGrid={handleScrollToGrid} />
             <LearningPathNavigator onFilter={handleFilter} />
@@ -2337,6 +2354,6 @@ export default function AttackLibrary() {
             <VisualizationsSection />
             <LearningPathTracker onSelect={handleSelect} />
             <FooterCTA />
-        </div>
+        </main>
     );
 }

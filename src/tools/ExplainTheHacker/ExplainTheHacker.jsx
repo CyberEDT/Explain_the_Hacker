@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useExplainHacker from './useExplainHacker';
 import AttackSimulationForm from './AttackSimulationForm';
 import ResultsPanel from './ResultsPanel';
+import SEO from '@/components/SEO';
 
 const ThreatVisualization = lazy(() => import('./ThreatVisualization'));
 
@@ -71,7 +72,10 @@ function LoadingState({ onCancel }) {
         return () => clearInterval(t);
     }, []);
     return (
-        <div style={{
+        <div 
+            aria-live="polite" 
+            aria-atomic="true"
+            style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             padding: '80px 24px', gap: '20px', minHeight: '400px',
         }}>
@@ -286,6 +290,27 @@ export default function ExplainTheHacker() {
         handleSubmit, resetForm, clearResult, cancelAnalysis, loadHistoryItem,
     } = useExplainHacker();
 
+    const schemaOrg = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Explain The Hacker (ETH Engine)",
+        "url": "https://explainthehacker.cyberedt.com/lab",
+        "description": "Interactive cybersecurity tool by CyberEDT to simulate and understand real-world attack chains using MITRE ATT&CK.",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any",
+        "featureList": [
+            "MITRE ATT&CK kill-chain simulation",
+            "Threat correlation",
+            "Predictive threat modeling",
+            "Actionable mitigations"
+        ],
+        "author": {
+            "@type": "Organization",
+            "name": "CyberEDT",
+            "url": "https://www.cyberedt.com/"
+        }
+    };
+
     const resultsRef = useRef(null);
     useEffect(() => {
         if (result && resultsRef.current) {
@@ -296,6 +321,12 @@ export default function ExplainTheHacker() {
     return (
         // Reference outer: min-h-screen bg-background text-foreground font-display
         <div style={{ background: '#000', color: '#fff', flex: 1, minHeight: '100vh' }}>
+            <SEO 
+                title="ETH Engine" 
+                description="Simulate real-world attack chains and generate predictive threat models with the Explain The Hacker (ETH) Engine."
+                canonicalUrl="/lab"
+                schema={schemaOrg}
+            />
 
             {/* ── Page Header — reference: max-w-[1440px] mx-auto px-6 pt-12 pb-8 border-b border-border ── */}
             <header style={{

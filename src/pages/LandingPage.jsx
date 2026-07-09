@@ -10,13 +10,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ATTACK_PHASES, TACTICS } from '../data/landingData';
+import SEO from '@/components/SEO';
 
 
 
 // ─── Phase Card ───────────────────────────────────────────────────────────────
 export function PhaseCard({ phase }) {
     return (
-        <div
+        <article
+            aria-labelledby={`phase-label-${phase.num}`}
             style={{
                 flex: 1,
                 minWidth: 0,
@@ -26,14 +28,14 @@ export function PhaseCard({ phase }) {
             }}
         >
             {/* Phase number + label */}
-            <div style={{ marginBottom: '8px' }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#444', letterSpacing: '0.08em' }}>
+            <header style={{ marginBottom: '8px' }}>
+                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#444', letterSpacing: '0.08em' }}>
                     {phase.num}
                 </span>
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>
+                <h3 id={`phase-label-${phase.num}`} style={{ margin: 0, fontFamily: 'var(--font-sans)', fontSize: '0.85rem', fontWeight: 700, color: '#fff', letterSpacing: '0.04em' }}>
                     {phase.label}
-                </p>
-            </div>
+                </h3>
+            </header>
 
             {/* Terminal card */}
             <div
@@ -51,13 +53,14 @@ export function PhaseCard({ phase }) {
             >
                 {/* Colored top bar */}
                 {phase.barWidth && (
-                    <div style={{ height: '2px', background: phase.color, width: phase.barWidth, marginBottom: '8px' }} />
+                    <div aria-hidden="true" style={{ height: '2px', background: phase.color, width: phase.barWidth, marginBottom: '8px' }} />
                 )}
 
                 {phase.lines.map((line, i) => (
                     <p
                         key={i}
                         style={{
+                            margin: 0,
                             fontFamily: 'var(--font-mono)',
                             fontSize: '0.6rem',
                             color: i === 0 && phase.isCritical ? '#ff0033' : i === 0 ? phase.color : '#444',
@@ -72,6 +75,7 @@ export function PhaseCard({ phase }) {
 
                 {phase.isCritical && (
                     <div
+                        aria-label="Critical Alert"
                         style={{
                             position: 'absolute',
                             bottom: 6,
@@ -89,14 +93,14 @@ export function PhaseCard({ phase }) {
                     </div>
                 )}
             </div>
-        </div>
+        </article>
     );
 }
 
 // ─── Tactic Cell ─────────────────────────────────────────────────────────────
 export function TacticCell({ tactic }) {
     return (
-        <div style={{ paddingBottom: '24px' }}>
+        <article aria-labelledby={`tactic-${tactic.id}`} style={{ paddingBottom: '24px' }}>
             <span
                 style={{
                     fontFamily: 'var(--font-mono)',
@@ -110,8 +114,10 @@ export function TacticCell({ tactic }) {
             >
                 {tactic.id}
             </span>
-            <p
+            <h3
+                id={`tactic-${tactic.id}`}
                 style={{
+                    margin: 0,
                     fontFamily: 'var(--font-sans)',
                     fontSize: '0.95rem',
                     fontWeight: 700,
@@ -121,8 +127,8 @@ export function TacticCell({ tactic }) {
                 }}
             >
                 {tactic.name}
-            </p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            </h3>
+            <ul aria-label={`Techniques for ${tactic.name}`} style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {tactic.items.map((item) => (
                     <li
                         key={item}
@@ -135,12 +141,12 @@ export function TacticCell({ tactic }) {
                             position: 'relative',
                         }}
                     >
-                        <span style={{ position: 'absolute', left: 0, color: '#333' }}>•</span>
+                        <span aria-hidden="true" style={{ position: 'absolute', left: 0, color: '#333' }}>•</span>
                         {item}
                     </li>
                 ))}
             </ul>
-        </div>
+        </article>
     );
 }
 
@@ -195,11 +201,54 @@ export default function LandingPage() {
 
     const W = { maxWidth: '1400px', margin: '0 auto', padding: '0 32px' };
 
+    const schemaOrg = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": "https://explainthehacker.cyberedt.com/#website",
+                "url": "https://explainthehacker.cyberedt.com/",
+                "name": "Explain The Hacker",
+                "description": "Attacker Intelligence Platform developed by CyberEDT.",
+                "publisher": { "@id": "https://explainthehacker.cyberedt.com/#organization" }
+            },
+            {
+                "@type": "Organization",
+                "@id": "https://explainthehacker.cyberedt.com/#organization",
+                "name": "CyberEDT",
+                "url": "https://www.cyberedt.com/",
+                "logo": "https://explainthehacker.cyberedt.com/favicon.png",
+                "sameAs": [
+                    "https://github.com/CyberEDT"
+                ]
+            },
+            {
+                "@type": "SoftwareApplication",
+                "@id": "https://explainthehacker.cyberedt.com/#software",
+                "name": "Explain The Hacker",
+                "applicationCategory": "SecurityApplication",
+                "operatingSystem": "Any",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "0"
+                },
+                "author": { "@id": "https://explainthehacker.cyberedt.com/#organization" }
+            }
+        ]
+    };
+
     return (
         <div style={{ background: '#000', color: '#fff', flex: 1 }}>
+            <SEO 
+                title="ETH (Explain The Hacker)" 
+                description="Explain The Hacker by CyberEDT is an advanced interactive cybersecurity tool to simulate and understand real-world attack chains. Visualize threats, analyze tactics, and learn how hackers think."
+                canonicalUrl="/"
+                schema={schemaOrg}
+            />
 
             {/* ── HERO ─────────────────────────────────────────────────────── */}
             <section
+                aria-labelledby="hero-heading"
                 style={{
                     padding: '80px 0 0',
                     position: 'relative',
@@ -236,6 +285,7 @@ export default function LandingPage() {
                         </p>
 
                         <h1
+                            id="hero-heading"
                             style={{
                                 fontFamily: 'var(--font-display)',
                                 fontSize: 'clamp(48px, 12vw, 128px)',

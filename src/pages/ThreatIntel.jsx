@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import SEO from '@/components/SEO';
 
-function SectionHeading({ title, subtitle }) {
+function SectionHeading({ id, title, subtitle }) {
     return (
         <div style={{ marginBottom: '32px' }}>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', textTransform: 'uppercase', marginBottom: '8px', lineHeight: 1.1 }}>
+            <h2 id={id} style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', textTransform: 'uppercase', marginBottom: '8px', lineHeight: 1.1 }}>
                 {title}
             </h2>
             {subtitle && (
@@ -18,22 +19,22 @@ function SectionHeading({ title, subtitle }) {
 
 function PipelineStep({ step, title, desc, arrow }) {
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+        <article style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
             <div style={{ flex: 1, border: '1px solid #333', background: '#000', padding: '20px', position: 'relative' }}>
-                <span style={{ position: 'absolute', top: -10, left: 16, background: '#000', padding: '0 8px', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--color-accent)', fontWeight: 700 }}>STEP {step}</span>
+                <span aria-hidden="true" style={{ position: 'absolute', top: -10, left: 16, background: '#000', padding: '0 8px', fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--color-accent)', fontWeight: 700 }}>STEP {step}</span>
                 <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '1.1rem', fontWeight: 600, color: '#fff', margin: '0 0 8px 0' }}>{title}</h4>
                 <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#888', margin: 0, lineHeight: 1.4 }}>{desc}</p>
             </div>
             {arrow && (
-                <div style={{ color: '#555', fontSize: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>→</div>
+                <div aria-hidden="true" style={{ color: '#555', fontSize: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>→</div>
             )}
-        </div>
+        </article>
     );
 }
 
 function EvidenceCard({ type, color, bg, border, desc, example }) {
     return (
-        <div style={{ border: `1px solid ${border}`, background: bg, padding: '24px' }}>
+        <article style={{ border: `1px solid ${border}`, background: bg, padding: '24px' }}>
             <div style={{ display: 'inline-block', border: `1px solid ${color}`, color: color, padding: '4px 12px', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '16px' }}>
                 {type}
             </div>
@@ -44,27 +45,45 @@ function EvidenceCard({ type, color, bg, border, desc, example }) {
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#666', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>Example Finding</span>
                 <code style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: '#bbb' }}>{example}</code>
             </div>
-        </div>
+        </article>
     );
 }
 
 export default function ThreatIntel() {
     const W = { maxWidth: '1200px', margin: '0 auto', padding: '64px 32px' };
 
+    const schemaOrg = {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Threat Intelligence Engine Methodology",
+        "description": "SOC Educational Hub explaining how the ETH engine parses telemetry, classifies evidence, and constructs predictive threat models.",
+        "author": {
+            "@type": "Organization",
+            "name": "CyberEDT",
+            "url": "https://www.cyberedt.com/"
+        }
+    };
+
     return (
-        <div style={{ minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text-primary)', paddingBottom: '100px' }}>
+        <main style={{ minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text-primary)', paddingBottom: '100px' }}>
+            <SEO 
+                title="Threat Intelligence Hub" 
+                description="SOC Educational Hub explaining how the ETH engine parses telemetry, classifies evidence, and constructs predictive threat models."
+                canonicalUrl="/threat-intel"
+                schema={schemaOrg}
+            />
             
             {/* Header / Hero */}
-            <section style={{ borderBottom: '1px solid var(--color-border)', paddingTop: '40px', background: 'radial-gradient(circle at 50% 0%, #1a0505 0%, #000 70%)' }}>
-                <div style={{ ...W }}>
-                    <div className="terminal-label" style={{ marginBottom: '24px', color: 'var(--color-accent)' }}>SOC EDUCATIONAL HUB</div>
-                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(40px, 5vw, 64px)', lineHeight: 0.9, textTransform: 'uppercase', marginBottom: '24px' }}>
+            <section aria-labelledby="hero-title" style={{ borderBottom: '1px solid var(--color-border)', paddingTop: '40px', background: 'radial-gradient(circle at 50% 0%, #1a0505 0%, #000 70%)' }}>
+                <header style={{ ...W }}>
+                    <div aria-hidden="true" className="terminal-label" style={{ marginBottom: '24px', color: 'var(--color-accent)' }}>SOC EDUCATIONAL HUB</div>
+                    <h1 id="hero-title" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(40px, 5vw, 64px)', lineHeight: 0.9, textTransform: 'uppercase', marginBottom: '24px' }}>
                         Engine Methodology <span style={{ color: 'var(--color-text-muted)' }}>// HANDBOOK</span>
                     </h1>
                     <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.1rem', color: '#aaa', lineHeight: 1.6, maxWidth: '800px', marginBottom: '32px' }}>
                         Bridging the gap between raw data and actionable intelligence. This hub explains how the ETH engine parses telemetry, classifies evidence, and constructs predictive threat models.
                     </p>
-                </div>
+                </header>
             </section>
 
             {/* LEARNING DIRECTORY BANNER */}
@@ -249,6 +268,6 @@ export default function ThreatIntel() {
                 </div>
             </section>
 
-        </div>
+        </main>
     );
 }

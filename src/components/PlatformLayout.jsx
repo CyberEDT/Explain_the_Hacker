@@ -30,6 +30,7 @@ export default function PlatformLayout({ children }) {
             {/* ── Navbar (Desktop Only) ──────────────────────────────────────────────────── */}
             {!isMobile && (
                 <nav
+                    aria-label="Main Navigation"
                     className="sticky top-0 z-50"
                     style={{
                         background: '#000',
@@ -113,6 +114,8 @@ export default function PlatformLayout({ children }) {
 
             {/* ── Ticker ──────────────────────────────────────────────────── */}
             <div
+                role="marquee"
+                aria-label="Live Threat Ticker"
                 className="overflow-hidden"
                 style={{
                     background: '#000',
