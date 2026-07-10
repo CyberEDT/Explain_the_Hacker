@@ -24,62 +24,9 @@ import {
     stripScripts,
 } from './validationSchema';
 import { analyzeAttackChain } from '@/services/analysisAPI';
+import useSimulationHistory from './useSimulationHistory';
 
-// ─── localStorage Utilities ─────────────────────────────────────────────────────
-const HISTORY_STORAGE_KEY = 'cyberedt_explainhacker_history';
-const SECRET_KEY = 'cyberedt-secure-key-2026';
 
-function encryptData(dataStr) {
-    const text = encodeURIComponent(dataStr);
-    let result = '';
-    for (let i = 0; i < text.length; i++) {
-        result += String.fromCharCode(text.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
-    }
-    return btoa(result);
-}
-
-function decryptData(base64Str) {
-    try {
-        const text = atob(base64Str);
-        let result = '';
-        for (let i = 0; i < text.length; i++) {
-            result += String.fromCharCode(text.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
-        }
-        return decodeURIComponent(result);
-    } catch {
-        return null;
-    }
-}
-
-/** Save history to localStorage */
-const saveHistoryToStorage = (history) => {
-    try {
-        if (localStorage.getItem('cyberedt_consent') === 'accepted') {
-            const encrypted = encryptData(JSON.stringify(history));
-            localStorage.setItem(HISTORY_STORAGE_KEY, encrypted);
-        } else {
-            localStorage.removeItem(HISTORY_STORAGE_KEY);
-        }
-    } catch (error) {
-        console.warn('Failed to save history to localStorage:', error);
-    }
-};
-
-/** Load history from localStorage */
-const loadHistoryFromStorage = () => {
-    try {
-        if (localStorage.getItem('cyberedt_consent') === 'accepted') {
-            const stored = localStorage.getItem(HISTORY_STORAGE_KEY);
-            if (!stored) return [];
-            const decrypted = decryptData(stored);
-            return decrypted ? JSON.parse(decrypted) : [];
-        }
-        return [];
-    } catch (error) {
-        console.warn('Failed to load history from localStorage:', error);
-        return [];
-    }
-};
 
 // ─── AI Output Sanitization ───────────────────────────────────────────────────
 // AI models can occasionally output markdown, HTML tags, or script fragments.
@@ -361,22 +308,10 @@ export default function useExplainHacker() {
     const [fieldErrors, setFieldErrors] = useState({});
 
     // ── History (last 5, persisted in localStorage) ───────────────────────────────
-    const [history, setHistory] = useState(() => loadHistoryFromStorage());
+    const [history, setHistory] = useSimulationHistory();
 
     // ── In-flight abort controller ─────────────────────────────────────────────
     const abortRef = useRef(null);
-
-    // ── Auto-save history to localStorage ─────────────────────────────────────
-    useEffect(() => {
-        saveHistoryToStorage(history);
-
-        // Also save history immediately when consent changes
-        const handleConsentChanged = () => {
-            saveHistoryToStorage(history);
-        };
-        window.addEventListener('storage-consent-changed', handleConsentChanged);
-        return () => window.removeEventListener('storage-consent-changed', handleConsentChanged);
-    }, [history]);
 
     // ──────────────────────────────────────────────────────────────────────────
     // PORT ACTIONS

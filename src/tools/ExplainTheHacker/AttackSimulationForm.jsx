@@ -529,6 +529,15 @@ function LogSnippetTextarea({ value, onChange, error }) {
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        // 1MB limit (1,048,576 bytes)
+        if (file.size > 1048576) {
+            alert('File is too large. Please upload a file smaller than 1MB.');
+            // Clear the input so the same file can be selected again if needed
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = (evt) => {
             onChange(evt.target.result);
