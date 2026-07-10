@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import PlatformLayout from '@/components/PlatformLayout';
 import ConsentBanner from '@/components/ConsentBanner';
 import ScrollToTop from '@/components/ScrollToTop';
+import AppErrorBoundary from '@/components/AppErrorBoundary';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const ExplainTheHacker = lazy(() => import('@/tools/ExplainTheHacker/ExplainTheHacker'));
@@ -19,10 +20,11 @@ const SecurityDisclaimer = lazy(() => import('@/pages/SecurityDisclaimer'));
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#ff0033', fontFamily: 'monospace' }}>INITIALIZING PLATFORM...</div>}>
-        <Routes>
+    <AppErrorBoundary>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Suspense fallback={<div className="app-fallback-screen">INITIALIZING PLATFORM...</div>}>
+          <Routes>
         {/* Home — landing/marketing page */}
         <Route
           path="/"
@@ -118,9 +120,10 @@ export default function App() {
             </PlatformLayout>
           }
         />
-        </Routes>
-      </Suspense>
-      <ConsentBanner />
-    </BrowserRouter>
+          </Routes>
+        </Suspense>
+        <ConsentBanner />
+      </BrowserRouter>
+    </AppErrorBoundary>
   );
 }

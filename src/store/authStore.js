@@ -1,9 +1,29 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 // ─── Auth Store ───────────────────────────────────────────────────────────────
 // Manages authentication state and API key for the analysis service.
 // Persisted to localStorage so sessions survive page refresh.
+
+const memoryStorage = new Map();
+
+const fallbackStorage = {
+    getItem: (name) => memoryStorage.get(name) ?? null,
+    setItem: (name, value) => {
+        memoryStorage.set(name, value);
+    },
+    removeItem: (name) => {
+        memoryStorage.delete(name);
+    },
+};
+
+function getSafeStorage() {
+    try {
+        return window.localStorage;
+    } catch {
+        return fallbackStorage;
+    }
+}
 
 const useAuthStore = create(
     persist(
@@ -75,6 +95,7 @@ const useAuthStore = create(
         }),
         {
             name: 'cyber-edt-auth', // localStorage key
+            storage: createJSONStorage(getSafeStorage),
             // Only persist non-sensitive UI-relevant fields
             partialize: (state) => ({
                 apiKey: state.apiKey,

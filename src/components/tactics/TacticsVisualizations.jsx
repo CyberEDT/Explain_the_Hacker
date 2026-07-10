@@ -57,7 +57,7 @@ export default function TacticsVisualizations() {
                             explanation="This bar chart highlights the most frequently leveraged MITRE ATT&CK tactics in recent global incidents. Tactics shown in red represent the most common entry or execution methods used by threat actors."
                         >
                             <div style={{ height: '300px' }}>
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                     <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                                         <XAxis dataKey="name" stroke="#444" fontSize={10} tickFormatter={(val) => val.substring(0, 4) + '.'} />
                                         <YAxis stroke="#444" fontSize={10} />
@@ -83,7 +83,7 @@ export default function TacticsVisualizations() {
                             explanation="This radar chart illustrates the distribution of techniques used by a specific threat actor (APT-41) across different tactics. A wider spread indicates a more diverse arsenal of techniques for that particular phase."
                         >
                             <div style={{ height: '300px' }}>
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                     <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
                                         <PolarGrid stroke="#333" />
                                         <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 9, fontFamily: 'monospace' }} />

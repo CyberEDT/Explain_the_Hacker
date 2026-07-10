@@ -1,17 +1,33 @@
 import React, { useState } from 'react';
 
+function readConsent() {
+    try {
+        return window.localStorage?.getItem('cyberedt_consent');
+    } catch {
+        return 'declined';
+    }
+}
+
+function writeConsent(value) {
+    try {
+        window.localStorage?.setItem('cyberedt_consent', value);
+    } catch {
+        // Storage can be unavailable in private mode, WebViews, or file shells.
+    }
+}
+
 export default function ConsentBanner() {
-    const [isVisible, setIsVisible] = useState(() => !localStorage.getItem('cyberedt_consent'));
+    const [isVisible, setIsVisible] = useState(() => !readConsent());
 
     const handleAccept = () => {
-        localStorage.setItem('cyberedt_consent', 'accepted');
+        writeConsent('accepted');
         setIsVisible(false);
         // Dispatch an event so other components know consent changed
         window.dispatchEvent(new Event('storage-consent-changed'));
     };
 
     const handleDecline = () => {
-        localStorage.setItem('cyberedt_consent', 'declined');
+        writeConsent('declined');
         setIsVisible(false);
         window.dispatchEvent(new Event('storage-consent-changed'));
     };

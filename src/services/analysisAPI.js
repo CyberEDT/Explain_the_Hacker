@@ -1482,16 +1482,6 @@ function scoreToRiskLevel(score) {
     return 'low';
 }
 
-function evidenceRank(type) {
-    return { observed:3, verified:3, inferred:2, hypothetical:1 }[type] || 1;
-}
-
-function strongestEvidence(items) {
-    return items.reduce((best, item) =>
-        evidenceRank(item.evidenceType) > evidenceRank(best) ? item.evidenceType : best, 'hypothetical'
-    ).replace('verified', 'observed');
-}
-
 function calculateAccuracyAssessment(portMap, matchedMisconfigs, logData, signals, frameworkMeta = {}) {
     const { unknownPortsList = [], knownPortsList = [], unmatchedMisconfigs = [] } = frameworkMeta;
     
@@ -1578,7 +1568,6 @@ function techniqueV4({ id, name, description, tactic, evidenceType = 'inferred',
 
 function buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData, signals, intelligenceLevel = 'HIGH') {
     const portCount = portMap.size;
-    const exposedServices = [...portMap.entries()].map(([p, d]) => `${d.service} (${p}/tcp)`);
     const hasRemoteAccess = signals.hasRemoteAccess;
     const hasWeb = signals.hasWeb;
     const hasSMB = signals.hasSMB;
@@ -1594,10 +1583,9 @@ function buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData
     const hasPersistenceEvidence = logData.indicators.some(i => i.type === 'PERSISTENCE');
     const hasPrivilegeEvidence = logData.indicators.some(i => i.type === 'PRIVILEGE_ESC');
     const hasCredentialEvidence = logData.indicators.some(i => ['AUTH_FAILURE','AUTH_SUCCESS'].includes(i.type));
-    const hasDiscoveryEvidence = logData.indicators.some(i => i.type === 'RECON_INDICATOR');
-    const hasLateralEvidence = logData.indicators.some(i => i.type === 'LATERAL_MOVEMENT');
     const hasImpactEvidence = logData.indicators.some(i => ['RANSOMWARE','EXFIL_PATTERN'].includes(i.type));
     const hasInitialAccessRoute = hasRemoteAccess || hasWeb || hasSMB || hasDatabase || hasDefaultCreds || hasUnpatched || hasNoAuthData || signals.hasBruteForce || signals.hasWebAttack;
+    void intelligenceLevel;
 
     const killChain = [];
     const addStage = ({ stageName, status, explanation, techniques, generatedBecause = [] }) => {
@@ -1952,8 +1940,8 @@ function buildMitigations(portMap, matchedMisconfigs, misconfigIds, logData, sig
 // ─────────────────────────────────────────────────────────────────────────────
 
 function buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, activeCorrelations, frameworkMeta = {}, intelligenceLevel = 'LOW') {
-    const { hasActiveThreat, hasBruteForce, hasWebAttack } = signals;
-    const { unknownPortsList = [], knownPortsList = [], unmatchedMisconfigs = [] } = frameworkMeta;
+    const { hasActiveThreat } = signals;
+    void frameworkMeta;
 
     const observed = [];
     const assessed = [];
@@ -2212,7 +2200,6 @@ export async function runAttackSimulationMock(payload, signal) {
                 likelihoodScore:p.likelihoodScore,
             })),
         attackPaths: killChain,
-        ATTACKMappings,
         riskAssessment,
         remediationPriority: mitigations.map(m => ({
             id:m.id,

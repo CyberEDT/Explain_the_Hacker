@@ -200,7 +200,7 @@ function RiskGaugeChart({ score, colors }) {
     const data = [{ name: 'Risk', value: score, fill: metaColor }];
 
     return (
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={200} minWidth={1} minHeight={1}>
             <RadialBarChart cx="50%" cy="60%" innerRadius="65%" outerRadius="95%" startAngle={180} endAngle={0} data={data} barSize={24}>
                 <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
                 <RadialBar background={{ fill: colors.surface2 }} dataKey="value" cornerRadius={10} isAnimationActive={false} />
@@ -288,7 +288,7 @@ function RiskDimensionHeatmap({ result, colors }) {
 
 function StageBarChart({ data, colors }) {
     return (
-        <ResponsiveContainer width="100%" height={Math.max(data.length * 42 + 20, 180)}>
+        <ResponsiveContainer width="100%" height={Math.max(data.length * 42 + 20, 180)} minWidth={1} minHeight={1}>
             <BarChart data={data} layout="vertical" margin={{ top: 0, right: 50, bottom: 0, left: 0 }}>
                 <XAxis type="number" domain={[0, 100]} hide />
                 <YAxis type="category" dataKey="phase" width={160} tick={{ fill: '#aaa', fontSize: 11, fontFamily: colors.fontSans }} axisLine={false} tickLine={false} />
@@ -323,7 +323,7 @@ function AttackProbabilitySection({ phaseData, colors }) {
 
 function AttackFlowChart({ data, colors }) {
     return (
-        <ResponsiveContainer width="100%" height={230}>
+        <ResponsiveContainer width="100%" height={230} minWidth={1} minHeight={1}>
             <ComposedChart data={data} margin={{ top: 10, right: 16, bottom: 0, left: -20 }}>
                 <defs>
                     <linearGradient id="flowGradient" x1="0" y1="0" x2="0" y2="1">
@@ -375,7 +375,7 @@ function EvidenceDistribution({ evidenceData, colors }) {
             explanation="This pie chart categorizes the evidence. VERIFIED means the activity was explicitly found in logs. INFERRED means it's highly likely based on related activity. POTENTIAL means the attacker could theoretically perform this action based on current misconfigurations."
         >
             <div className="grid grid-cols-1 sm:grid-cols-[150px_1fr] gap-4 items-center">
-                <ResponsiveContainer width="100%" height={150}>
+                <ResponsiveContainer width="100%" height={150} minWidth={1} minHeight={1}>
                     <PieChart>
                         <Pie data={evidenceData} dataKey="value" nameKey="name" innerRadius={42} outerRadius={66} paddingAngle={3} isAnimationActive={false}>
                             {evidenceData.map(d => <Cell key={d.name} fill={d.fill} />)}
@@ -411,7 +411,7 @@ function ConfidenceDistribution({ phaseData, colors }) {
             subtitle="Shows how much of the modeled path is backed by strong evidence versus lower-confidence inference."
             explanation="This shows the system's certainty in its analysis. If most items are 'High', the threat intelligence mapping is strongly supported by the provided data. If most are 'Low', the system is extrapolating potential risks from limited inputs."
         >
-            <ResponsiveContainer width="100%" height={175}>
+            <ResponsiveContainer width="100%" height={175} minWidth={1} minHeight={1}>
                 <BarChart data={buckets} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
                     <XAxis dataKey="name" tick={{ fill: '#999', fontSize: 10, fontFamily: colors.fontMono }} axisLine={false} tickLine={false} />
                     <YAxis allowDecimals={false} tick={{ fill: '#999', fontSize: 10, fontFamily: colors.fontMono }} axisLine={false} tickLine={false} />
@@ -587,7 +587,7 @@ function RemediationPriorityChart({ data, colors }) {
             subtitle="Prioritized controls based on urgency, exposure reduction value, and remediation sequence."
             explanation="This chart ranks actionable fixes. The longer the bar, the more critical the remediation is for reducing overall risk. Fix the items at the top first to eliminate the most significant exposure points."
         >
-            <ResponsiveContainer width="100%" height={Math.max(data.length * 38 + 20, 170)}>
+            <ResponsiveContainer width="100%" height={Math.max(data.length * 38 + 20, 170)} minWidth={1} minHeight={1}>
                 <BarChart data={data} layout="vertical" margin={{ top: 0, right: 44, bottom: 0, left: 0 }}>
                     <XAxis type="number" domain={[0, 100]} hide />
                     <YAxis type="category" dataKey="name" width={190} tick={{ fill: '#aaa', fontSize: 10, fontFamily: colors.fontSans }} axisLine={false} tickLine={false} tickFormatter={(v) => v.length > 24 ? `${v.slice(0, 24)}...` : v} />

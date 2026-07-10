@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { MISCONFIGURATION_SUGGESTIONS } from './validationSchema';
+import { MISCONFIGURATION_SUGGESTIONS, PORT_PRESETS } from './validationSchema';
 import Editor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-clike';
@@ -348,11 +348,6 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
         return () => document.removeEventListener('mousedown', close);
     }, [suggestionsOpen]);
 
-    useEffect(() => {
-        // Reset highlight when input changes
-        setHighlightedIndex(-1);
-    }, [inputValue]);
-
     const filtered = MISCONFIGURATION_SUGGESTIONS.filter(
         s => !misconfigs.includes(s) && (!inputValue.trim() || s.toLowerCase().includes(inputValue.toLowerCase()))
     ).slice(0, 50); // Limit to 50 items
@@ -431,7 +426,7 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
                         type="text"
                         id="misconfig-input"
                         value={inputValue}
-                        onChange={e => { setInputValue(e.target.value); setSuggestionsOpen(true); setInputError(''); }}
+                        onChange={e => { setInputValue(e.target.value); setHighlightedIndex(-1); setSuggestionsOpen(true); setInputError(''); }}
                         onFocus={() => { setFocused(true); setSuggestionsOpen(true); }}
                         onBlur={() => setFocused(false)}
                         onKeyDown={handleKeyDown}
@@ -630,6 +625,7 @@ export default function AttackSimulationForm({
     fieldErrors,
     loading,
     onAddPort,
+    onAddPorts,
     onRemovePort,
     onAddMisconfiguration,
     onRemoveMisconfiguration,
@@ -670,6 +666,35 @@ export default function AttackSimulationForm({
                     onRemovePort={onRemovePort}
                     error={fieldErrors.openPorts}
                 />
+                {/* Port Preset Groups */}
+                {onAddPorts && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#555', textTransform: 'uppercase', letterSpacing: '0.2em', flexShrink: 0 }}>
+                            Presets:
+                        </span>
+                        {PORT_PRESETS.map(preset => (
+                            <button
+                                key={preset.label}
+                                type="button"
+                                title={`${preset.description}: ${preset.ports.join(', ')}`}
+                                disabled={openPorts.length >= 50}
+                                onClick={() => onAddPorts(preset.ports)}
+                                style={{
+                                    fontFamily: 'var(--font-mono)', fontSize: '0.6rem', fontWeight: 500,
+                                    color: '#aaa', background: 'transparent',
+                                    border: '1px solid rgba(255,255,255,0.15)',
+                                    padding: '4px 8px', cursor: openPorts.length >= 50 ? 'not-allowed' : 'pointer',
+                                    transition: 'background 0.15s, color 0.15s',
+                                    letterSpacing: '0.04em', opacity: openPorts.length >= 50 ? 0.4 : 1,
+                                }}
+                                onMouseEnter={e => { if (openPorts.length < 50) { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#000'; } }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#aaa'; }}
+                            >
+                                {preset.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* ── Section 02: Known Misconfigurations ───────────────────────── */}
@@ -696,7 +721,7 @@ export default function AttackSimulationForm({
                     title="Log Snippet"
                     subtitle="Optional. Paste raw logs, IDS output, or firewall drops."
                     count={logSnippet.length}
-                    max={5000}
+                    max={500000}
                 />
                 <LogSnippetTextarea
                     value={logSnippet}

@@ -6,10 +6,10 @@
  * ports + services + misconfigurations into attack paths.
  */
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Shield, AlertTriangle, Zap, Target, Crosshair, Map, Activity, ShieldAlert, BrainCircuit, TerminalSquare, Eye, Lock, Globe, Server, Database, Network } from 'lucide-react';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Cell, Area, AreaChart } from 'recharts';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, Area, AreaChart, CartesianGrid, Legend } from 'recharts';
 import { mitreIntelligenceData } from '../data/mitreIntelligenceData.js';
 import ChartExplainer from '../components/ChartExplainer';
 import SEO from '@/components/SEO';

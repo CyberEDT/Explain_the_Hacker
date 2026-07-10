@@ -648,9 +648,8 @@ function KillChainV4Visualizer({ killChain, intelligenceLevel }) {
 }
 
 function MitreATTACKMatrix({ attackMappings, intelligenceLevel }) {
-    if (intelligenceLevel === 'LOW' || !attackMappings?.length) return null;
-
     const groupedMappings = useMemo(() => {
+        if (!attackMappings) return [];
         const grouped = {};
         attackMappings.forEach(mapping => {
             const tacticName = mapping.tactic || 'Unknown Tactic';
@@ -664,6 +663,8 @@ function MitreATTACKMatrix({ attackMappings, intelligenceLevel }) {
         });
         return Object.entries(grouped).map(([tactic, techniques]) => ({ tactic, techniques }));
     }, [attackMappings]);
+
+    if (intelligenceLevel === 'LOW' || !attackMappings?.length) return null;
 
     return (
         <div style={{ marginBottom: '56px' }}>

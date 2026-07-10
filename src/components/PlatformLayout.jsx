@@ -1,10 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import useDevice from '@/hooks/useDevice';
 import MobileTabBar from '@/components/MobileTabBar';
 
 export default function PlatformLayout({ children }) {
-    const location = useLocation();
     const { isMobile, isIOS } = useDevice();
 
     const navLinks = [

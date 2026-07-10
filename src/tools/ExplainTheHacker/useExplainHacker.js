@@ -16,7 +16,7 @@
  * from this hook and never deal with API mechanics or sanitization directly.
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
     attackSimulationSchema,
     defaultFormValues,
@@ -69,13 +69,6 @@ function sanitizeJson(value) {
         return Object.fromEntries(Object.entries(value).map(([k, v]) => [sanitizeText(k, ''), sanitizeJson(v)]));
     }
     return null;
-}
-
-/** Sanitize a risk level string to one of the known values. */
-const KNOWN_RISK_LEVELS = ['low', 'medium', 'high', 'critical'];
-function sanitizeRiskLevel(value) {
-    const s = String(value || '').toLowerCase().trim();
-    return KNOWN_RISK_LEVELS.includes(s) ? s : 'medium';
 }
 
 /** Sanitize severity string. */
@@ -270,6 +263,7 @@ function normalizeResult(raw) {
         intelligenceLevel: raw.intelligenceLevel || 'LOW',
         accuracyAssessment,
         summary,
+        attackPaths,
         killChain,
         iocList,
         mitigations,
@@ -505,7 +499,7 @@ export default function useExplainHacker() {
             setLoading(false);
             abortRef.current = null;
         }
-    }, [formValues]);
+    }, [formValues, setHistory]);
 
     // ──────────────────────────────────────────────────────────────────────────
     // PUBLIC API — everything a component needs, nothing it doesn't

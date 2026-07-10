@@ -70,6 +70,66 @@ body {
   flex-direction: column;
 }
 
+.app-fallback-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #050505;
+  color: #fff;
+  font-family: var(--font-mono);
+}
+
+.app-fallback-panel {
+  width: min(100%, 520px);
+  padding: 28px;
+  border: 1px solid var(--color-border-2);
+  background: #0a0a0a;
+  box-shadow: var(--shadow-card-hover);
+}
+
+.app-fallback-kicker {
+  margin-bottom: 12px;
+  color: var(--color-accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.app-fallback-panel h1 {
+  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 8vw, 4rem);
+  line-height: 0.95;
+}
+
+.app-fallback-panel p {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+.app-fallback-error {
+  margin-top: 16px;
+  max-height: 120px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-accent);
+  font: 0.72rem/1.5 var(--font-mono);
+}
+
+.app-fallback-panel button {
+  margin-top: 20px;
+  padding: 12px 18px;
+  border: 1px solid #fff;
+  background: #fff;
+  color: #000;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* ─── Scrollbar ───────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 4px;

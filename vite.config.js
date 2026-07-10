@@ -17,6 +17,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ['react', 'react-dom'],
   },
   build: {
     // Target modern browsers — reduces polyfill bloat
@@ -29,17 +30,9 @@ export default defineConfig({
     chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
-        // Split vendor chunks for optimal long-term caching
-        manualChunks: {
-          // React runtime — changes rarely, gets cached aggressively
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          // Recharts — only loaded after analysis results appear (lazy import)
-          'vendor-recharts': ['recharts'],
-          // Zod + Zustand — small but separate from React runtime
-          'vendor-state': ['zod', 'zustand'],
-          // Axios — network layer
-          'vendor-axios': ['axios'],
-        },
+        // Removed manualChunks: Forcibly splitting vendor-react and vendor-recharts was causing 
+        // Vite to initialize duplicate React contexts in dev mode, leading to useContext crashes.
+        // Rollup's default chunking is safer and still highly optimized.
       },
     },
   },

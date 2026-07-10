@@ -1,4 +1,3 @@
-/* global process */
 /**
  * ETH Engine v3 — QA Retest Suite
  * Tests all 8 fixes applied from the QA validation audit.

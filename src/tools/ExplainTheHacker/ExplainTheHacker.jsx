@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState, Suspense, lazy } from 'react';
+import { useEffect, useRef, useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useExplainHacker from './useExplainHacker';
 import AttackSimulationForm from './AttackSimulationForm';
 import ResultsPanel from './ResultsPanel';
 import SEO from '@/components/SEO';
-
-const ThreatVisualization = lazy(() => import('./ThreatVisualization'));
+import CILContextPanel from '@/components/CILContextPanel';
+import ThreatVisualization from './ThreatVisualization';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function AlertCircleIcon() {
@@ -420,6 +420,9 @@ export default function ExplainTheHacker() {
                     )}
 
                     {/* Form sections — each in a white background div */}
+                    {/* CyberEDT Intelligence Layer — auto-shows when opened from EME */}
+                    <CILContextPanel analysisResults={result} />
+
                     <AttackSimulationForm
                         formValues={formValues}
                         fieldErrors={fieldErrors}
