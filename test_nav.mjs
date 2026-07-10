@@ -12,7 +12,7 @@ import puppeteer from 'puppeteer';
     });
 
     console.log('Going to /library');
-    await page.goto('http://localhost:4173/library');
+    await page.goto('http://localhost:5173/library');
     
     console.log('Clicking KILL CHAIN');
     // Using evaluate to find and click the exact link

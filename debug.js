@@ -10,7 +10,7 @@ import puppeteer from 'puppeteer';
 
   console.log('Navigating to http://localhost:5174/tactics...');
   try {
-    await page.goto('http://localhost:5174/tactics', { waitUntil: 'networkidle2', timeout: 10000 });
+    await page.goto('http://localhost:5173/tactics', { waitUntil: 'networkidle2', timeout: 10000 });
     console.log('Page loaded successfully.');
   } catch (e) {
     console.error('Failed to load page:', e);
