@@ -13,6 +13,8 @@
  */
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { mitreIntelligenceData } from '../../data/mitreIntelligenceData';
+import { useCILSession } from '@/hooks/useCILSession';
+import { CILNavigator } from '@/integrations/cil';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function Ico({ d, size = 16, strokeWidth = 2 }) {
@@ -163,6 +165,7 @@ function StatCell({ value, label, color = '#e8183a' }) {
 function TopSummaryBar({ result, onNewAnalysis }) {
     const date = new Date(result.timestamp).toLocaleString();
     const report = useCallback(() => JSON.stringify(result, null, 2), [result]);
+    const { sessionId, isFromCIL } = useCILSession();
 
     return (
         <div style={{ marginBottom: '40px' }}>
@@ -227,6 +230,38 @@ function TopSummaryBar({ result, onNewAnalysis }) {
                             <CopyButton id="copy-json-btn"   text={report()} label="JSON" fullWidth />
                         </div>
                     </div>
+
+                    {/* CIL Navigation Links */}
+                    {isFromCIL && (
+                        <div style={{ display: 'flex', gap: '1px', background: '#1a1a1a' }}>
+                            <button
+                                onClick={() => CILNavigator.openInEME(sessionId)}
+                                style={{
+                                    flex: 1, background: '#000', color: '#00aaff', border: 'none',
+                                    fontFamily: 'var(--font-mono)', fontSize: '0.65rem', fontWeight: 700,
+                                    letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 0',
+                                    cursor: 'pointer', transition: 'background 0.15s'
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,170,255,0.1)'}
+                                onMouseLeave={e => e.currentTarget.style.background = '#000'}
+                            >
+                                VIEW EXPOSURE
+                            </button>
+                            <button
+                                onClick={() => CILNavigator.openInETD(sessionId)}
+                                style={{
+                                    flex: 1, background: '#000', color: '#00ff9d', border: 'none',
+                                    fontFamily: 'var(--font-mono)', fontSize: '0.65rem', fontWeight: 700,
+                                    letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 0',
+                                    cursor: 'pointer', transition: 'background 0.15s'
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,255,157,0.1)'}
+                                onMouseLeave={e => e.currentTarget.style.background = '#000'}
+                            >
+                                OPEN IN ETD
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,14 +1,7 @@
-// ============================================================
-// ETH — CIL Publisher Service
-// After ETH generates attack paths and threat intelligence,
-// this service patches the existing CIL session so ETD can
-// consume it without any rescan or re-analysis.
-// ============================================================
-
-import { CILStore, CILBus } from '../integrations/cil';
+import { CILStore, CILBus } from '../../integrations/cil';
 
 /**
- * Patch the current CIL session with ETH-generated threat intelligence.
+ * Publish Threat Intelligence back to CIL.
  * @param {string} sessionId - The active CIL session ID
  * @param {object} analysisResults - ETH analysis output
  */
@@ -55,20 +48,26 @@ export function publishThreatIntelligence(sessionId, analysisResults) {
   }));
 
   const riskScore = analysisResults.riskScore || analysisResults.threatScore || 0;
+  
+  // Format requested by CIL
+  const payload = {
+    tool: "ETH",
+    attackPaths: attackPaths,
+    mitre: mitreTechniques,
+    threats: threats,
+    killChain: analysisResults.killChain || [],
+    iocs: analysisResults.iocs || [],
+    risk: {
+      threatScore: riskScore,
+      riskLevel: riskScore >= 80 ? 'critical' : riskScore >= 60 ? 'high' : riskScore >= 30 ? 'medium' : 'low',
+    }
+  };
 
   if (isNewSession) {
     activeSessionId = CILStore.create({
       asset: { ip: 'UNKNOWN', os: 'UNKNOWN', ports: [] },
       exposures: [],
-      attackPaths,
-      threats,
-      mitreTechniques,
-      risk: {
-        exposureScore: 0,
-        threatScore: riskScore,
-        overallScore: riskScore,
-        riskLevel: riskScore >= 80 ? 'critical' : riskScore >= 60 ? 'high' : riskScore >= 30 ? 'medium' : 'low',
-      },
+      ...payload,
       metadata: {
         eme: { published: false },
         eth: { published: true, publishedAt: new Date().toISOString() },
@@ -78,26 +77,24 @@ export function publishThreatIntelligence(sessionId, analysisResults) {
       },
     });
   } else {
-    // Patch the existing session — preserving EME exposure data
+    // Patch the existing session
+    const currentSession = CILStore.get(activeSessionId) || {};
     CILStore.patch(activeSessionId, {
-      attackPaths,
-      threats,
-      mitreTechniques,
+      ...payload,
       risk: {
-        ...CILStore.get(activeSessionId)?.risk,
-        threatScore: riskScore,
-        overallScore: Math.min(100, (CILStore.get(activeSessionId)?.risk?.exposureScore || 0) + riskScore) / 2,
-        riskLevel: riskScore >= 80 ? 'critical' : riskScore >= 60 ? 'high' : riskScore >= 30 ? 'medium' : 'low',
+        ...(currentSession.risk || {}),
+        ...payload.risk,
+        overallScore: Math.min(100, ((currentSession.risk?.exposureScore || 0) + riskScore) / 2)
       },
       metadata: {
-        ...CILStore.get(activeSessionId)?.metadata,
+        ...(currentSession.metadata || {}),
         eth: { published: true, publishedAt: new Date().toISOString() },
       },
     });
   }
 
   // Notify other open CyberEDT tabs
-  CILBus.emit({ type: 'ETH_PUBLISHED', sessionId: activeSessionId });
+  CILBus.emit({ type: 'ETH_PUBLISHED', sessionId: activeSessionId, payload });
 
   console.info(`[CIL] ETH published threat intelligence to session: ${activeSessionId}`);
   return activeSessionId;

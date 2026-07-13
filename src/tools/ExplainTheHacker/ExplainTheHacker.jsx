@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, Suspense } from 'react';
+import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useExplainHacker from './useExplainHacker';
 import AttackSimulationForm from './AttackSimulationForm';
@@ -7,7 +7,10 @@ import SEO from '@/components/SEO';
 import CILContextPanel from '@/components/CILContextPanel';
 import ThreatVisualization from './ThreatVisualization';
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
+import { consumeExposureIntelligence } from '@/services/cil/consumeExposure';
+
+// ... (in ExplainTheHacker component, we'll need to add it before useExplainHacker call or just inline it)
+
 function AlertCircleIcon() {
     return (
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -287,8 +290,16 @@ export default function ExplainTheHacker() {
         addMisconfiguration, removeMisconfiguration,
         setLogSnippet,
         setIntelligenceLevel,
-        handleSubmit, resetForm, clearResult, cancelAnalysis, loadHistoryItem,
+        handleSubmit, resetForm, clearResult, cancelAnalysis, loadHistoryItem, importExposureData
     } = useExplainHacker();
+
+    const handleAnalyzeExposure = useCallback(() => {
+        const data = consumeExposureIntelligence();
+        if (data) {
+            const current = importExposureData(data);
+            handleSubmit(null, current);
+        }
+    }, [importExposureData, handleSubmit]);
 
     const schemaOrg = {
         "@context": "https://schema.org",
@@ -421,7 +432,7 @@ export default function ExplainTheHacker() {
 
                     {/* Form sections — each in a white background div */}
                     {/* CyberEDT Intelligence Layer — auto-shows when opened from EME */}
-                    <CILContextPanel analysisResults={result} />
+                    <CILContextPanel analysisResults={result} onAnalyzeExposure={handleAnalyzeExposure} />
 
                     <AttackSimulationForm
                         formValues={formValues}

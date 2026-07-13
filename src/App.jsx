@@ -17,6 +17,7 @@ const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const ResponsibleUsage = lazy(() => import('@/pages/ResponsibleUsage'));
 const SecurityDisclaimer = lazy(() => import('@/pages/SecurityDisclaimer'));
+const CILPage = lazy(() => import('@/pages/CIL'));
 
 export default function App() {
   return (
@@ -101,6 +102,16 @@ export default function App() {
           element={
             <PlatformLayout>
               <Roadmap />
+            </PlatformLayout>
+          }
+        />
+
+        {/* CIL Architecture */}
+        <Route
+          path="/cil"
+          element={
+            <PlatformLayout>
+              <CILPage />
             </PlatformLayout>
           }
         />

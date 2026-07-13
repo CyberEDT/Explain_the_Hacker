@@ -401,6 +401,17 @@ export default function useExplainHacker() {
         setError(null);
     }, []);
 
+    const importExposureData = useCallback((data) => {
+        setFormValues(prev => ({
+            ...prev,
+            openPorts: data.openPorts || prev.openPorts,
+            misconfigurations: data.misconfigurations || prev.misconfigurations,
+            logSnippet: data.logSnippet || prev.logSnippet,
+        }));
+        setFieldErrors({});
+        return data; // Return it so handleSubmit can use it immediately
+    }, []);
+
     const cancelAnalysis = useCallback(() => {
         if (abortRef.current) {
             abortRef.current.abort();
@@ -426,7 +437,7 @@ export default function useExplainHacker() {
     // SUBMIT — full lifecycle with normalization + sanitization
     // ──────────────────────────────────────────────────────────────────────────
 
-    const handleSubmit = useCallback(async (e) => {
+    const handleSubmit = useCallback(async (e, overrideValues) => {
         if (e?.preventDefault) e.preventDefault();
 
         // ① Cancel any previous in-flight request
@@ -437,8 +448,10 @@ export default function useExplainHacker() {
         setFieldErrors({});
         setResult(null);
 
+        const currentValues = overrideValues ? { ...formValues, ...overrideValues } : formValues;
+
         // ③ Zod client-side validation
-        const parsed = attackSimulationSchema.safeParse(formValues);
+        const parsed = attackSimulationSchema.safeParse(currentValues);
         if (!parsed.success) {
             const errors = {};
             parsed.error.errors.forEach(({ path, message }) => {
@@ -471,11 +484,11 @@ export default function useExplainHacker() {
                     id: normalized.id,
                     timestamp: normalized.timestamp,
                     riskScore: normalized.riskScore,
-                    portCount: formValues.openPorts.length,
+                    portCount: currentValues.openPorts.length,
                     // Summary is already sanitized by normalizeResult
                     summary: normalized.summary.slice(0, 120) + (normalized.summary.length > 120 ? '…' : ''),
                     fullResult: normalized,
-                    savedFormValues: formValues,
+                    savedFormValues: currentValues,
                 },
                 ...prev.slice(0, 4),
             ]);
@@ -537,5 +550,6 @@ export default function useExplainHacker() {
         clearResult,
         cancelAnalysis,
         loadHistoryItem,
+        importExposureData,
     };
 }

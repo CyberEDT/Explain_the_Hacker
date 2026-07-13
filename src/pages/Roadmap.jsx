@@ -1,6 +1,6 @@
 import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, RadialBarChart, RadialBar, Legend } from 'recharts';
-import { BrainCircuit, Cpu, Target, Network, Layers, ShieldAlert, Sparkles, Activity } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
+
 import ChartExplainer from '../components/ChartExplainer';
 
 // ─── DATA FOR CHARTS ────────────────────────────────────────────────────────

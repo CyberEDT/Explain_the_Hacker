@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCILSession } from '../hooks/useCILSession';
 import { CILNavigator, CILStore } from '../integrations/cil';
-import { publishThreatIntelligence } from '../services/cilPublisher';
+import { publishThreatIntelligence } from '../services/cil/publishThreat';
 // Removed lucide-react imports to fix potential useContext crash
 
 const sev = { critical: '#f87171', high: '#fb923c', medium: '#fbbf24', low: '#22d3ee', informational: '#64748b' };
@@ -9,7 +9,7 @@ const sev = { critical: '#f87171', high: '#fb923c', medium: '#fbbf24', low: '#22
 /**
  * CILContextPanel — ETH Hacker Theme
  */
-export default function CILContextPanel({ analysisResults }) {
+export default function CILContextPanel({ analysisResults, onAnalyzeExposure }) {
   const { sessionId, isFromCIL, hasEMEData, exposures, asset } = useCILSession();
   const [ethPublished, setEthPublished] = React.useState(false);
   const [localSessionId, setLocalSessionId] = React.useState(null);
@@ -87,14 +87,17 @@ export default function CILContextPanel({ analysisResults }) {
               &gt; IMPORTED_EXPOSURES ({exposures.length})
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {exposures.slice(0, 8).map((exp) => (
-                <span key={exp.id} style={{
+              {exposures.slice(0, 8).map((exp, idx) => {
+                const color = sev[exp.severity?.toLowerCase()] || sev.informational;
+                return (
+                <span key={exp.id || idx} style={{
                   padding: '4px 8px', fontSize: '0.65rem', fontWeight: '700',
-                  background: `${sev[exp.severity]}10`, color: sev[exp.severity], border: `1px solid ${sev[exp.severity]}30`,
+                  background: `${color}10`, color: color, border: `1px solid ${color}30`,
                 }}>
-                  {exp.port}/{exp.protocol} {exp.service}
+                  {exp.port ? `${exp.port}/${exp.protocol || 'tcp'}` : 'N/A'} {exp.service || ''}
                 </span>
-              ))}
+                );
+              })}
               {exposures.length > 8 && (
                 <span style={{ padding: '4px 8px', fontSize: '0.6rem', color: '#555', border: '1px dashed #333' }}>
                   +{exposures.length - 8} MORE
@@ -144,6 +147,23 @@ export default function CILContextPanel({ analysisResults }) {
                 </>
               )}
             </>
+          )}
+
+          {/* New Analyze Exposure button */}
+          {hasEMEData && !analysisResults && (
+            <button
+              onClick={onAnalyzeExposure}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', 
+                fontSize: '0.65rem', color: '#e8183a', background: 'rgba(232, 24, 58, 0.1)', 
+                border: '1px solid rgba(232, 24, 58, 0.4)', cursor: 'pointer', 
+                textTransform: 'uppercase', letterSpacing: '0.1em'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(232, 24, 58, 0.2)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(232, 24, 58, 0.1)'}
+            >
+              ANALYZE_EXPOSURE
+            </button>
           )}
         </div>
       </div>

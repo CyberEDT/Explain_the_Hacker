@@ -12,6 +12,7 @@ export default function PlatformLayout({ children }) {
         { label: 'THREAT INTEL', href: '/threat-intel' },
         { label: 'LIBRARY', href: '/library' },
         { label: 'ROADMAP', href: '/roadmap' },
+        { label: 'CIL ARCHITECTURE', href: '/cil' },
         { label: 'CYBEREDT', href: 'https://www.cyberedt.com' },
     ];
 
@@ -174,6 +175,7 @@ export default function PlatformLayout({ children }) {
                                 <li><Link to="/lab" className="footer-link">ETH Engine</Link></li>
                                 <li><Link to="/threat-intel" className="footer-link">Threat Intel</Link></li>
                                 <li><Link to="/roadmap" className="footer-link">Roadmap</Link></li>
+                                <li><Link to="/cil" className="footer-link">CIL Architecture</Link></li>
                             </ul>
                         </div>
 
