@@ -196,9 +196,9 @@ export default function Roadmap() {
                             phaseNum="2"
                             title="Analysis & Explainability"
                             date="Mid 2026"
-                            status="In Progress"
-                            progressColor="var(--color-accent)"
-                            progressValue={65}
+                            status="Completed"
+                            progressColor="var(--color-success)"
+                            progressValue={100}
                             focusList={[
                                 'Dedicated Threat Intel educational hub',
                                 'Clear separation of Verified vs Inferred findings',
@@ -208,6 +208,20 @@ export default function Roadmap() {
                         />
                         <PhaseCard 
                             phaseNum="3"
+                            title="Intelligence Layer (CIL)"
+                            date="Late 2026"
+                            status="In Progress"
+                            progressColor="var(--color-accent)"
+                            progressValue={45}
+                            focusList={[
+                                'CyberEDT Intelligence Layer (CIL) foundation',
+                                'Standardized JSON intelligence sharing',
+                                'Decoupling ETH from raw scanning (EME dependency)',
+                                'Real-time intelligence bus communication'
+                            ]}
+                        />
+                        <PhaseCard 
+                            phaseNum="4"
                             title="AI & Adv. Intelligence"
                             date="Early 2027"
                             status="Planned"
@@ -221,7 +235,7 @@ export default function Roadmap() {
                             ]}
                         />
                         <PhaseCard 
-                            phaseNum="4"
+                            phaseNum="5"
                             title="Final Enterprise Release"
                             date="Late 2027"
                             status="Future Release"
