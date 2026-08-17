@@ -28,9 +28,9 @@
   --color-text-muted: #444444;
 
   /* Fonts */
-  --font-display: 'Bebas Neue', 'Impact', sans-serif;
-  --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
   /* Shadows */
   --shadow-card: 0 0 0 1px #1f1f1f;
@@ -605,3 +605,19 @@ body {
 
   .cursor-blink { animation: none !important; opacity: 1; }
 }
+
+
+/* Global Heading Styles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.mono-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #2563eb;
+}
+

@@ -18,6 +18,9 @@ const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const ResponsibleUsage = lazy(() => import('@/pages/ResponsibleUsage'));
 const SecurityDisclaimer = lazy(() => import('@/pages/SecurityDisclaimer'));
 const CILPage = lazy(() => import('@/pages/CIL'));
+const Campaigns = lazy(() => import('@/pages/Campaigns'));
+const Vulnerabilities = lazy(() => import('@/pages/Vulnerabilities'));
+const NetworkExposure = lazy(() => import('@/pages/NetworkExposure'));
 
 export default function App() {
   return (
@@ -115,6 +118,11 @@ export default function App() {
             </PlatformLayout>
           }
         />
+
+        {/* Intelligence Datasets */}
+        <Route path="/campaigns" element={<PlatformLayout><Campaigns /></PlatformLayout>} />
+        <Route path="/vulnerabilities" element={<PlatformLayout><Vulnerabilities /></PlatformLayout>} />
+        <Route path="/network-exposure" element={<PlatformLayout><NetworkExposure /></PlatformLayout>} />
 
         {/* Legal Pages */}
         <Route path="/privacy" element={<PlatformLayout><PrivacyPolicy /></PlatformLayout>} />

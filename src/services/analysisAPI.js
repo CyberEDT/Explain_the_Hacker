@@ -1680,27 +1680,84 @@ function buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData
         installTechs.push(techniqueV4({ id:'T1135', name:'Network Share Discovery', tactic:'Discovery', description:'Anonymous SMB shares allow unauthenticated enumeration of all shared directories across the network.', evidenceType:'inferred', confidence:72, generatedBecause:['Anonymous SMB shares configured', 'Port 445 exposed'] }));
         installTechs.push(techniqueV4({ id:'T1021.002', name:'SMB/Windows Admin Shares', tactic:'Lateral Movement', description:'Anonymous SMB access enables lateral file drop and remote execution via shared network paths.', evidenceType:'inferred', confidence:68, generatedBecause:['Anonymous SMB shares active'] }));
     }
-    if (installTechs.length === 0) installTechs.push(techniqueV4({ id:'T1543', name:'Create or Modify System Process', tactic:'Persistence', description:'Attacker establishes persistence on the host.', evidenceType:'hypothetical', confidence:25 }));
+    const hasInstallBasis = hasExecutionEvidence || hasPersistenceEvidence || signals.hasWebAttack || (misconfigIds.has('PROTO-002') && hasSMB);
+    if (installTechs.length === 0 && hasInstallBasis) {
+        installTechs.push(techniqueV4({ id:'T1543', name:'Create or Modify System Process', tactic:'Persistence',
+            description:'Following access, an attacker would establish persistence on the compromised host. Specific mechanism depends on OS and access level obtained.',
+            evidenceType:'hypothetical', confidence:25,
+            generatedBecause:['Exposure profile creates a plausible access path for persistence installation'] }));
+    }
+
+    const installStatus = hasPersistenceEvidence ? 'OBSERVED'
+        : hasExecutionEvidence ? 'INFERRED'
+        : hasInstallBasis ? 'HYPOTHETICAL'
+        : 'NOT OBSERVED';
+    const installExplanation = hasPersistenceEvidence
+        ? 'Persistence mechanisms directly observed in log telemetry.'
+        : hasExecutionEvidence
+        ? 'Command execution evidence observed. Persistence installation is a predictable attacker follow-on; specific mechanism not yet confirmed.'
+        : hasInstallBasis
+        ? 'Attack surface creates a plausible path for persistence installation, but no execution or persistence evidence is present to confirm this stage.'
+        : 'No evidence basis for Installation. No execution, persistence, web attack, or lateral movement evidence provided.';
 
     addStage({
         stageName: 'INSTALLATION',
-        status: hasPersistenceEvidence ? 'OBSERVED' : hasExecutionEvidence ? 'INFERRED' : 'HYPOTHETICAL',
-        explanation: hasPersistenceEvidence ? 'Persistence mechanisms observed in telemetry.' : 'Attackers typically install persistence after gaining execution.',
-        techniques: installTechs,
-        generatedBecause: [hasPersistenceEvidence ? 'Persistence terms in logs.' : null, (misconfigIds.has('PROTO-002') && hasSMB) ? 'Anonymous SMB shares enable lateral file staging.' : null]
+        status: installStatus,
+        explanation: installExplanation,
+        techniques: installStatus !== 'NOT OBSERVED' ? installTechs : [],
+        generatedBecause: [
+            hasPersistenceEvidence ? 'Persistence installation patterns in logs.' : null,
+            hasExecutionEvidence ? 'Command execution evidence — persistence is a predictable follow-on.' : null,
+            (misconfigIds.has('PROTO-002') && hasSMB) ? 'Anonymous SMB shares enable lateral file staging.' : null,
+            signals.hasWebAttack && !hasPersistenceEvidence ? 'Web attack evidence raises web shell persistence probability.' : null,
+        ]
     });
 
     // 06 COMMAND & CONTROL
+    const hasC2Evidence = logData.indicators.some(i => i.type === 'C2_INDICATOR');
+    const hasC2IpBasis  = logData.ips.length > 0;
     const c2Techs = [];
-    if (logData.indicators.some(i => i.type === 'C2_TRAFFIC')) c2Techs.push(techniqueV4({ id:'T1071', name:'Application Layer Protocol', tactic:'Command and Control', description:'C2 beaconing observed.', evidenceType:'observed', confidence:95 }));
-    if (c2Techs.length === 0) c2Techs.push(techniqueV4({ id:'T1071', name:'Application Layer Protocol', tactic:'Command and Control', description:'Outbound beaconing to actor-controlled infrastructure.', evidenceType:'hypothetical', confidence:25 }));
+    if (hasC2Evidence) {
+        c2Techs.push(techniqueV4({ id:'T1071', name:'Application Layer Protocol', tactic:'Command and Control',
+            description:'C2 framework references (e.g. Cobalt Strike, Meterpreter) identified in log telemetry. High-confidence C2 activity.',
+            evidenceType:'observed', confidence:95,
+            generatedBecause:['C2 tool signatures detected in submitted log data'] }));
+    }
+    if (!hasC2Evidence && hasC2IpBasis) {
+        c2Techs.push(techniqueV4({ id:'T1071.001', name:'Application Layer Protocol: Web Protocols', tactic:'Command and Control',
+            description:`${logData.ips.length} external IP address(es) extracted from log data require reputation lookup to determine if they represent C2 infrastructure. This is an inferred indicator, not confirmed C2.`,
+            evidenceType:'inferred', confidence:45,
+            generatedBecause:[`${logData.ips.length} external IP(s) present in logs — threat intel enrichment required`] }));
+    }
+    if (!hasC2Evidence && !hasC2IpBasis && hasExecutionEvidence) {
+        c2Techs.push(techniqueV4({ id:'T1072', name:'Software Deployment Tools', tactic:'Command and Control',
+            description:'Following confirmed execution activity, an attacker would establish a C2 channel to maintain persistent access. Specific channel type cannot be determined without network telemetry.',
+            evidenceType:'hypothetical', confidence:30,
+            generatedBecause:['Command execution evidence creates basis for C2 modelling'] }));
+    }
+
+    const c2Status = hasC2Evidence ? 'OBSERVED'
+        : hasC2IpBasis ? 'INFERRED'
+        : hasExecutionEvidence ? 'HYPOTHETICAL'
+        : 'NOT OBSERVED';
+    const c2Explanation = hasC2Evidence
+        ? 'C2 framework tool signatures directly observed in log telemetry.'
+        : hasC2IpBasis
+        ? 'External IPs present in logs — correlation with threat intelligence required before C2 can be confirmed.'
+        : hasExecutionEvidence
+        ? 'Execution activity observed. Attacker would likely establish a C2 channel; specific channel type cannot be determined without network telemetry.'
+        : 'No evidence basis for Command and Control. No C2 signatures, no external IPs, and no execution telemetry provided. ETH will not model this phase without evidence.';
 
     addStage({
         stageName: 'COMMAND & CONTROL',
-        status: logData.indicators.some(i => i.type === 'C2_TRAFFIC') ? 'OBSERVED' : 'HYPOTHETICAL',
-        explanation: logData.indicators.some(i => i.type === 'C2_TRAFFIC') ? 'Command-and-control beaconing observed.' : 'No evidence supports command-and-control activity.',
-        techniques: c2Techs,
-        generatedBecause: [logData.indicators.some(i => i.type === 'C2_TRAFFIC') ? 'C2 traffic patterns in logs.' : null]
+        status: c2Status,
+        explanation: c2Explanation,
+        techniques: c2Status !== 'NOT OBSERVED' ? c2Techs : [],
+        generatedBecause: [
+            hasC2Evidence ? 'C2 tool signatures in log telemetry.' : null,
+            hasC2IpBasis  ? `${logData.ips.length} external IP(s) in logs require threat intel correlation.` : null,
+            hasExecutionEvidence && !hasC2Evidence && !hasC2IpBasis ? 'Execution evidence creates basis for hypothetical C2 modelling.' : null,
+        ]
     });
 
     // 07 ACTIONS ON OBJECTIVES
@@ -2121,6 +2178,71 @@ export async function runAttackSimulationMock(payload, signal) {
     // ── Narrative ──────────────────────────────────────────────────────────────
     const summary = buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, signals.activeCorrelations, frameworkMeta, intelligenceLevel);
 
+    // ── ETH Engine Operational Decision Protocol (ODP) v1 ─────────────────────
+    const odpStep1 = {
+        step: 1, name: 'Parse Evidence',
+        verifiedFindings: [
+            ...[...portMap.entries()].map(([p, d]) => `${d.service} exposed on ${p}/tcp`),
+            ...matchedMisconfigs.map(m => `Misconfiguration: ${m.category} - ${m.finding}`),
+            ...logData.indicators.map(i => `Telemetry: ${i.type} - ${i.description}`)
+        ]
+    };
+    
+    const odpStep2 = {
+        step: 2, name: 'Correlate Evidence',
+        inferredRisks: signals.activeCorrelations.map(c => `Correlation ID: ${c.id} - ${c.name} [Likelihood: ${c.likelihood}]`)
+    };
+
+    const odpStep3 = {
+        step: 3, name: 'Build Kill Chain',
+        killChainStages: killChain.map(s => ({
+            phase: s.phase,
+            status: s.status,
+            evidenceUsed: s.supportingEvidence,
+            techniquesCount: s.techniques.length
+        }))
+    };
+
+    const groupedTactics = {};
+    ATTACKMappings.forEach(m => {
+        const t = m.tactic || 'Unknown';
+        if (!groupedTactics[t]) groupedTactics[t] = [];
+        groupedTactics[t].push(m.mitreId);
+    });
+
+    const odpStep4 = {
+        step: 4, name: 'Map MITRE ATT&CK',
+        mappedTactics: Object.entries(groupedTactics).map(([tactic, techniques]) => ({
+            tactic,
+            techniques
+        }))
+    };
+
+    const odpStep5 = {
+        step: 5, name: 'Assess Risk',
+        score: riskScore,
+        confidence: confidenceScore,
+        accuracy: accuracyAssessment.overallAccuracy,
+        topFactors: topFactors.map(f => f.factor)
+    };
+    
+    const odpStep6 = {
+        step: 6, name: 'Synthesize Context',
+        narrativeSnippet: summary.slice(0, 150) + '...'
+    };
+
+    const odpStep7 = {
+        step: 7, name: 'Identify IOCs',
+        iocCount: iocList.length
+    };
+
+    const odpStep8 = {
+        step: 8, name: 'Generate Mitigations',
+        mitigationCount: mitigations.length
+    };
+    
+    const odp = [odpStep1, odpStep2, odpStep3, odpStep4, odpStep5, odpStep6, odpStep7, odpStep8];
+
     // ── Risk Breakdown ────────────────────────────────────────────────────────
     const riskBreakdown = riskAssessment.dimensions.map(d => ({
         category:d.category,
@@ -2152,6 +2274,7 @@ export async function runAttackSimulationMock(payload, signal) {
         confidenceScore,
         accuracyAssessment,
         summary,
+        odp,              // The ETH ODP 8-step trace
         killChain,        // The newly structured 7-stage Cyber Kill Chain
         ATTACKMappings,   // Extracted MITRE map
         iocList,

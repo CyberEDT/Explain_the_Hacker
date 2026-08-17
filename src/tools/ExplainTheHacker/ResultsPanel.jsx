@@ -15,6 +15,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { mitreIntelligenceData } from '../../data/mitreIntelligenceData';
 import { useCILSession } from '@/hooks/useCILSession';
 import { CILNavigator } from '@/integrations/cil';
+import AttackerReasoningPanel from './AttackerReasoningPanel';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function Ico({ d, size = 16, strokeWidth = 2 }) {
@@ -556,22 +557,80 @@ function AnalysisSummary({ summary, confidenceScore, detectionDifficulty, estima
     );
 }
 
+// ─── Per-phase identity colors for Kill Chain ────────────────────────────────
+const PHASE_COLORS = {
+    'RECONNAISSANCE':        { accent: '#e8183a', glow: 'rgba(232,24,58,0.15)' },
+    'WEAPONIZATION':         { accent: '#ff6b2b', glow: 'rgba(255,107,43,0.15)' },
+    'DELIVERY':              { accent: '#ff2d7b', glow: 'rgba(255,45,123,0.15)' },
+    'EXPLOITATION':          { accent: '#ffaa00', glow: 'rgba(255,170,0,0.15)' },
+    'INSTALLATION':          { accent: '#00e5ff', glow: 'rgba(0,229,255,0.15)' },
+    'COMMAND & CONTROL':     { accent: '#4db8ff', glow: 'rgba(77,184,255,0.15)' },
+    'ACTIONS ON OBJECTIVES': { accent: '#00ff9d', glow: 'rgba(0,255,157,0.15)' },
+};
+
+// ─── Status badge colors ──────────────────────────────────────────────────────
+const STATUS_COLORS = {
+    'OBSERVED':     { bg: 'rgba(232,24,58,0.12)', border: 'rgba(232,24,58,0.5)',  color: '#ff4d6a' },
+    'INFERRED':     { bg: 'rgba(255,170,0,0.10)', border: 'rgba(255,170,0,0.45)', color: '#ffbf40' },
+    'HYPOTHETICAL': { bg: 'rgba(0,170,255,0.10)', border: 'rgba(0,170,255,0.4)',  color: '#4dc3ff' },
+    'NOT OBSERVED': { bg: 'rgba(255,255,255,0.03)', border: '#333', color: '#555' },
+};
+
+// ─── Technique Card (truncated description with Read More) ────────────────────
+function TechniqueCard({ t, intel, fullDesc, shortDesc, intelligenceLevel }) {
+    const [showFull, setShowFull] = useState(false);
+    const techName = intel?.['Technique Name'] || t.name;
+    const attackerPerspective = intel?.['Attacker Perspective'] || '';
+    // Show ETH's concise description by default; full MITRE desc behind toggle
+    const displayDesc = showFull ? fullDesc : shortDesc;
+    const hasMore = fullDesc && fullDesc.length > 0 && fullDesc !== shortDesc;
+
+    return (
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginTop: '8px', background: 'rgba(255,255,255,0.015)', padding: '12px', borderLeft: '2px solid #222' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0, minWidth: '70px' }}>
+                {(intelligenceLevel !== 'LOW' && t.id) && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#00aaff' }}>{t.id}</span>}
+                <EvidenceBadge type={t.evidenceType} small />
+            </div>
+            <div style={{ flex: 1 }}>
+                {techName && (
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', fontWeight: 700, color: '#fff', margin: '0 0 6px 0' }}>
+                        {techName}
+                    </p>
+                )}
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#aaa', lineHeight: 1.6, margin: 0 }}>
+                    {displayDesc}
+                </p>
+                {hasMore && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setShowFull(s => !s); }}
+                        style={{
+                            background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', marginTop: '6px',
+                            fontFamily: 'var(--font-mono)', fontSize: '0.6rem', fontWeight: 700,
+                            color: '#00aaff', letterSpacing: '0.08em',
+                        }}
+                    >
+                        {showFull ? '▴ SHOW LESS' : '▾ MITRE FULL DESCRIPTION'}
+                    </button>
+                )}
+                {attackerPerspective && (
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', color: '#888', marginTop: '8px', fontStyle: 'italic', borderLeft: '2px solid #333', paddingLeft: '8px' }}>
+                        🧠 {attackerPerspective}
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+}
+
 // ─── Cyber Kill Chain V4 Row (expandable) ───────────────────────────────────────────
 function KillChainRowV4({ phase, index, intelligenceLevel }) {
     const [expanded, setExpanded] = useState(false);
     const [hovered, setHovered] = useState(false);
     
-    // Status colors
     const st = phase.status;
     const isNotObserved = st === 'NOT OBSERVED';
-    let borderColor = '#333';
-    let bgHover = 'rgba(255,255,255,0.02)';
-    let textCol = '#fff';
-    
-    if (st === 'OBSERVED') { borderColor = '#e8183a'; textCol = '#ff4d6a'; }
-    else if (st === 'INFERRED') { borderColor = '#ffaa00'; textCol = '#ffbf40'; }
-    else if (st === 'HYPOTHETICAL') { borderColor = '#00aaff'; textCol = '#4dc3ff'; }
-    else { textCol = '#555'; } // NOT OBSERVED
+    const phaseColor = PHASE_COLORS[phase.phase?.toUpperCase()] || { accent: '#888', glow: 'rgba(255,255,255,0.05)' };
+    const statusColor = STATUS_COLORS[st] || STATUS_COLORS['NOT OBSERVED'];
 
     return (
         <div style={{ borderBottom: '1px solid #111', opacity: isNotObserved ? 0.6 : 1 }}>
@@ -582,12 +641,14 @@ function KillChainRowV4({ phase, index, intelligenceLevel }) {
                 style={{
                     display: 'flex', alignItems: 'center', gap: '16px',
                     padding: '14px 0', cursor: 'pointer',
-                    background: hovered ? bgHover : 'transparent',
-                    transition: 'background 0.15s',
+                    borderLeft: `3px solid ${isNotObserved ? '#222' : phaseColor.accent}`,
+                    paddingLeft: '16px',
+                    background: hovered ? phaseColor.glow : 'transparent',
+                    transition: 'background 0.2s, border-color 0.2s',
                 }}>
                 <div style={{
-                    background: isNotObserved ? '#111' : borderColor,
-                    color: isNotObserved ? '#444' : (st === 'INFERRED' ? '#000' : '#fff'),
+                    background: isNotObserved ? '#111' : phaseColor.accent,
+                    color: '#fff',
                     width: '28px', height: '28px', flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.75rem',
@@ -596,10 +657,15 @@ function KillChainRowV4({ phase, index, intelligenceLevel }) {
                 </div>
 
                 <div style={{ width: '240px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '0.88rem', color: textCol, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '0.88rem', color: isNotObserved ? '#555' : phaseColor.accent, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                         {phase.phase}
                     </span>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: isNotObserved ? '#555' : borderColor, border: `1px solid ${isNotObserved ? '#333' : borderColor}`, padding: '2px 6px', flexShrink: 0, opacity: 0.8 }}>
+                    <span style={{
+                        fontFamily: 'var(--font-mono)', fontSize: '0.55rem',
+                        color: statusColor.color, background: statusColor.bg,
+                        border: `1px solid ${statusColor.border}`,
+                        padding: '2px 6px', flexShrink: 0,
+                    }}>
                         {phase.status}
                     </span>
                 </div>
@@ -612,7 +678,7 @@ function KillChainRowV4({ phase, index, intelligenceLevel }) {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                     {!isNotObserved && <EvidenceBadge type={phase.evidenceType} small />}
-                    <span style={{ color: expanded ? '#00aaff' : '#333', transition: 'color 0.15s' }}>
+                    <span style={{ color: expanded ? phaseColor.accent : '#333', transition: 'color 0.15s' }}>
                         {expanded ? <MinusIcon /> : <PlusIcon />}
                     </span>
                 </div>
@@ -628,24 +694,10 @@ function KillChainRowV4({ phase, index, intelligenceLevel }) {
                     
                     {phase.techniques?.length > 0 ? phase.techniques.map(t => {
                         const intel = mitreIntelligenceData[t.id] || mitreIntelligenceData[t.id?.split('.')[0]];
+                        const fullDesc = intel?.Description || '';
+                        const shortDesc = t.description || '';
                         return (
-                        <div key={t.id || t.name} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginTop: '8px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0, minWidth: '70px' }}>
-                                {(intelligenceLevel !== 'LOW' && t.id) && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#00aaff' }}>{t.id}</span>}
-                                <EvidenceBadge type={t.evidenceType} small />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: '#fff', lineHeight: 1.6 }}>
-                                    {t.name ? <strong style={{ color: '#fff', marginRight: '6px' }}>{intel?.['Technique Name'] || t.name}:</strong> : null}
-                                    {intel?.Description || t.description}
-                                </span>
-                                {intel?.['Attacker Perspective'] && (
-                                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#999', marginTop: '8px', fontStyle: 'italic', borderLeft: '2px solid #333', paddingLeft: '8px' }}>
-                                        {intel['Attacker Perspective']}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
+                        <TechniqueCard key={t.id || t.name} t={t} intel={intel} fullDesc={fullDesc} shortDesc={shortDesc} intelligenceLevel={intelligenceLevel} />
                         );
                     }) : (
                         <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#666', fontStyle: 'italic', margin: '4px 0' }}>
@@ -928,6 +980,22 @@ function SimplifiedMitreSection({ mitreChain }) {
     );
 }
 
+// ─── Section Divider ──────────────────────────────────────────────────────────
+function SectionDivider({ number, title }) {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', marginTop: '8px' }}>
+            <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '0.6rem', fontWeight: 700,
+                color: '#e8183a', background: 'rgba(232,24,58,0.1)', border: '1px solid rgba(232,24,58,0.3)',
+                padding: '3px 8px', letterSpacing: '0.1em', flexShrink: 0,
+            }}>
+                {number}
+            </span>
+            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, #1a1a1a, transparent)' }} />
+        </div>
+    );
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function ResultsPanel({ result, onNewAnalysis }) {
     if (!result) return null;
@@ -935,9 +1003,10 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
         <div style={{ color: '#fff', fontFamily: 'var(--font-sans)' }}
             aria-label="Analysis Results" role="region">
 
+            {/* ── 01. Risk Score & Stats ── */}
             <TopSummaryBar result={result} onNewAnalysis={onNewAnalysis} />
 
-            {/* Unknown Port Handling Framework — warning banners */}
+            {/* ── Framework warnings (non-LOW only) ── */}
             {result.intelligenceLevel !== 'LOW' && (
                 <FrameworkWarningBanner
                     frameworkWarnings={result.frameworkWarnings}
@@ -945,7 +1014,8 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
                 />
             )}
 
-
+            {/* ── 02. Executive Summary ── */}
+            <SectionDivider number="02" title="ANALYSIS SUMMARY" />
             <AnalysisSummary
                 summary={result.summary}
                 confidenceScore={result.confidenceScore}
@@ -955,11 +1025,22 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
                 intelligenceLevel={result.intelligenceLevel}
             />
 
+            {/* ── 03. Kill Chain Progression ── */}
+            <SectionDivider number="03" title="KILL CHAIN" />
             <KillChainV4Visualizer 
                 killChain={result.killChain}
                 intelligenceLevel={result.intelligenceLevel}
             />
 
+            {/* ── 04. Attacker Reasoning (What-Ifs) ── */}
+            <SectionDivider number="04" title="ATTACKER REASONING" />
+            <AttackerReasoningPanel 
+                killChain={result.killChain}
+                intelligenceLevel={result.intelligenceLevel}
+            />
+
+            {/* ── 05. MITRE ATT&CK Mapping ── */}
+            <SectionDivider number="05" title="MITRE MAPPING" />
             {result.intelligenceLevel === 'LOW' ? (
                 <SimplifiedMitreSection mitreChain={result.killChain} />
             ) : (
@@ -969,16 +1050,26 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
                 />
             )}
 
+            {/* ── 06. Evidence (HIGH/LE only) ── */}
             {(result.intelligenceLevel === 'HIGH' || result.intelligenceLevel === 'LE') && (
-                <EvidenceSummarySection 
-                    evidenceSummary={result.evidenceSummary} 
-                />
+                <>
+                    <SectionDivider number="06" title="EVIDENCE" />
+                    <EvidenceSummarySection 
+                        evidenceSummary={result.evidenceSummary} 
+                    />
+                </>
             )}
 
+            {/* ── 07. Mitigations ── */}
+            <SectionDivider number="07" title="MITIGATIONS" />
             <MitigationsSection mitigations={result.mitigations} intelligenceLevel={result.intelligenceLevel} />
 
+            {/* ── 08. IOCs (HIGH/LE only) ── */}
             {(result.intelligenceLevel === 'HIGH' || result.intelligenceLevel === 'LE') && (
-                <IOCSection iocList={result.iocList} />
+                <>
+                    <SectionDivider number="08" title="IOCS" />
+                    <IOCSection iocList={result.iocList} />
+                </>
             )}
         </div>
     );

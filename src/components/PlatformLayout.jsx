@@ -179,6 +179,8 @@ export default function PlatformLayout({ children }) {
                             </ul>
                         </div>
 
+
+
                         {/* Legal */}
                         <div>
                             <h4 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>Legal & Policy</h4>
