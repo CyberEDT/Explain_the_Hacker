@@ -991,6 +991,15 @@ function SectionDivider({ number, title }) {
             }}>
                 {number}
             </span>
+            {title ? (
+                <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '0.56rem', fontWeight: 700,
+                    color: '#a7a7a7', letterSpacing: '0.18em', textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                }}>
+                    {title}
+                </span>
+            ) : null}
             <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, #1a1a1a, transparent)' }} />
         </div>
     );

@@ -220,7 +220,9 @@ function normalizeResult(raw) {
         exploitValidation: 30,
         attackChainConsistency: 50,
         falsePositiveResistance: 50,
-        overallAccuracy: 50
+        overallAccuracy: 50,
+        validationStatus: 'NOT_VALIDATED',
+        methodology: 'Accuracy is an exposure-and-telemetry heuristic estimate; no independent ground truth validation was supplied.',
     };
     
     const accuracyAssessment = raw.accuracyAssessment && typeof raw.accuracyAssessment === 'object' 
@@ -230,7 +232,9 @@ function normalizeResult(raw) {
             exploitValidation: sanitizeNumber(raw.accuracyAssessment.exploitValidation, {min: 0, max: 100, fallback: 30}),
             attackChainConsistency: sanitizeNumber(raw.accuracyAssessment.attackChainConsistency, {min: 0, max: 100, fallback: 50}),
             falsePositiveResistance: sanitizeNumber(raw.accuracyAssessment.falsePositiveResistance, {min: 0, max: 100, fallback: 50}),
-            overallAccuracy: sanitizeNumber(raw.accuracyAssessment.overallAccuracy, {min: 0, max: 100, fallback: 50})
+            overallAccuracy: sanitizeNumber(raw.accuracyAssessment.overallAccuracy, {min: 0, max: 100, fallback: 50}),
+            validationStatus: sanitizeText(raw.accuracyAssessment.validationStatus, 'NOT_VALIDATED'),
+            methodology: sanitizeText(raw.accuracyAssessment.methodology, 'Accuracy is an exposure-and-telemetry heuristic estimate; no independent ground truth validation was supplied.'),
         }
         : defaultAccuracy;
 

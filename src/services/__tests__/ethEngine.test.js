@@ -586,6 +586,37 @@ test('CORRELATION: SNMP Host Recon (CORR-022) triggers correctly', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
+// TEST SUITE 11: Intelligence traceability and validation status
+// ═════════════════════════════════════════════════════════════════════════════
+console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+console.log('SUITE 11: Intelligence traceability & validation status');
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+const fs = await import('node:fs/promises');
+const analysisSource = await fs.readFile(new URL('../analysisAPI.js', import.meta.url), 'utf8');
+
+test('INTELLIGENCE: accuracy metadata explicitly marks unvalidated results', () => {
+    const hasValidationFlag = analysisSource.includes("validationStatus: 'NOT_VALIDATED'") || analysisSource.includes('validationStatus: "NOT_VALIDATED"');
+    const hasMethodology = analysisSource.includes('methodology:');
+    expect(hasValidationFlag).toBeTrue();
+    expect(hasMethodology).toBeTrue();
+});
+
+test('INTELLIGENCE: attack techniques carry evidence classification and traceability metadata', () => {
+    const hasClassification = analysisSource.includes('classification');
+    const hasEvidenceTrace = analysisSource.includes('evidence: evidenceReferences') || analysisSource.includes('evidence:');
+    const hasCredentialAccessMapping = analysisSource.includes("'T1110', name:'Brute Force', tactic:'Credential Access'");
+    const hasRemoteServicesMapping = analysisSource.includes("'T1133', name:'External Remote Services', tactic:'Initial Access'");
+    const hasPrivEscMapping = analysisSource.includes("'T1548'");
+
+    expect(hasClassification).toBeTrue();
+    expect(hasEvidenceTrace).toBeTrue();
+    expect(hasCredentialAccessMapping).toBeTrue();
+    expect(hasRemoteServicesMapping).toBeTrue();
+    expect(hasPrivEscMapping).toBeTrue();
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
 // RESULTS
 // ═════════════════════════════════════════════════════════════════════════════
 console.log('\n════════════════════════════════════════════════════════════');

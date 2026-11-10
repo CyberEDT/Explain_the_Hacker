@@ -1532,7 +1532,9 @@ function calculateAccuracyAssessment(portMap, matchedMisconfigs, logData, signal
         exploitValidation,
         attackChainConsistency,
         falsePositiveResistance,
-        overallAccuracy
+        overallAccuracy,
+        validationStatus: 'NOT_VALIDATED',
+        methodology: 'Accuracy is estimated from port, misconfiguration, and telemetry heuristics; no independent ground-truth validation data was supplied.',
     };
 }
 
@@ -1555,13 +1557,51 @@ function techniqueV4({ id, name, description, tactic, evidenceType = 'inferred',
         resolvedConfidence = Math.max(30, Math.min(89, resolvedConfidence));
     }
 
+    const normalizedEvidence = (generatedBecause || []).filter(Boolean);
+    const classification = evidenceType === 'verified'
+        ? 'VERIFIED'
+        : evidenceType === 'observed'
+            ? 'OBSERVED'
+            : evidenceType === 'inferred'
+                ? 'INFERRED'
+                : evidenceType === 'recommended'
+                    ? 'RECOMMENDED'
+                    : evidenceType === 'not_observed'
+                        ? 'NOT_OBSERVED'
+                        : evidenceType === 'unknown'
+                            ? 'UNKNOWN'
+                            : 'HYPOTHETICAL';
+
+    const validationStatus = classification === 'HYPOTHETICAL' || classification === 'UNKNOWN'
+        ? 'INCOMPLETE'
+        : classification === 'OBSERVED' || classification === 'VERIFIED'
+            ? 'PARTIAL'
+            : 'PENDING';
+
+    const evidenceReferences = normalizedEvidence.map((observation, index) => ({
+        evidenceId: `EVID-${id || 'TECH'}-${index + 1}`,
+        source: 'telemetry_or_exposure_profile',
+        observation,
+        strength: classification === 'OBSERVED' || classification === 'VERIFIED' ? 'STRONG' : 'PARTIAL',
+    }));
+
     return {
         id,
         name: intel && intel['Technique Name'] ? intel['Technique Name'] : name,
         tactic,
         description: finalDescription,
         evidenceType: evidenceType === 'verified' ? 'observed' : evidenceType,
-        generatedBecause: generatedBecause.filter(Boolean),
+        generatedBecause: normalizedEvidence,
+        evidence: evidenceReferences,
+        classification,
+        validation: {
+            required: [
+                'Behavioral evidence supporting this technique',
+                'Context linking the technique to the observed exposure or telemetry',
+                'Validation of missing prerequisites before claiming confirmed activity',
+            ],
+            status: validationStatus,
+        },
         confidence: resolvedConfidence,
     };
 }
