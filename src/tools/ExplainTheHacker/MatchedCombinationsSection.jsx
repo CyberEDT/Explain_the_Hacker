@@ -78,7 +78,7 @@ function TerminalViewer({ steps }) {
     );
 }
 
-export default function MatchedCombinationsSection({ combinations, intelligenceLevel }) {
+export default function MatchedCombinationsSection({ combinations }) {
     const [expandedIds, setExpandedIds] = useState(() => new Set(combinations?.map(c => c.id) || []));
 
     if (!combinations || combinations.length === 0) return null;

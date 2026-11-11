@@ -202,4 +202,3 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Pre-Authentication Disabled on User Accounts',
     'Open Recursive Resolver + No DNS Query Monitoring'
 ];
-

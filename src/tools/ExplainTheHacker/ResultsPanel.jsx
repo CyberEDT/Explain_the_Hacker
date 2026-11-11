@@ -4,11 +4,9 @@
  * Security: Zero dangerouslySetInnerHTML. All text via React nodes.
  *
  * ┌─ Intelligence Level Rendering Architecture ────────────────────────────────┐
- * │ LOW (Executive) : Hides MITRE Matrix, Evidence, and Complex Correlations.  │
- * │                   Shows simple Kill Chain and basic risk gauge.            │
+ * │ LOW (Beginner)  : Concise findings, essential warnings, and remediation.   │
  * │ MEDIUM (Analyst): Shows MITRE Matrix, Correlation paths, and logic.        │
- * │ HIGH (Engineer) : Full technical visibility, deep context, all IOCs.       │
- * │ LE (Law Enforce): Prioritizes Evidence, IOCs, and Attack Story generation. │
+ * │ HIGH (Analyst)  : Advanced evidence-linked investigation and hypotheses.   │
  * └────────────────────────────────────────────────────────────────────────────┘
  */
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -44,7 +42,10 @@ function EvidenceBadge({ type, small = false }) {
     const cfg = {
         observed:    { label: 'OBSERVED',  bg: 'rgba(0,255,157,0.1)',  border: 'rgba(0,255,157,0.35)',  color: '#00ff9d' },
         inferred:    { label: 'INFERRED',  bg: 'rgba(255,170,0,0.08)', border: 'rgba(255,170,0,0.35)',  color: '#ffaa00' },
-        hypothetical:{ label: 'POTENTIAL', bg: 'rgba(0,170,255,0.08)', border: 'rgba(0,170,255,0.3)',   color: '#00aaff' },
+        hypothetical:{ label: 'HYPOTHETICAL', bg: 'rgba(0,170,255,0.08)', border: 'rgba(0,170,255,0.3)',   color: '#00aaff' },
+        verified:    { label: 'VERIFIED',  bg: 'rgba(0,255,157,0.1)',  border: 'rgba(0,255,157,0.35)',  color: '#00ff9d' },
+        not_observed:{ label: 'NOT OBSERVED', bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.15)', color: '#888' },
+        unknown:     { label: 'UNKNOWN', bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.15)', color: '#888' },
     }[t] || { label: 'INFERRED', bg: 'rgba(255,170,0,0.08)', border: 'rgba(255,170,0,0.35)', color: '#ffaa00' };
     return (
         <span style={{
@@ -458,7 +459,7 @@ function ServiceIntelligenceSection({ serviceIntelligence, intelligenceLevel }) 
                                         </p>
                                     </div>
                                 )}
-                                {(intelligenceLevel === 'HIGH' || intelligenceLevel === 'LE') && intel['Real World Abuse Examples'] && (
+                                {intelligenceLevel === 'HIGH' && intel['Real World Abuse Examples'] && (
                                     <div className="md:col-span-2 mt-2" style={{ borderTop: '1px solid #333', paddingTop: '12px' }}>
                                         <h5 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#00ff9d', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>
                                             Real World Abuse Examples
@@ -992,7 +993,201 @@ function SectionDivider({ number, title }) {
             }}>
                 {number}
             </span>
+            {title ? (
+                <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '0.56rem', fontWeight: 700,
+                    color: '#a7a7a7', letterSpacing: '0.18em', textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                }}>
+                    {title}
+                </span>
+            ) : null}
             <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, #1a1a1a, transparent)' }} />
+        </div>
+    );
+}
+
+function IntelligenceModeReport({ report, quality }) {
+    if (!report) return null;
+    const qualityScore = Number.isFinite(quality?.score) ? `${quality.score}/100` : 'Not assessed';
+    const qualityLevel = quality?.qualityLevel || 'UNKNOWN';
+    const mode = report.analysisMode || 'LOW';
+    const cardStyle = { background: '#080808', border: '1px solid #1a1a1a', padding: '20px', marginBottom: '24px' };
+    const headingStyle = { color: '#bbb', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase' };
+    const bodyStyle = { color: '#aaa', fontFamily: 'var(--font-sans)', fontSize: '0.82rem', lineHeight: 1.55 };
+
+    return (
+        <div style={cardStyle} aria-label={`${mode} analysis report`}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                <div>
+                    <span style={headingStyle}>Analysis mode: {mode}</span>
+                    <p style={{ ...bodyStyle, color: '#666', margin: '5px 0 0' }}>{report.policy?.audience} · {report.policy?.depth}</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                    <span style={headingStyle}>Intelligence quality: {qualityLevel}</span>
+                    <p style={{ ...bodyStyle, color: '#666', margin: '5px 0 0' }}>{qualityScore} · independent of analysis mode</p>
+                </div>
+            </div>
+
+            {report.warnings?.length > 0 && (
+                <div style={{ borderLeft: '2px solid #ffaa00', paddingLeft: '12px', margin: '16px 0' }}>
+                    <h3 style={headingStyle}>Important warnings and evidence gaps</h3>
+                    {report.warnings.map((warning, index) => <p key={`${warning}-${index}`} style={bodyStyle}>{warning}</p>)}
+                </div>
+            )}
+
+            <h3 style={headingStyle}>Evidence-linked findings ({report.findings?.length || 0})</h3>
+            {report.findings?.length ? report.findings.map((finding, index) => (
+                <div key={`${finding.title}-${index}`} style={{ borderTop: '1px solid #181818', padding: '12px 0' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <strong style={{ ...bodyStyle, color: '#ddd' }}>{finding.title}</strong>
+                        <EvidenceBadge type={finding.classification} small />
+                    </div>
+                    <p style={bodyStyle}>
+                        {mode === 'LOW' && finding.whyItMatters.length > 180
+                            ? `${finding.whyItMatters.slice(0, 177)}...`
+                            : finding.whyItMatters}
+                    </p>
+                    <p style={{ ...bodyStyle, color: '#777' }}>
+                        Evidence: {finding.evidenceReferences?.length ? finding.evidenceReferences.join('; ') : 'No explicit evidence reference was included in the response.'}
+                        {finding.confidence !== null ? ` · Conclusion confidence: ${finding.confidence}%` : ''}
+                    </p>
+                </div>
+            )) : <p style={bodyStyle}>No findings were extracted from the supplied data; this does not prove that no issue exists.</p>}
+
+            {report.mitreMappings?.length > 0 && (
+                <>
+                    <h3 style={headingStyle}>MITRE ATT&CK mappings</h3>
+                    <p style={bodyStyle}>
+                        {report.mitreMappings.slice(0, mode === 'LOW' ? 4 : undefined).map(mapping =>
+                            `${mapping.id} ${mapping.name}${mapping.tactic ? ` (${mapping.tactic})` : ''} — ${mapping.classification}`
+                        ).join('; ')}
+                    </p>
+                </>
+            )}
+
+            {report.correlations?.length > 0 && (
+                <>
+                    <h3 style={headingStyle}>Evidence correlations</h3>
+                    {report.correlations.map((item, index) => (
+                        <p key={`${item.title}-${index}`} style={bodyStyle}>
+                            <EvidenceBadge type={item.classification} small /> {item.title} — {item.likelihood}. {item.explanation}
+                            {item.evidenceReferences.length ? ` Evidence: ${item.evidenceReferences.join('; ')}.` : ''}
+                        </p>
+                    ))}
+                </>
+            )}
+
+            {report.riskPrioritization && (
+                <>
+                    <h3 style={headingStyle}>Risk prioritization (separate from intelligence quality)</h3>
+                    <p style={bodyStyle}>Risk score: {report.riskPrioritization.riskScore ?? 'Not assessed'}/100.</p>
+                    {report.riskPrioritization.factors.map((factor, index) => (
+                        <p key={`${factor.factor || factor.title}-${index}`} style={bodyStyle}>
+                            {factor.factor || factor.title || 'Risk factor'}{Number.isFinite(factor.pts) ? ` (+${factor.pts})` : ''}.
+                        </p>
+                    ))}
+                    {report.impactAnalysis?.basis && <p style={bodyStyle}>{report.impactAnalysis.basis}</p>}
+                </>
+            )}
+
+            {report.attackPath?.length > 0 && (
+                <>
+                    <h3 style={headingStyle}>Attack-path assessment</h3>
+                    {report.attackPath.map((stage, index) => (
+                        <p key={`${stage.phase}-${index}`} style={bodyStyle}>
+                            <EvidenceBadge type={stage.status} small /> {stage.phase}: {stage.explanation || 'No explanation supplied.'}
+                            {stage.evidenceReferences.length ? ` Evidence: ${stage.evidenceReferences.join('; ')}.` : ''}
+                        </p>
+                    ))}
+                </>
+            )}
+
+            {report.alternativeHypotheses && (
+                <>
+                    <h3 style={headingStyle}>Alternative hypotheses</h3>
+                    {report.alternativeHypotheses.length
+                        ? report.alternativeHypotheses.map((hypothesis, index) => (
+                            <p key={`${hypothesis.title}-${index}`} style={bodyStyle}>
+                                <EvidenceBadge type={hypothesis.classification} small /> {hypothesis.title}: {hypothesis.explanation}
+                                {hypothesis.prerequisites.length ? ` Prerequisites to verify: ${hypothesis.prerequisites.join('; ')}.` : ''}
+                            </p>
+                        ))
+                        : <p style={bodyStyle}>No alternative hypotheses are supported by the supplied assessment data.</p>}
+                </>
+            )}
+
+            {report.defensiveGaps?.length > 0 && (
+                <>
+                    <h3 style={headingStyle}>Observed defensive gaps</h3>
+                    {report.defensiveGaps.map((gap, index) => (
+                        <p key={`${gap.title}-${index}`} style={bodyStyle}>
+                            <EvidenceBadge type={gap.classification} small /> {gap.title}
+                            {gap.evidenceReferences.length ? ` Evidence: ${gap.evidenceReferences.join('; ')}.` : ''}
+                        </p>
+                    ))}
+                </>
+            )}
+
+            {report.detectionOpportunities?.length > 0 && (
+                <>
+                    <h3 style={headingStyle}>Detection opportunities</h3>
+                    {report.detectionOpportunities.map((item, index) => <p key={`${item}-${index}`} style={bodyStyle}>{item}</p>)}
+                </>
+            )}
+
+            {report.threatIntelligenceContext?.length > 0 && (
+                <>
+                    <h3 style={headingStyle}>Threat-intelligence reference context</h3>
+                    {report.threatIntelligenceContext.map((item, index) => (
+                        <p key={`${item.correlation}-${index}`} style={bodyStyle}>
+                            {item.correlation}: {item.referenceGroups.join(', ')} — reference context only; not actor attribution.
+                        </p>
+                    ))}
+                </>
+            )}
+
+            {report.hypothesisAnalysis && (
+                <>
+                    <h3 style={headingStyle}>Comparative hypothesis assessment</h3>
+                    <p style={{ ...bodyStyle, color: '#777' }}>{report.hypothesisAnalysis.methodology}</p>
+                    {report.hypothesisAnalysis.hypotheses.map((hypothesis, index) => (
+                        <p key={`${hypothesis.title}-${index}`} style={bodyStyle}>
+                            <EvidenceBadge type={hypothesis.classification} small /> {hypothesis.title}: {hypothesis.limitation}
+                            {hypothesis.supportingEvidence.length ? ` Support: ${hypothesis.supportingEvidence.join('; ')}.` : ''}
+                        </p>
+                    ))}
+                </>
+            )}
+
+            {report.investigation?.questions?.length > 0 && (
+                <>
+                    <h3 style={headingStyle}>Investigation questions</h3>
+                    {report.investigation.questions.map((question, index) => <p key={`${question}-${index}`} style={bodyStyle}>{question}</p>)}
+                    {report.investigation.recommendations.map((recommendation, index) => (
+                        <p key={`${recommendation}-${index}`} style={bodyStyle}>{recommendation}</p>
+                    ))}
+                </>
+            )}
+
+            <h3 style={headingStyle}>Prioritized recommendations</h3>
+            {report.recommendations?.length
+                ? report.recommendations.map((item, index) => (
+                    <p key={`${item.title}-${index}`} style={bodyStyle}><strong>{item.priority.toUpperCase()}:</strong> {item.title}. {item.rationale}</p>
+                ))
+                : <p style={bodyStyle}>No remediation recommendation was generated from the supplied assessment.</p>}
+
+            {quality?.dimensions?.length > 0 && (
+                <details style={{ marginTop: '16px' }}>
+                    <summary style={{ ...headingStyle, cursor: 'pointer' }}>Intelligence quality dimensions</summary>
+                    {quality.dimensions.map(dimension => (
+                        <p key={dimension.id} style={bodyStyle}>
+                            {dimension.label}: {Number.isFinite(dimension.score) ? `${dimension.score}/100` : dimension.status || 'NOT_ASSESSED'} — {dimension.explanation}
+                        </p>
+                    ))}
+                    <p style={{ ...bodyStyle, color: '#666' }}>{quality.methodology}</p>
+                </details>
+            )}
         </div>
     );
 }
@@ -1026,34 +1221,43 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
                 intelligenceLevel={result.intelligenceLevel}
             />
 
-            {/* ── 03. Kill Chain Progression ── */}
-            <SectionDivider number="03" title="KILL CHAIN" />
-            <KillChainV4Visualizer 
-                killChain={result.killChain}
-                intelligenceLevel={result.intelligenceLevel}
+            <SectionDivider number="03" title="MODE-SPECIFIC INTELLIGENCE REPORT" />
+            <IntelligenceModeReport
+                report={result.analysisReport}
+                quality={result.intelligenceQualityAssessment}
             />
 
-            {/* ── 04. Attacker Reasoning (What-Ifs) ── */}
-            <SectionDivider number="04" title="ATTACKER REASONING" />
-            <AttackerReasoningPanel 
-                killChain={result.killChain}
-                intelligenceLevel={result.intelligenceLevel}
-            />
-
-            {/* ── 05. MITRE ATT&CK Mapping ── */}
-            {/* ── 05. Matched Attack Combination Intelligence ── */}
-            {result.matchedAttackCombinations?.length > 0 && (
+            {result.intelligenceLevel !== 'LOW' && (
                 <>
-                    <SectionDivider number="05" title="COMBINATION INTELLIGENCE" />
-                    <MatchedCombinationsSection 
-                        combinations={result.matchedAttackCombinations}
+                    <SectionDivider number="04" title="KILL CHAIN" />
+                    <KillChainV4Visualizer
+                        killChain={result.killChain}
                         intelligenceLevel={result.intelligenceLevel}
                     />
                 </>
             )}
 
-            {/* ── 06. MITRE ATT&CK Mapping ── */}
-            <SectionDivider number="06" title="MITRE MAPPING" />
+            {result.intelligenceLevel === 'HIGH' && (
+                <>
+                    <SectionDivider number="05" title="ATTACKER REASONING" />
+                    <AttackerReasoningPanel
+                        killChain={result.killChain}
+                        intelligenceLevel={result.intelligenceLevel}
+                    />
+                </>
+            )}
+
+            {/* ── 05. MITRE ATT&CK Mapping ── */}
+            {result.matchedAttackCombinations?.length > 0 && (
+                <>
+                    <SectionDivider number="06" title="COMBINATION INTELLIGENCE" />
+                    <MatchedCombinationsSection
+                        combinations={result.matchedAttackCombinations}
+                    />
+                </>
+            )}
+
+            <SectionDivider number="07" title="MITRE MAPPING" />
             {result.intelligenceLevel === 'LOW' ? (
                 <SimplifiedMitreSection mitreChain={result.killChain} />
             ) : (
@@ -1063,29 +1267,27 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
                 />
             )}
 
-            {/* ── 06. Evidence (HIGH/LE only) ── */}
-            {(result.intelligenceLevel === 'HIGH' || result.intelligenceLevel === 'LE') && (
+            {/* ── 07. Supporting evidence ── */}
+            {result.intelligenceLevel === 'HIGH' && (
                 <>
-                    <SectionDivider number="06" title="EVIDENCE" />
+                    <SectionDivider number="08" title="EVIDENCE" />
                     <EvidenceSummarySection 
                         evidenceSummary={result.evidenceSummary} 
                     />
                 </>
             )}
 
-            {/* ── 07. Mitigations ── */}
-            <SectionDivider number="07" title="MITIGATIONS" />
+            {/* ── 08. Mitigations ── */}
+            <SectionDivider number="09" title="MITIGATIONS" />
             <MitigationsSection mitigations={result.mitigations} intelligenceLevel={result.intelligenceLevel} />
 
-            {/* ── 08. IOCs (HIGH/LE only) ── */}
-            {(result.intelligenceLevel === 'HIGH' || result.intelligenceLevel === 'LE') && (
+            {/* ── 09. IOCs ── */}
+            {result.intelligenceLevel === 'HIGH' && (
                 <>
-                    <SectionDivider number="08" title="IOCS" />
+                    <SectionDivider number="10" title="IOCS" />
                     <IOCSection iocList={result.iocList} />
                 </>
             )}
         </div>
     );
 }
-
-

@@ -654,7 +654,7 @@ export default function ThreatVisualization({ result }) {
 
     if (!result) return null;
 
-    const intelLevel = result.intelligenceLevel || 'HIGH';
+    const intelLevel = result.intelligenceLevel || 'LOW';
     // Only render charts if there's something meaningful to show
     const hasPhaseData = phaseData.length > 0;
     const hasRemediations = remediations.length > 0;
@@ -764,4 +764,3 @@ export default function ThreatVisualization({ result }) {
         </div>
     );
 }
-

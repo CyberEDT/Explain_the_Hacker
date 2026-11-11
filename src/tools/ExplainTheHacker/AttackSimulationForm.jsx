@@ -709,7 +709,7 @@ export default function AttackSimulationForm({
                 onChange={onIntelligenceLevelChange} 
             />
 
-            <LibraryPresetSelector 
+            <LibraryPresetSelector
                 onSelectPreset={onSelectPreset}
                 onAddPort={onAddPort}
                 onAddMisconfiguration={onAddMisconfiguration}
@@ -894,10 +894,3 @@ export default function AttackSimulationForm({
         </form>
     );
 }
-
-
-
-
-
-
-
