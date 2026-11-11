@@ -25,6 +25,7 @@
 import { serviceIntelligenceData } from '../data/serviceIntelligenceData.js';
 import { mitreIntelligenceData } from '../data/mitreIntelligenceData.js';
 import { misconfigIntelligenceData } from '../data/misconfigIntelligenceData.js';
+import { applyAnalysisMode, applyValidationConfidencePenalty, normalizeAnalysisMode } from './ethAnalysisModes.js';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 
@@ -1538,6 +1539,213 @@ function calculateAccuracyAssessment(portMap, matchedMisconfigs, logData, signal
     };
 }
 
+const INTELLIGENCE_LEVEL_THRESHOLDS = Object.freeze({
+    LOW: { min: 0, max: 49 },
+    MEDIUM: { min: 50, max: 74 },
+    HIGH: { min: 75, max: 100 },
+});
+
+function normalizeIntelligenceLevel(level, fallback = 'LOW') {
+    const normalized = String(level ?? fallback).trim().toUpperCase();
+    if (normalized === 'LE') return 'HIGH';
+    if (['LOW', 'MEDIUM', 'HIGH'].includes(normalized)) return normalized;
+    return fallback;
+}
+
+function classifyIntelligenceLevel(score, thresholds = INTELLIGENCE_LEVEL_THRESHOLDS) {
+    if (typeof score !== 'number' || !Number.isFinite(score)) { return 'LOW'; }
+    if (score >= (thresholds.HIGH?.min ?? 75)) return 'HIGH';
+    if (score >= (thresholds.MEDIUM?.min ?? 50)) return 'MEDIUM';
+    return 'LOW';
+}
+
+function clampIntelligenceScore(score) {
+    if (typeof score !== 'number' || !Number.isFinite(score)) return null;
+    return Math.min(100, Math.max(0, Math.round(score)));
+}
+
+function buildIntelligenceAssessment(portMap, matchedMisconfigs, misconfigIds, logData, signals, attackChain, frameworkMeta = {}) {
+    const { unknownPortsList = [], knownPortsList: _knownPortsList = [], unmatchedMisconfigs = [], contradictions = [], warnings = [] } = frameworkMeta;
+    const effectiveLogData = logData || { hasLog: false, indicators: [], ips: [], domains: [], urls: [] };
+    const effectiveSignals = signals || { activeCorrelations: [], hasActiveThreat: false };
+    const evidenceSources = [];
+    if (portMap && portMap.size > 0) {
+        evidenceSources.push(`Open services: ${[...portMap.entries()].map(([port, details]) => `${details.service} (${port})`).join(', ')}`);
+    }
+    if (matchedMisconfigs && matchedMisconfigs.length > 0) {
+        evidenceSources.push(`Misconfigurations: ${matchedMisconfigs.map(m => m.finding).join('; ')}`);
+    }
+    if (effectiveLogData.hasLog) {
+        evidenceSources.push(`Telemetry: ${effectiveLogData.indicators.length} behavioral indicator(s)`);
+    }
+    if (effectiveSignals.activeCorrelations && effectiveSignals.activeCorrelations.length > 0) {
+        evidenceSources.push(`Correlations: ${effectiveSignals.activeCorrelations.length} rule(s) triggered`);
+    }
+    if (attackChain && attackChain.length > 0) {
+        evidenceSources.push(`Attack-chain phases: ${attackChain.filter(p => p.status !== 'NOT OBSERVED').length} supported phases`);
+    }
+
+    const totalObservations = [
+        ...[...(portMap ? [...portMap.entries()] : [])].map(([port, details]) => `${details.service}:${port}`),
+        ...(matchedMisconfigs || []).map(m => m.finding || m.id),
+        ...(effectiveLogData.indicators || []).map(i => i.type),
+        ...(effectiveLogData.ips || []),
+        ...(effectiveLogData.domains || []),
+        ...(effectiveLogData.urls || []),
+    ].filter(Boolean);
+    const uniqueObservationCount = new Set(totalObservations).size;
+    const duplicatePenalty = Math.min(28, Math.max(0, totalObservations.length - uniqueObservationCount) * 4);
+    const evidenceBase = (
+        (portMap && portMap.size > 0 ? 24 : 0) +
+        ((matchedMisconfigs && matchedMisconfigs.length > 0) ? 20 : 0) +
+        (effectiveLogData.hasLog ? 24 : 0) +
+        ((effectiveSignals.activeCorrelations && effectiveSignals.activeCorrelations.length > 0) ? 12 : 0) +
+        ((attackChain && attackChain.length > 0) ? 10 : 0)
+    );
+    const evidenceQuality = clampIntelligenceScore(evidenceBase - duplicatePenalty);
+
+    const coverageBase = (
+        (portMap && portMap.size > 0 ? 24 : 0) +
+        ((matchedMisconfigs && matchedMisconfigs.length > 0) ? 20 : 0) +
+        (effectiveLogData.hasLog ? 24 : 0) +
+        ((effectiveSignals.activeCorrelations && effectiveSignals.activeCorrelations.length > 0) ? 12 : 0) +
+        ((attackChain && attackChain.filter(stage => stage.status !== 'NOT OBSERVED').length) * 6)
+    );
+    const evidenceCoverage = clampIntelligenceScore(Math.max(0, coverageBase - (unknownPortsList.length * 8) - (unmatchedMisconfigs.length * 8)));
+
+    const observedStages = attackChain ? attackChain.filter(phase => phase.status === 'OBSERVED').length : 0;
+    const inferredStages = attackChain ? attackChain.filter(phase => phase.status === 'INFERRED').length : 0;
+    const evidenceCorrelation = clampIntelligenceScore(
+        25 +
+        ((effectiveSignals.activeCorrelations && effectiveSignals.activeCorrelations.length) * 12) +
+        (observedStages * 8) +
+        (inferredStages * 4) -
+        (effectiveSignals.activeCorrelations && effectiveSignals.activeCorrelations.length > 0 && uniqueObservationCount < 6 ? 12 : 0) -
+        (duplicatePenalty > 0 ? duplicatePenalty * 0.5 : 0)
+    );
+
+    const attackChainCompleteness = attackChain && attackChain.length > 0
+        ? clampIntelligenceScore((attackChain.filter(stage => stage.status !== 'HYPOTHETICAL').length / attackChain.length) * 100)
+        : null;
+
+    const mitreQuality = attackChain && attackChain.length > 0
+        ? clampIntelligenceScore(
+            (attackChain.reduce((sum, phase) => sum + Math.max(0, phase.techniques.length), 0) * 6) -
+            ((misconfigIds && misconfigIds.size === 0) ? 12 : 0) -
+            (duplicatePenalty * 0.5)
+        )
+        : null;
+
+    const contradictionsPenalty = (contradictions.length * 12) + (warnings.length * 5) + (unknownPortsList.length * 8) + (unmatchedMisconfigs.length * 6);
+    const evidenceValidation = clampIntelligenceScore(100 - contradictionsPenalty);
+
+    const hasAnyEvidence = Boolean(portMap && portMap.size > 0) || Boolean(matchedMisconfigs && matchedMisconfigs.length > 0) || effectiveLogData.hasLog || (effectiveSignals.activeCorrelations && effectiveSignals.activeCorrelations.length > 0) || (attackChain && attackChain.length > 0);
+
+    const dimensions = [
+        {
+            id: 'evidenceQuality',
+            label: 'Evidence Quality',
+            score: hasAnyEvidence ? evidenceQuality : null,
+            status: hasAnyEvidence ? 'OK' : 'NOT_ASSESSED',
+            explanation: hasAnyEvidence
+                ? 'Evidence quality measures whether the supporting observations are strong, unique, and directly relevant; duplicate or repetitive signals are de-duplicated so they cannot inflate the assessment.'
+                : 'No direct evidence was supplied, so evidence quality cannot be estimated reliably.',
+            evidence: evidenceSources.length > 0 ? evidenceSources : ['No corroborating evidence was supplied.'],
+            limitations: [
+                'Weakly sourced or highly repetitive evidence lowers quality even when the exposure appears serious.',
+                'Without validating the source, the assessment remains conservative.',
+            ],
+        },
+        {
+            id: 'evidenceCoverage',
+            label: 'Evidence Coverage',
+            score: hasAnyEvidence ? evidenceCoverage : null,
+            status: hasAnyEvidence ? 'OK' : 'NOT_ASSESSED',
+            explanation: hasAnyEvidence
+                ? 'Coverage reflects whether the data spans exposed services, misconfigurations, telemetry, correlation rules, and the reconstructed attack chain.'
+                : 'Coverage cannot be measured without at least one corroborating signal.',
+            evidence: evidenceSources.length > 0 ? evidenceSources : ['No indicators or findings were supplied.'],
+            limitations: ['Missing logs, missing misconfigurations, or incomplete service exposure reduce coverage without proving the absence of activity.'],
+        },
+        {
+            id: 'evidenceCorrelation',
+            label: 'Evidence Correlation',
+            score: hasAnyEvidence ? evidenceCorrelation : null,
+            status: hasAnyEvidence ? 'OK' : 'NOT_ASSESSED',
+            explanation: effectiveSignals.activeCorrelations && effectiveSignals.activeCorrelations.length > 0
+                ? `Multiple threat correlations match the exposure profile (${effectiveSignals.activeCorrelations.map(c => c.name).join(', ')}), providing stronger corroboration.`
+                : 'No meaningful cross-source correlation was established from the available evidence.',
+            evidence: effectiveSignals.activeCorrelations && effectiveSignals.activeCorrelations.length > 0
+                ? effectiveSignals.activeCorrelations.map(rule => `${rule.name} (${rule.likelihood})`)
+                : ['No consistent multi-source correlation was established.'],
+            limitations: ['A large number of weak or duplicated observations should not inflate correlation quality.'],
+        },
+        {
+            id: 'attackChainCompleteness',
+            label: 'Attack-Chain Completeness',
+            score: attackChain && attackChain.length > 0 ? attackChainCompleteness : null,
+            status: attackChain && attackChain.length > 0 ? 'OK' : 'NOT_ASSESSED',
+            explanation: attackChain && attackChain.length > 0
+                ? 'The reconstructed kill chain is assessed by how many phases have direct or strongly inferred support, rather than by the mere presence of a risky service.'
+                : 'No attack chain was reconstructed because the supplied data does not support a meaningful sequence.',
+            evidence: attackChain && attackChain.length > 0
+                ? attackChain.map(phase => `${phase.phase}: ${phase.status}`)
+                : ['No stage-level evidence available.'],
+            limitations: ['Incomplete telemetry or missing endpoint context can reduce chain completeness even when the exposure is real.'],
+        },
+        {
+            id: 'mitreMappingQuality',
+            label: 'MITRE ATT&CK Mapping Quality',
+            score: attackChain && attackChain.length > 0 ? mitreQuality : null,
+            status: attackChain && attackChain.length > 0 ? 'OK' : 'NOT_ASSESSED',
+            explanation: attackChain && attackChain.length > 0
+                ? 'MITRE mapping quality depends on whether the mapped tactics are supported by specific evidence in the chain and not just by a risky service profile.'
+                : 'MITRE mapping is not reliable without a partial chain or supporting telemetry.',
+            evidence: attackChain && attackChain.length > 0
+                ? attackChain.flatMap(phase => phase.techniques.map(tech => `${tech.name} (${tech.id || 'unmapped'})`)).slice(0, 10)
+                : ['No supported MITRE mapping available.'],
+            limitations: ['Mechanistic mappings based purely on exposure are inherently lower confidence than telemetry-backed mappings.'],
+        },
+        {
+            id: 'evidenceValidation',
+            label: 'Evidence Validation',
+            score: hasAnyEvidence ? evidenceValidation : null,
+            status: hasAnyEvidence ? 'OK' : 'NOT_ASSESSED',
+            explanation: contradictionsPenalty > 0 || unknownPortsList.length || unmatchedMisconfigs.length
+                ? 'Validation is reduced by contradictory findings, missing context, or unrecognized inputs; this keeps the intelligence assessment conservative.'
+                : 'Available evidence is internally consistent and does not show obvious conflicts or validation gaps.',
+            evidence: contradictionsPenalty > 0 || unknownPortsList.length || unmatchedMisconfigs.length
+                ? ['Contradictions or incomplete validation were detected.']
+                : ['No obvious contradictions or missing-validation flags were identified.'],
+            limitations: ['Without ground-truth validation or authoritative telemetry, accuracy remains limited to the supplied evidence.'],
+        },
+    ];
+
+    const scoredDimensions = dimensions.filter(d => typeof d.score === 'number' && Number.isFinite(d.score));
+    const intelligenceScore = scoredDimensions.length > 0
+        ? Math.round(scoredDimensions.reduce((sum, dimension) => sum + dimension.score, 0) / scoredDimensions.length)
+        : null;
+
+    const qualityLevel = intelligenceScore === null ? 'UNKNOWN' : classifyIntelligenceLevel(intelligenceScore, INTELLIGENCE_LEVEL_THRESHOLDS);
+
+    return {
+        score: intelligenceScore,
+        qualityLevel,
+        status: intelligenceScore === null ? 'NOT_ASSESSED' : 'ASSESSED',
+        thresholds: { ...INTELLIGENCE_LEVEL_THRESHOLDS },
+        dimensions,
+        methodology: 'Each of the six intelligence dimensions is scored independently and then averaged. Duplicate evidence, contradictions, and missing telemetry reduce the score; they do not prove absence. Risk and confidence are not used as proxies for intelligence quality.',
+        supportingEvidence: evidenceSources,
+        notes: [
+            'This section measures intelligence quality, not severity or exploitability.',
+            'A high-risk exposure can still have low intelligence if the evidence is incomplete or weak.',
+            'A low-risk environment can still have high intelligence when the evidence is strong and well correlated.',
+        ],
+    };
+}
+
+export { INTELLIGENCE_LEVEL_THRESHOLDS, normalizeIntelligenceLevel, classifyIntelligenceLevel, buildIntelligenceAssessment };
+
 function techniqueV4({ id, name, description, tactic, evidenceType = 'inferred', generatedBecause = [], confidence = 50 }) {
     let finalDescription = description;
     
@@ -2036,137 +2244,27 @@ function buildMitigations(portMap, matchedMisconfigs, misconfigIds, logData, sig
 // SOC NARRATIVE BUILDER
 // ─────────────────────────────────────────────────────────────────────────────
 
-function buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, activeCorrelations, frameworkMeta = {}, intelligenceLevel = 'LOW') {
-    const { hasActiveThreat } = signals;
-    void frameworkMeta;
+function buildNarrative(portMap, matchedMisconfigs, logData, riskScore, activeCorrelations, frameworkMeta = {}, intelligenceLevel = 'LOW') {
+    const observations = [
+        ...[...portMap.entries()].map(([port, service]) => `${service.service} on TCP/${port}`),
+        ...matchedMisconfigs.map(item => item.finding),
+        ...logData.indicators.map(item => item.description),
+    ];
+    const correlationNames = activeCorrelations.map(item => item.name);
+    const mode = normalizeAnalysisMode(intelligenceLevel);
+    const evidenceText = observations.length ? observations.join('; ') : 'No observations were extracted from the supplied data.';
+    const gapText = frameworkMeta.warnings?.length || frameworkMeta.contradictions?.length
+        ? 'Evidence warnings or contradictions limit the assessment.'
+        : 'No validation warnings were supplied.';
+    const riskText = `Exposure risk score: ${riskScore}/100. This is separate from intelligence quality and confidence.`;
 
-    const observed = [];
-    const assessed = [];
-    const modelled = [];
-
-    portMap.forEach((d, p) => {
-        if (d.isUnknownPort) {
-            observed.push(`Port ${p}/tcp (unknown service)`);
-        } else {
-            observed.push(`${d.service} on TCP/${p}`);
-        }
-    });
-    matchedMisconfigs.forEach(m => observed.push(m.finding));
-    logData.indicators.forEach(i => observed.push(`${i.description}`));
-
-    if (activeCorrelations.length > 0) {
-        activeCorrelations.forEach(c => assessed.push(c.threat.split('.')[0]));
+    if (mode === 'LOW') {
+        return `What ETH found: ${evidenceText}\n\n${gapText}\n\n${riskText}`;
     }
-
-    if (!hasActiveThreat) {
-        if (portMap.has('3389') || portMap.has('22')) modelled.push('Password spraying and valid account abuse targeting exposed remote access services');
-        if (portMap.has('445')) modelled.push('Lateral movement propagation if an initial foothold is obtained');
-        if (signals.hasDatabase) modelled.push('Data exfiltration and database dumping following compromise');
-    } else {
-        modelled.push('Establish persistence, deploy ransomware, or exfiltrate sensitive data');
+    if (mode === 'MEDIUM') {
+        return `Assessment: ${evidenceText}\n\nCorrelations: ${correlationNames.length ? correlationNames.join('; ') : 'No supported correlation was identified.'}\n\n${gapText}\n\n${riskText}`;
     }
-
-    let narrative = '';
-
-    if (intelligenceLevel === 'LOW') {
-        narrative += '1. What ETH Found\n';
-        narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No major exposures found.\n\n';
-        
-        narrative += '2. Why It Matters\n';
-        narrative += 'These services are exposed to the public internet, which means anyone can attempt to connect to them. Misconfigured services act as open doors for attackers.\n\n';
-        
-        narrative += '3. What A Hacker Could Do\n';
-        narrative += modelled.length > 0 ? modelled.map(m => `- ${m}`).join('\n') + '\n\n' : 'Opportunistic scanning and automated exploitation.\n\n';
-        
-        narrative += '4. Risk Level\n';
-        narrative += `Score: ${riskScore}/100. This number tells us how exposed you are based on what we found.\n\n`;
-        
-        narrative += '5. How To Fix It\n';
-        narrative += 'Restrict access using a firewall, enable Multi-Factor Authentication (MFA), and apply the latest security updates immediately.';
-        return narrative;
-    }
-
-    if (intelligenceLevel === 'MEDIUM') {
-        narrative += '1. Asset Summary\n';
-        narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No confirmed exposure findings verified from provided telemetry.\n\n';
-
-        narrative += '2. Exposure Analysis\n';
-        narrative += 'The identified services increase the external attack surface. Without proper access controls, they are vulnerable to enumeration, brute-forcing, and exploitation of legacy protocols.\n\n';
-
-        narrative += '3. Attack Opportunities\n';
-        narrative += modelled.length > 0 ? modelled.map(m => `- ${m}`).join('\n') + '\n\n' : 'Automated exploitation of known CVEs.\n\n';
-
-        narrative += '4. MITRE ATT&CK Mapping\n';
-        narrative += assessed.length > 0 ? assessed.join('\n') + '\n\n' : 'Initial Access via Public-Facing Applications.\n\n';
-
-        narrative += '5. Potential Impact\n';
-        narrative += 'Successful compromise may result in unauthorized access, data exposure, or lateral movement within the network.\n\n';
-
-        narrative += '6. Remediation\n';
-        narrative += 'Implement network segmentation, enforce strong authentication (MFA), and ensure regular vulnerability scanning and patching.';
-        return narrative;
-    }
-
-    if (intelligenceLevel === 'LE') {
-        narrative += '1. Investigation Summary\n';
-        if (hasActiveThreat) {
-            narrative += 'Telemetry corroborates active threat indicators. Immediate preservation of endpoint logs is recommended for chain of custody.\n\n';
-        } else {
-            narrative += 'No evidence of active compromise was identified in the submitted data. Further log review is recommended.\n\n';
-        }
-
-        narrative += '2. Observed Exposure\n';
-        narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No objective exposure findings verified from provided telemetry.\n\n';
-
-        narrative += '3. Potential Criminal Abuse\n';
-        narrative += 'Such exposure has historically been associated with unauthorized access incidents, ransomware deployment, and lateral movement activities.\n\n';
-
-        narrative += '4. Indicators Of Compromise\n';
-        narrative += logData.hasLog ? `${logData.indicators.length} behavioral indicator(s) extracted from telemetry.\n\n` : 'No log telemetry provided for IOC extraction.\n\n';
-
-        narrative += '5. MITRE Mapping\n';
-        narrative += assessed.length > 0 ? assessed.join('\n') + '\n\n' : 'T1190 - Exploit Public-Facing Application.\n\n';
-
-        narrative += '6. Evidence Notes\n';
-        narrative += `Evidentiary Confidence Score: ${riskScore}/100. Score reflects observed exposure severity based on objective telemetry.\n\n`;
-
-        narrative += '7. Recommended Actions\n';
-        narrative += 'Preserve all relevant firewall and authentication logs for forensic analysis. Subpoena access records if unauthorized intrusion is suspected.';
-        return narrative;
-    }
-
-    // Default HIGH
-    narrative += '1. Technical Assessment\n';
-    narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No confirmed exposure findings verified from provided telemetry.\n\n';
-
-    narrative += '2. Exposure Correlation\n';
-    if (hasActiveThreat) {
-        narrative += 'Active threat indicators and suspected compromise patterns were directly observed in telemetry. Immediate containment and incident response investigation is required.\n\n';
-    } else if (assessed.length > 0) {
-        narrative += `Correlation of identified weaknesses suggests an elevated risk profile concerning: ${assessed.join(', ')}.\n\n`;
-    } else {
-        narrative += 'Current exposure presents standard background noise risk. No targeted threat correlation established.\n\n';
-    }
-
-    narrative += '3. Attack Chain Simulation\n';
-    narrative += modelled.length > 0 ? 'Initial Access -> ' + modelled.join(' -> ') + '\n\n' : 'Initial Access -> Execution -> Persistence\n\n';
-
-    narrative += '4. MITRE ATT&CK Analysis\n';
-    narrative += assessed.length > 0 ? assessed.join('\n') + '\n\n' : 'T1190, T1078, T1110 mapped based on exposure profile.\n\n';
-
-    narrative += '5. Threat Actor Relevance\n';
-    narrative += 'Observed exposures correlate with historical lateral movement pathways and initial access vectors leveraged by ransomware operators and APT groups.\n\n';
-
-    narrative += '6. Detection Opportunities\n';
-    narrative += 'Monitor perimeter firewall logs for sequential scanning. Deploy behavioral analytics for abnormal authentication spikes and anomalous data transfers.\n\n';
-
-    narrative += '7. Defensive Weaknesses\n';
-    narrative += 'Exposed administrative interfaces, lack of strict access controls, and potential credential weaknesses represent significant defensive gaps.\n\n';
-
-    narrative += '8. Strategic Remediation\n';
-    narrative += 'Adopt a Zero Trust architecture. Decouple administrative services from the public internet, deploy EDR across all endpoints, and mandate continuous vulnerability validation.';
-
-    return narrative;
+    return `Advanced assessment: ${evidenceText}\n\nEvidence-backed correlations: ${correlationNames.length ? correlationNames.join('; ') : 'No supported correlation was identified.'}\n\nAttack stages remain classified individually; no stage is asserted from exposure alone.\n\n${gapText}\n\n${riskText}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2189,7 +2287,7 @@ export async function runAttackSimulationMock(payload, signal) {
     const { portMap, matchedMisconfigs, misconfigIds, logData,
              unknownPortsList, knownPortsList, unmatchedMisconfigs } = acquireData(payload);
     
-    const intelligenceLevel = payload.intelligenceLevel || 'LOW';
+    const intelligenceLevel = normalizeAnalysisMode(payload.intelligenceLevel);
 
     // ── Framework metadata bundle — passed to all downstream layers ───────────
     const frameworkMeta = { unknownPortsList, knownPortsList, unmatchedMisconfigs };
@@ -2206,8 +2304,20 @@ export async function runAttackSimulationMock(payload, signal) {
 
     // ── L6: Risk Scoring ──────────────────────────────────────────────────────
     const { score: riskScore, topFactors, riskAssessment } = calculateExposureRisk(portMap, matchedMisconfigs, logData, signals);
-    const confidenceScore = calculateConfidence(portMap, matchedMisconfigs, logData, frameworkMeta);
+    const confidenceScore = applyValidationConfidencePenalty(
+        calculateConfidence(portMap, matchedMisconfigs, logData, frameworkMeta),
+        { contradictions, warnings: validationWarnings }
+    );
     const accuracyAssessment = calculateAccuracyAssessment(portMap, matchedMisconfigs, logData, signals, frameworkMeta);
+    const intelligenceQualityAssessment = buildIntelligenceAssessment(
+        portMap,
+        matchedMisconfigs,
+        misconfigIds,
+        logData,
+        signals,
+        killChain,
+        { ...frameworkMeta, contradictions, warnings: validationWarnings }
+    );
 
     // ── IOC Generation ────────────────────────────────────────────────────────
     const iocList = buildIOCs(logData, validHashes);
@@ -2216,7 +2326,15 @@ export async function runAttackSimulationMock(payload, signal) {
     const mitigations = buildMitigations(portMap, matchedMisconfigs, misconfigIds, logData, signals);
 
     // ── Narrative ──────────────────────────────────────────────────────────────
-    const summary = buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, signals.activeCorrelations, frameworkMeta, intelligenceLevel);
+    const summary = buildNarrative(
+        portMap,
+        matchedMisconfigs,
+        logData,
+        riskScore,
+        signals.activeCorrelations,
+        { ...frameworkMeta, contradictions, warnings: validationWarnings },
+        intelligenceLevel
+    );
 
     // ── ETH Engine Operational Decision Protocol (ODP) v1 ─────────────────────
     const odpStep1 = {
@@ -2305,7 +2423,7 @@ export async function runAttackSimulationMock(payload, signal) {
         ? 'Unknown — Active investigation required'
         : 'Not determinable without endpoint telemetry';
 
-    return {
+    const result = {
         id: `eth-v4-${Date.now()}`,
         timestamp: new Date().toISOString(),
         intelligenceLevel,
@@ -2313,6 +2431,7 @@ export async function runAttackSimulationMock(payload, signal) {
         riskScore,
         confidenceScore,
         accuracyAssessment,
+        intelligenceQualityAssessment,
         summary,
         odp,              // The ETH ODP 8-step trace
         killChain,        // The newly structured 7-stage Cyber Kill Chain
@@ -2455,6 +2574,7 @@ export async function runAttackSimulationMock(payload, signal) {
         // Risk drivers
         topRiskFactors: topFactors,
     };
+    return applyAnalysisMode(result, intelligenceLevel);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2462,6 +2582,8 @@ export async function runAttackSimulationMock(payload, signal) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function analyzeAttackChain(payload, signal) {
+    const requestedMode = normalizeAnalysisMode(payload?.intelligenceLevel);
+    const request = { ...payload, intelligenceLevel: requestedMode };
     const enrichWithIntelligence = (result) => {
         const serviceIntelList = [];
         if (result.portIntelStatus && Array.isArray(result.portIntelStatus.knownPorts)) {
@@ -2500,10 +2622,10 @@ export function analyzeAttackChain(payload, signal) {
                 }
             });
         }
-        result.serviceIntelligence = serviceIntelList;
+        const enrichedResult = { ...result, serviceIntelligence: serviceIntelList };
 
         const misconfigIntelList = [];
-        if (result.verifiedFindings) {
+        if (enrichedResult.verifiedFindings) {
             const MISCONFIG_MAP = {
                 'AUTH-001': 'Weak Default Passwords',
                 'AUTH-002': 'No Multi-Factor Authentication (MFA)',
@@ -2524,7 +2646,7 @@ export function analyzeAttackChain(payload, signal) {
                 'SYS-005': 'Anonymous SMB Share Access'
             };
 
-            const misconfigs = result.verifiedFindings.filter(f => f.type === 'misconfiguration');
+            const misconfigs = enrichedResult.verifiedFindings.filter(f => f.type === 'misconfiguration');
             
             // We need to look up the original ID from MISCONFIG_DB based on the finding
             misconfigs.forEach(m => {
@@ -2541,15 +2663,23 @@ export function analyzeAttackChain(payload, signal) {
                 }
             });
         }
-        result.misconfigIntelligence = misconfigIntelList;
-
-        return result;
+        enrichedResult.misconfigIntelligence = misconfigIntelList;
+        if (!enrichedResult.intelligenceQualityAssessment) {
+            enrichedResult.intelligenceQualityAssessment = {
+                score: null,
+                qualityLevel: 'UNKNOWN',
+                status: 'NOT_ASSESSED',
+                dimensions: [],
+                methodology: 'The analysis response did not include a separately calculated intelligence-quality assessment.',
+            };
+        }
+        return applyAnalysisMode(enrichedResult, requestedMode);
     };
 
     if (import.meta.env.VITE_USE_MOCK !== 'false') {
-        return runAttackSimulationMock(payload, signal).then(enrichWithIntelligence);
+        return runAttackSimulationMock(request, signal).then(enrichWithIntelligence);
     }
-    return runAttackSimulation(payload, signal).then(enrichWithIntelligence);
+    return runAttackSimulation(request, signal).then(enrichWithIntelligence);
 }
 
 export default apiClient;

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
+import { useCallback, useEffect, useRef, useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useExplainHacker from './useExplainHacker';
 import AttackSimulationForm from './AttackSimulationForm';
-import ResultsPanel from './ResultsPanel';
+const ResultsPanel = lazy(() => import('./ResultsPanel'));
 import SEO from '@/components/SEO';
 import CILContextPanel from '@/components/CILContextPanel';
 import ThreatVisualization from './ThreatVisualization';
@@ -484,7 +484,13 @@ export default function ExplainTheHacker() {
                             <LoadingState onCancel={cancelAnalysis} />
                         ) : result ? (
                             <div>
-                                <ResultsPanel result={result} onNewAnalysis={clearResult} />
+                                <Suspense fallback={
+                                    <div role="status" style={{ minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.1em' }}>
+                                        LOADING DETAILED INTELLIGENCE...
+                                    </div>
+                                }>
+                                    <ResultsPanel result={result} onNewAnalysis={clearResult} />
+                                </Suspense>
                                 <Suspense fallback={
                                     <div style={{ height: '200px', background: '#0a0a0a', marginTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#333', letterSpacing: '0.1em' }}>LOADING VISUALIZATION...</span>

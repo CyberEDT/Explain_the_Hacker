@@ -58,8 +58,8 @@ export const attackSimulationSchema = z.object({
         .optional()
         .or(z.literal('')),
 
-    // Intelligence Level (LOW, MEDIUM, HIGH, LE)
-    intelligenceLevel: z.enum(['LOW', 'MEDIUM', 'HIGH', 'LE']).default('LOW'),
+    // Intelligence Level (LOW, MEDIUM, HIGH)
+    intelligenceLevel: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('LOW'),
 });
 
 // ─── Default Form Values ──────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ export const defaultFormValues = {
     openPorts: [],   // string[]
     misconfigurations: [],  // string[]
     logSnippet: '',   // string
-    intelligenceLevel: 'LOW', // 'LOW' | 'MEDIUM' | 'HIGH' | 'LE'
+    intelligenceLevel: 'LOW', // 'LOW' | 'MEDIUM' | 'HIGH'
 };
 
 // ─── Preset port lists for quick-add ─────────────────────────────────────────

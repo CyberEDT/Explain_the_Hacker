@@ -105,7 +105,6 @@ function IntelligenceLevelSelector({ value, onChange }) {
         { id: 'LOW', label: 'LOW', desc: 'Beginner-friendly, minimal jargon' },
         { id: 'MEDIUM', label: 'MEDIUM', desc: 'Operational security context' },
         { id: 'HIGH', label: 'HIGH', desc: 'Research-grade threat intel' },
-        { id: 'LE', label: 'LAW ENFORCEMENT', desc: 'Investigation & forensics focus' }
     ];
 
     return (
@@ -115,7 +114,7 @@ function IntelligenceLevelSelector({ value, onChange }) {
                 title="Intelligence Level"
                 subtitle="Select the depth and complexity of the resulting intelligence report."
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
                 {levels.map(level => {
                     const isSelected = value === level.id;
                     return (

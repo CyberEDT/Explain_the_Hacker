@@ -6,6 +6,8 @@
  * No Jest / Vitest required — pure Node.js.
  */
 
+import { readFileSync } from 'node:fs';
+
 // ─── Extract only the pure functions we need to test ──────────────────────────
 // We mirror the regex patterns directly from analysisAPI.js so we can test
 // them in isolation without ESM/Vite import issues.
@@ -91,6 +93,9 @@ function expect(actual) {
         toBe: (expected) => {
             if (actual !== expected) throw new Error(`Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
         },
+        notToBe: (expected) => {
+            if (actual === expected) throw new Error(`Expected value not to equal ${JSON.stringify(expected)}`);
+        },
         toContain: (item) => {
             if (!actual.includes(item)) throw new Error(`Expected array to contain "${item}", got [${actual.join(', ')}]`);
         },
@@ -103,11 +108,36 @@ function expect(actual) {
         toBeFalse: () => {
             if (actual !== false) throw new Error(`Expected false, got ${actual}`);
         },
+        toBeGreaterThan: (expected) => {
+            if (!(actual > expected)) throw new Error(`Expected ${actual} to be greater than ${expected}`);
+        },
+        toBeGreaterThanOrEqual: (expected) => {
+            if (!(actual >= expected)) throw new Error(`Expected ${actual} to be greater than or equal to ${expected}`);
+        },
+        toBeLessThan: (expected) => {
+            if (!(actual < expected)) throw new Error(`Expected ${actual} to be less than ${expected}`);
+        },
+        toBeLessThanOrEqual: (expected) => {
+            if (!(actual <= expected)) throw new Error(`Expected ${actual} to be less than or equal to ${expected}`);
+        },
         toHaveLength: (len) => {
             if (actual.length !== len) throw new Error(`Expected length ${len}, got ${actual.length}`);
         },
     };
 }
+
+const analysisHookSource = readFileSync(new URL('../../tools/ExplainTheHacker/useExplainHacker.js', import.meta.url), 'utf8');
+const labPageSource = readFileSync(new URL('../../tools/ExplainTheHacker/ExplainTheHacker.jsx', import.meta.url), 'utf8');
+
+test('COLD LOAD: analysis engine is imported only after a validated submit', () => {
+    expect(analysisHookSource.includes("import { analyzeAttackChain } from '@/services/analysisAPI'")).toBeFalse();
+    expect(analysisHookSource.includes("await import('@/services/analysisAPI')")).toBeTrue();
+});
+
+test('COLD LOAD: detailed results panel is lazy-loaded after results exist', () => {
+    expect(labPageSource.includes("const ResultsPanel = lazy(() => import('./ResultsPanel'))")).toBeTrue();
+    expect(labPageSource.includes("import ResultsPanel from './ResultsPanel'")).toBeFalse();
+});
 
 // ═════════════════════════════════════════════════════════════════════════════
 // TEST SUITE 1: CRIT-001 — SQL Injection Regex Fix
@@ -594,6 +624,8 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 
 const fs = await import('node:fs/promises');
 const analysisSource = await fs.readFile(new URL('../analysisAPI.js', import.meta.url), 'utf8');
+const { applyAnalysisMode, applyValidationConfidencePenalty } = await import('../ethAnalysisModes.js');
+const formSource = await fs.readFile(new URL('../../tools/ExplainTheHacker/AttackSimulationForm.jsx', import.meta.url), 'utf8');
 
 test('INTELLIGENCE: accuracy metadata explicitly marks unvalidated results', () => {
     const hasValidationFlag = analysisSource.includes("validationStatus: 'NOT_VALIDATED'") || analysisSource.includes('validationStatus: "NOT_VALIDATED"');
@@ -614,6 +646,243 @@ test('INTELLIGENCE: attack techniques carry evidence classification and traceabi
     expect(hasCredentialAccessMapping).toBeTrue();
     expect(hasRemoteServicesMapping).toBeTrue();
     expect(hasPrivEscMapping).toBeTrue();
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// INTELLIGENCE LEVEL REGRESSION SUITE
+// ═════════════════════════════════════════════════════════════════════
+
+const INTELLIGENCE_LEVEL_THRESHOLDS = Object.freeze({
+    LOW: { min: 0, max: 49 },
+    MEDIUM: { min: 50, max: 74 },
+    HIGH: { min: 75, max: 100 },
+});
+
+function classifyIntelligenceByScore(score) {
+    if (typeof score !== 'number' || !Number.isFinite(score)) return 'LOW';
+    if (score >= INTELLIGENCE_LEVEL_THRESHOLDS.HIGH.min) return 'HIGH';
+    if (score >= INTELLIGENCE_LEVEL_THRESHOLDS.MEDIUM.min) return 'MEDIUM';
+    return 'LOW';
+}
+
+function simulateIntelligence({ portCount = 0, misconfigCount = 0, logIndicators = 0, correlationCount = 0, observedStages = 0, inferredStages = 0, duplicateSignals = 0, contradictionCount = 0, unknownPorts = 0, unmatchedMisconfigs = 0, stageCount = 0, mitreMappings = 0 }) {
+    const uniqueSignals = Math.max(1, portCount + misconfigCount + logIndicators + correlationCount + observedStages + inferredStages + mitreMappings);
+    const duplicatePenalty = Math.min(28, duplicateSignals * 4);
+    const quality = Math.min(100, Math.max(0,
+        (portCount > 0 ? 24 : 0) +
+        (misconfigCount > 0 ? 20 : 0) +
+        (logIndicators > 0 ? 24 : 0) +
+        (correlationCount > 0 ? 12 : 0) +
+        (stageCount > 0 ? 10 : 0) -
+        duplicatePenalty
+    ));
+    const coverage = Math.min(100, Math.max(0,
+        (portCount > 0 ? 24 : 0) +
+        (misconfigCount > 0 ? 20 : 0) +
+        (logIndicators > 0 ? 24 : 0) +
+        (correlationCount > 0 ? 12 : 0) +
+        ((observedStages + inferredStages) * 6) -
+        (unknownPorts * 8) -
+        (unmatchedMisconfigs * 8)
+    ));
+    const correlation = Math.min(100, Math.max(0,
+        25 + (correlationCount * 12) + (observedStages * 8) + (inferredStages * 4) -
+        (correlationCount > 0 && uniqueSignals < 6 ? 12 : 0) -
+        (duplicatePenalty > 0 ? duplicatePenalty * 0.5 : 0)
+    ));
+    const completeness = stageCount > 0 ? Math.min(100, Math.max(0, ((observedStages + inferredStages) / stageCount) * 100)) : 0;
+    const mapping = stageCount > 0 ? Math.min(100, Math.max(0, (mitreMappings * 8) - (duplicatePenalty * 0.5))) : 0;
+    const validation = Math.max(0, 100 - (contradictionCount * 12) - (unknownPorts * 8) - (unmatchedMisconfigs * 6));
+    const score = Math.round((quality + coverage + correlation + completeness + mapping + validation) / 6);
+    return { score, level: classifyIntelligenceByScore(score) };
+}
+
+const validationSchemaSource = await fs.readFile(new URL('../../tools/ExplainTheHacker/validationSchema.js', import.meta.url), 'utf8');
+
+test('INTELLIGENCE: validation schema only allows LOW, MEDIUM, and HIGH', () => {
+    const hasThreeLevels = validationSchemaSource.includes("['LOW', 'MEDIUM', 'HIGH']") || validationSchemaSource.includes('"LOW", "MEDIUM", "HIGH"');
+    expect(hasThreeLevels).toBeTrue();
+    expect(validationSchemaSource.includes('LE')).toBeFalse();
+    expect(formSource.includes("id: 'LE'")).toBeFalse();
+});
+
+test('INTELLIGENCE: exposure-only assessment is LOW', () => {
+    const result = simulateIntelligence({ portCount: 2, misconfigCount: 0, logIndicators: 0, correlationCount: 0, observedStages: 0, inferredStages: 0, duplicateSignals: 0, contradictionCount: 0, unknownPorts: 0, unmatchedMisconfigs: 0, stageCount: 0, mitreMappings: 0 });
+    expect(result.level).toBe('LOW');
+});
+
+test('INTELLIGENCE: limited logs with a few correlated observations is MEDIUM', () => {
+    const result = simulateIntelligence({ portCount: 3, misconfigCount: 2, logIndicators: 3, correlationCount: 2, observedStages: 1, inferredStages: 2, duplicateSignals: 2, contradictionCount: 1, unknownPorts: 0, unmatchedMisconfigs: 0, stageCount: 5, mitreMappings: 4 });
+    expect(result.level).toBe('MEDIUM');
+});
+
+test('INTELLIGENCE: strong multi-source correlated evidence can be HIGH', () => {
+    const result = simulateIntelligence({ portCount: 5, misconfigCount: 4, logIndicators: 8, correlationCount: 4, observedStages: 3, inferredStages: 3, duplicateSignals: 1, contradictionCount: 0, unknownPorts: 0, unmatchedMisconfigs: 0, stageCount: 7, mitreMappings: 8 });
+    expect(result.level).toBe('HIGH');
+});
+
+test('INTELLIGENCE: duplicate evidence must not inflate the level', () => {
+    const clean = simulateIntelligence({ portCount: 4, misconfigCount: 3, logIndicators: 7, correlationCount: 4, observedStages: 2, inferredStages: 3, duplicateSignals: 0, contradictionCount: 0, unknownPorts: 0, unmatchedMisconfigs: 0, stageCount: 7, mitreMappings: 8 });
+    const duplicateInflated = simulateIntelligence({ portCount: 4, misconfigCount: 3, logIndicators: 7, correlationCount: 4, observedStages: 2, inferredStages: 3, duplicateSignals: 16, contradictionCount: 0, unknownPorts: 0, unmatchedMisconfigs: 0, stageCount: 7, mitreMappings: 8 });
+    expect(duplicateInflated.score).toBeLessThanOrEqual(clean.score);
+    expect(clean.level).toBe('HIGH');
+    expect(duplicateInflated.level).toBe('HIGH');
+});
+
+test('INTELLIGENCE: missing evidence reduces coverage without proving absence', () => {
+    const complete = simulateIntelligence({ portCount: 4, misconfigCount: 3, logIndicators: 6, correlationCount: 3, observedStages: 2, inferredStages: 2, duplicateSignals: 0, contradictionCount: 0, unknownPorts: 0, unmatchedMisconfigs: 0, stageCount: 7, mitreMappings: 6 });
+    const incomplete = simulateIntelligence({ portCount: 1, misconfigCount: 0, logIndicators: 0, correlationCount: 0, observedStages: 0, inferredStages: 0, duplicateSignals: 0, contradictionCount: 0, unknownPorts: 2, unmatchedMisconfigs: 2, stageCount: 0, mitreMappings: 0 });
+    expect(complete.level).toBe('HIGH');
+    expect(incomplete.level).toBe('LOW');
+    expect(incomplete.score).toBeLessThan(complete.score);
+});
+
+test('INTELLIGENCE: contradictory evidence reduces confidence', () => {
+    const consistent = simulateIntelligence({ portCount: 3, misconfigCount: 2, logIndicators: 5, correlationCount: 2, observedStages: 2, inferredStages: 2, duplicateSignals: 1, contradictionCount: 0, unknownPorts: 0, unmatchedMisconfigs: 0, stageCount: 7, mitreMappings: 6 });
+    const contradictory = simulateIntelligence({ portCount: 3, misconfigCount: 2, logIndicators: 5, correlationCount: 2, observedStages: 2, inferredStages: 2, duplicateSignals: 1, contradictionCount: 4, unknownPorts: 1, unmatchedMisconfigs: 2, stageCount: 7, mitreMappings: 6 });
+    expect(contradictory.score).toBeLessThan(consistent.score);
+    expect(contradictory.level).toBe('MEDIUM');
+});
+
+test('INTELLIGENCE: high risk with low intelligence remains possible', () => {
+    const riskHighLowIntel = simulateIntelligence({ portCount: 5, misconfigCount: 4, logIndicators: 1, correlationCount: 0, observedStages: 0, inferredStages: 1, duplicateSignals: 8, contradictionCount: 2, unknownPorts: 2, unmatchedMisconfigs: 2, stageCount: 2, mitreMappings: 1 });
+    expect(riskHighLowIntel.level).toBe('LOW');
+    expect(riskHighLowIntel.score).toBeLessThan(50);
+});
+
+test('INTELLIGENCE: low risk with high intelligence remains possible', () => {
+    const lowRiskHighIntel = simulateIntelligence({ portCount: 2, misconfigCount: 1, logIndicators: 7, correlationCount: 3, observedStages: 3, inferredStages: 2, duplicateSignals: 0, contradictionCount: 0, unknownPorts: 0, unmatchedMisconfigs: 0, stageCount: 7, mitreMappings: 8 });
+    expect(lowRiskHighIntel.level).toBe('HIGH');
+    expect(lowRiskHighIntel.score).toBeGreaterThanOrEqual(75);
+});
+
+const modeInvariantDataset = {
+    intelligenceLevel: 'LOW',
+    riskScore: 87,
+    confidenceScore: 43,
+    summary: 'Baseline summary',
+    verifiedFindings: [
+        { type: 'exposure', finding: 'SSH exposed on TCP/22', evidence: 'Submitted open port 22', confidence: 90 },
+        { type: 'telemetry', finding: 'Authentication failures observed', evidence: 'AUTH_FAILURE log indicator', confidence: 70 },
+    ],
+    inferredRisks: [
+        { id: 'CORR-006', risk: 'SSH credential brute-force risk', likelihood: 'POTENTIAL', mitreId: 'T1110.003', generatedBecause: ['Port 22 exposed', 'Rate limiting misconfiguration present'] },
+    ],
+    correlationIntelligence: [
+        { id: 'CORR-006', name: 'SSH credential brute-force risk', threat: 'The service and authentication configuration are correlated.', targetedBy: ['Reference group'], generatedBecause: ['Port 22 exposed', 'Rate limiting finding'] },
+    ],
+    hypotheticalScenarios: [
+        { phase: 'Persistence', scenario: 'Persistence could be attempted after execution.', prerequisites: [], evidenceReferences: [] },
+        { phase: 'Credential attack follow-up', scenario: 'Review whether failed attempts preceded a successful login.', prerequisites: ['Authentication logs around the observed failures'], evidenceReferences: ['AUTH_FAILURE log indicator'] },
+    ],
+    killChain: [
+        { phase: 'RECONNAISSANCE', status: 'INFERRED', explanation: 'A service is present in the supplied exposure data.', supportingEvidence: ['Submitted open port 22'], techniques: [{ id: 'T1595.001', name: 'Active Scanning', tactic: 'Reconnaissance', evidenceType: 'inferred', generatedBecause: ['Submitted open port 22'] }] },
+        { phase: 'COMMAND AND CONTROL', status: 'NOT OBSERVED', explanation: 'No C2-specific evidence was supplied.', supportingEvidence: [], techniques: [] },
+    ],
+    ATTACKMappings: [
+        { mitreId: 'T1595.001', tactic: 'Reconnaissance', technique: 'Active Scanning', evidenceType: 'inferred', generatedBecause: ['Submitted open port 22'] },
+    ],
+    mitigations: [
+        { id: 'MFA', title: 'Restrict and protect remote access', priority: 'high', description: 'Limit SSH access to approved administrative sources.' },
+    ],
+    riskAssessment: { overallScore: 87 },
+    topRiskFactors: [{ factor: 'SSH exposure', score: 40 }],
+    confidenceMetrics: { overallConfidence: 43, dataSources: ['No endpoint telemetry provided'] },
+    evidenceSummary: { observedFindings: ['SSH exposed from supplied data'], inferredRisks: ['Credential pathway is possible'], hypotheticalScenarios: [] },
+    iocList: [{ type: 'IP', value: '203.0.113.8', evidenceType: 'observed' }],
+    validationMetadata: { contradictions: ['A service inventory conflicts with a firewall record'], warnings: ['Port ownership is not independently validated.'] },
+    intelligenceQualityAssessment: {
+        score: 31,
+        qualityLevel: 'LOW',
+        status: 'ASSESSED',
+        dimensions: [{ id: 'evidenceCoverage', label: 'Evidence Coverage', score: 30, explanation: 'Only partial sources were supplied.' }],
+        methodology: 'Quality is computed from evidence, independently of analysis mode.',
+    },
+};
+
+const originalModeDataset = JSON.stringify(modeInvariantDataset);
+const lowModeResult = applyAnalysisMode(modeInvariantDataset, 'LOW');
+const mediumModeResult = applyAnalysisMode(modeInvariantDataset, 'MEDIUM');
+const highModeResult = applyAnalysisMode(modeInvariantDataset, 'HIGH');
+
+test('ANALYSIS MODE: selected mode is propagated and API compatibility field remains', () => {
+    expect(lowModeResult.intelligenceLevel).toBe('LOW');
+    expect(mediumModeResult.intelligenceLevel).toBe('MEDIUM');
+    expect(highModeResult.intelligenceLevel).toBe('HIGH');
+    expect(highModeResult.analysisMode).toBe('HIGH');
+    expect(applyAnalysisMode(modeInvariantDataset, 'LE').intelligenceLevel).toBe('HIGH');
+});
+
+test('ANALYSIS MODE: identical source data yields meaningfully distinct report depth', () => {
+    expect(lowModeResult.analysisReport.executiveSummary).notToBe(mediumModeResult.analysisReport.executiveSummary);
+    expect(mediumModeResult.analysisReport.executiveSummary).notToBe(highModeResult.analysisReport.executiveSummary);
+    expect(lowModeResult.analysisReport.correlations).toBe(undefined);
+    expect(mediumModeResult.analysisReport.correlations.length).toBe(1);
+    expect(mediumModeResult.analysisReport.attackPath.length).toBe(2);
+    expect(highModeResult.analysisReport.investigation.stageReview.length).toBe(2);
+    expect(highModeResult.analysisReport.alternativeHypotheses.length).toBe(1);
+    expect(highModeResult.analysisReport.detectionOpportunities.length).toBe(0);
+    expect(lowModeResult.analysisReport.warnings.length).toBeGreaterThan(0);
+});
+
+test('ANALYSIS MODE: findings, evidence, chain, risk, and confidence remain invariant', () => {
+    for (const result of [mediumModeResult, highModeResult]) {
+        expect(JSON.stringify(result.verifiedFindings)).toBe(JSON.stringify(lowModeResult.verifiedFindings));
+        expect(JSON.stringify(result.analysisReport.findings)).toBe(JSON.stringify(lowModeResult.analysisReport.findings));
+        expect(JSON.stringify(result.inferredRisks)).toBe(JSON.stringify(lowModeResult.inferredRisks));
+        expect(JSON.stringify(result.evidenceSummary)).toBe(JSON.stringify(lowModeResult.evidenceSummary));
+        expect(JSON.stringify(result.iocList)).toBe(JSON.stringify(lowModeResult.iocList));
+        expect(JSON.stringify(result.validationMetadata)).toBe(JSON.stringify(lowModeResult.validationMetadata));
+        expect(JSON.stringify(result.killChain)).toBe(JSON.stringify(lowModeResult.killChain));
+        expect(result.riskScore).toBe(lowModeResult.riskScore);
+        expect(result.confidenceScore).toBe(lowModeResult.confidenceScore);
+        expect(JSON.stringify(result.intelligenceQualityAssessment)).toBe(JSON.stringify(lowModeResult.intelligenceQualityAssessment));
+    }
+    expect(JSON.stringify(modeInvariantDataset)).toBe(originalModeDataset);
+});
+
+test('ANALYSIS MODE: quality and risk do not increase when HIGH mode is selected', () => {
+    expect(highModeResult.intelligenceQualityAssessment.qualityLevel).toBe('LOW');
+    expect(highModeResult.intelligenceQualityAssessment.score).toBe(31);
+    expect(highModeResult.riskScore).toBe(87);
+    expect(highModeResult.confidenceScore).toBe(43);
+});
+
+test('ANALYSIS MODE: unsupported stages and hypotheses remain explicitly classified', () => {
+    const sourceStages = modeInvariantDataset.killChain.map(stage => stage.phase);
+    const reportedStages = highModeResult.analysisReport.investigation.stageReview.map(stage => stage.phase);
+    expect(JSON.stringify(reportedStages)).toBe(JSON.stringify(sourceStages));
+    expect(highModeResult.analysisReport.attackPath[1].status).toBe('NOT_OBSERVED');
+    expect(highModeResult.analysisReport.alternativeHypotheses[0].classification).toBe('HYPOTHETICAL');
+});
+
+test('ANALYSIS MODE: insufficient quality remains UNKNOWN across every mode', () => {
+    const insufficient = {
+        verifiedFindings: [],
+        inferredRisks: [],
+        hypotheticalScenarios: [],
+        killChain: [],
+        ATTACKMappings: [],
+        mitigations: [],
+        intelligenceQualityAssessment: { score: null, qualityLevel: 'UNKNOWN', status: 'NOT_ASSESSED', dimensions: [] },
+    };
+    for (const mode of ['LOW', 'MEDIUM', 'HIGH']) {
+        const result = applyAnalysisMode(insufficient, mode);
+        expect(result.intelligenceQualityAssessment.qualityLevel).toBe('UNKNOWN');
+        expect(result.intelligenceQualityAssessment.score).toBe(null);
+    }
+});
+
+test('ANALYSIS MODE: contradictory evidence reduces confidence independent of mode', () => {
+    const baseConfidence = 80;
+    const withoutContradictions = applyValidationConfidencePenalty(baseConfidence);
+    const withContradictions = applyValidationConfidencePenalty(baseConfidence, {
+        contradictions: ['conflicting service state'],
+        warnings: ['source not validated'],
+    });
+    expect(withContradictions).toBeLessThan(withoutContradictions);
+    expect(applyAnalysisMode({ ...modeInvariantDataset, confidenceScore: withContradictions }, 'LOW').confidenceScore)
+        .toBe(applyAnalysisMode({ ...modeInvariantDataset, confidenceScore: withContradictions }, 'HIGH').confidenceScore);
 });
 
 // ═════════════════════════════════════════════════════════════════════════════

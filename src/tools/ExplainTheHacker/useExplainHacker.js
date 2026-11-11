@@ -23,7 +23,7 @@ import {
     stripHtml,
     stripScripts,
 } from './validationSchema';
-import { analyzeAttackChain } from '@/services/analysisAPI';
+import { normalizeAnalysisMode } from '@/services/ethAnalysisModes';
 import useSimulationHistory from './useSimulationHistory';
 
 
@@ -98,7 +98,7 @@ function sanitizePriority(value) {
  * @param {unknown} raw  Raw response from analyzeAttackChain()
  * @returns {AnalysisResult}  Normalized, sanitized result ready for the UI layer
  */
-function normalizeResult(raw) {
+function normalizeResult(raw, requestedMode = raw?.intelligenceLevel) {
     if (!raw || typeof raw !== 'object') {
         throw new Error('Invalid response format received from the analysis engine.');
     }
@@ -242,6 +242,27 @@ function normalizeResult(raw) {
     const ATTACKMappings = Array.isArray(raw.ATTACKMappings) ? sanitizeJson(raw.ATTACKMappings) : [];
     const riskAssessment = raw.riskAssessment && typeof raw.riskAssessment === 'object' ? sanitizeJson(raw.riskAssessment) : {};
     const remediationPriority = Array.isArray(raw.remediationPriority) ? sanitizeJson(raw.remediationPriority) : mitigations;
+    const rawQuality = raw.intelligenceQualityAssessment && typeof raw.intelligenceQualityAssessment === 'object'
+        ? raw.intelligenceQualityAssessment
+        : null;
+    const intelligenceQualityAssessment = rawQuality ? {
+        ...sanitizeJson(rawQuality),
+        score: Number.isFinite(rawQuality.score) ? sanitizeNumber(rawQuality.score, { min: 0, max: 100, fallback: 0 }) : null,
+        qualityLevel: ['LOW', 'MEDIUM', 'HIGH', 'UNKNOWN'].includes(rawQuality.qualityLevel) ? rawQuality.qualityLevel : 'UNKNOWN',
+        status: sanitizeText(rawQuality.status, 'NOT_ASSESSED'),
+        dimensions: Array.isArray(rawQuality.dimensions) ? sanitizeJson(rawQuality.dimensions) : [],
+        methodology: sanitizeText(rawQuality.methodology, 'Quality assessment methodology was not supplied.'),
+    } : {
+        score: null,
+        qualityLevel: 'UNKNOWN',
+        status: 'NOT_ASSESSED',
+        dimensions: [],
+        methodology: 'The analysis response did not include a separately calculated intelligence-quality assessment.',
+    };
+    const analysisMode = normalizeAnalysisMode(requestedMode);
+    const analysisReport = raw.analysisReport && typeof raw.analysisReport === 'object'
+        ? sanitizeJson(raw.analysisReport)
+        : null;
 
     // ── UNKNOWN PORT HANDLING FRAMEWORK — Normalize framework output ──────────
     const frameworkWarnings = Array.isArray(raw.frameworkWarnings)
@@ -264,7 +285,10 @@ function normalizeResult(raw) {
         timestamp,
         riskScore,
         confidenceScore,
-        intelligenceLevel: raw.intelligenceLevel || 'LOW',
+        intelligenceLevel: analysisMode,
+        analysisMode,
+        analysisReport,
+        intelligenceQualityAssessment,
         accuracyAssessment,
         summary,
         attackPaths,
@@ -384,7 +408,7 @@ export default function useExplainHacker() {
     }, []);
 
     const setIntelligenceLevel = useCallback((level) => {
-        setFormValues(prev => ({ ...prev, intelligenceLevel: level }));
+        setFormValues(prev => ({ ...prev, intelligenceLevel: normalizeAnalysisMode(level) }));
     }, []);
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -429,7 +453,10 @@ export default function useExplainHacker() {
         const item = history.find(e => e.id === id);
         if (item && item.fullResult && item.savedFormValues) {
             if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
-            setFormValues(item.savedFormValues);
+            setFormValues({
+                ...item.savedFormValues,
+                intelligenceLevel: normalizeAnalysisMode(item.savedFormValues.intelligenceLevel),
+            });
             setResult(item.fullResult);
             setError(null);
             setFieldErrors({});
@@ -472,12 +499,13 @@ export default function useExplainHacker() {
         abortRef.current = controller;
 
         try {
-            // ⑤ Call API service (real or mock depending on VITE_USE_MOCK)
+            // Load the engine only when a validated analysis is submitted.
+            const { analyzeAttackChain } = await import('@/services/analysisAPI');
             const raw = await analyzeAttackChain(parsed.data, controller.signal);
 
             // ⑥ Normalize — reshape raw response to stable typed contract
             //    Throws if the response is completely malformed
-            const normalized = normalizeResult(raw);
+            const normalized = normalizeResult(raw, parsed.data.intelligenceLevel);
 
             // ⑦ Store normalized result — components only ever see clean data
             setResult(normalized);
