@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cluster",
+  "type": "object",
+  "required": [
+    "cluster_id",
+    "cluster_name",
+    "associated_keywords",
+    "priority",
+    "landing_page_recommendation",
+    "limitations"
+  ],
+  "properties": {
+    "priority": {
+      "enum": [
+        "P0",
+        "P1",
+        "P2",
+        "research_required"
+      ]
+    }
+  }
+}

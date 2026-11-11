@@ -1,36 +1,37 @@
-/**
- * analysisAPI.js — CyberEDT ETH Engine v3.0
+﻿/**
+ * analysisAPI.js â€” CyberEDT ETH Engine v3.0
  *
- * ┌─ 6-Layer Intelligence Architecture ────────────────────────────────────────┐
- * │  L1  Data Acquisition     — parse, extract, classify all inputs            │
- * │  L2  Evidence Validation  — validate IOCs, CVEs, hashes, chain integrity   │
- * │  L3  Threat Correlation   — port/misconfig/log combination analysis        │
- * │  L4  MITRE ATT&CK Mapping — evidence-gated technique selection             │
- * │  L5  Predictive Modeling  — 7-phase kill chain, always present             │
- * │  L6  Risk Scoring         — exposure × exploitability × likelihood         │
- * └────────────────────────────────────────────────────────────────────────────┘
+ * â”Œâ”€ 6-Layer Intelligence Architecture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+ * â”‚  L1  Data Acquisition     â€” parse, extract, classify all inputs            â”‚
+ * â”‚  L2  Evidence Validation  â€” validate IOCs, CVEs, hashes, chain integrity   â”‚
+ * â”‚  L3  Threat Correlation   â€” port/misconfig/log combination analysis        â”‚
+ * â”‚  L4  MITRE ATT&CK Mapping â€” evidence-gated technique selection             â”‚
+ * â”‚  L5  Predictive Modeling  â€” 7-phase kill chain, always present             â”‚
+ * â”‚  L6  Risk Scoring         â€” exposure Ã— exploitability Ã— likelihood         â”‚
+ * â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
  *
  * Evidence Classification:
- *   VERIFIED    — directly observed in provided data
- *   INFERRED    — logically derived from known TTP patterns
- *   HYPOTHETICAL — possible future attacker action
+ *   VERIFIED    â€” directly observed in provided data
+ *   INFERRED    â€” logically derived from known TTP patterns
+ *   HYPOTHETICAL â€” possible future attacker action
  *
  * Predictive Labels (sub-findings):
  *   POSSIBLE (< 40% likelihood)
- *   POTENTIAL (40–70% likelihood)
+ *   POTENTIAL (40â€“70% likelihood)
  *   LIKELY    (> 70% likelihood)
- *   CONFIRMED — only when log evidence directly supports it
+ *   CONFIRMED â€” only when log evidence directly supports it
  */
 
 import { serviceIntelligenceData } from '../data/serviceIntelligenceData.js';
 import { mitreIntelligenceData } from '../data/mitreIntelligenceData.js';
 import { misconfigIntelligenceData } from '../data/misconfigIntelligenceData.js';
+import { COMBOS } from '../data/attackCombinationsData.js';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// INFRASTRUCTURE (Axios, Auth, Error Handling) — unchanged
-// ═══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// INFRASTRUCTURE (Axios, Auth, Error Handling) â€” unchanged
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.cyberedt.io/v1',
@@ -91,17 +92,17 @@ export const getMitreTechniques   = (ports)           => apiClient.get('/mitre/t
 export const getCveContext        = (cveId)           => apiClient.get(`/intel/cve/${cveId}`).then(r => r.data);
 export const checkApiHealth       = async ()          => { const t0 = Date.now(); const r = await apiClient.get('/health'); return { ...r.data, latencyMs: Date.now() - t0 }; };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ██████████████████████████████████████████████████████████████████████████████
-// ETH ENGINE v3 — EVIDENCE-BASED CYBER EXPOSURE INTELLIGENCE
-// ██████████████████████████████████████████████████████████████████████████████
-// ═══════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ
+// ETH ENGINE v3 â€” EVIDENCE-BASED CYBER EXPOSURE INTELLIGENCE
+// â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // INTELLIGENCE DATABASES
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-/** Port → Service intelligence with exploitability ratings */
+/** Port â†’ Service intelligence with exploitability ratings */
 const PORT_INTEL = {
     '21':    { service:'FTP',          proto:'TCP', risk:'high',     exploitability:0.72, cve:'CVE-2015-3306', category:'remote-access',  note:'Cleartext file transfer; anonymous login common on misconfigured hosts' },
     '22':    { service:'SSH',          proto:'TCP', risk:'medium',   exploitability:0.45, category:'remote-access',  note:'Encrypted remote shell; brute-force and stolen-key attacks are primary vectors' },
@@ -119,7 +120,7 @@ const PORT_INTEL = {
     '1433':  { service:'MSSQL',        proto:'TCP', risk:'critical', exploitability:0.85, category:'database',       note:'SQL Server; public exposure enables direct database access and xp_cmdshell abuse' },
     '1521':  { service:'Oracle DB',    proto:'TCP', risk:'critical', exploitability:0.80, category:'database',       note:'Oracle listener; public exposure enables TNS poisoning and data exfiltration' },
     '3306':  { service:'MySQL',        proto:'TCP', risk:'critical', exploitability:0.82, category:'database',       note:'MySQL; public exposure with weak credentials enables full DB dump' },
-    '3389':  { service:'RDP',          proto:'TCP', risk:'critical', exploitability:0.87, cve:'CVE-2019-0708', category:'remote-access',  note:'BlueKeep, credential brute-force, session hijacking — top ransomware ingress vector' },
+    '3389':  { service:'RDP',          proto:'TCP', risk:'critical', exploitability:0.87, cve:'CVE-2019-0708', category:'remote-access',  note:'BlueKeep, credential brute-force, session hijacking â€” top ransomware ingress vector' },
     '5432':  { service:'PostgreSQL',   proto:'TCP', risk:'critical', exploitability:0.78, category:'database',       note:'PostgreSQL; public exposure enables COPY TO/FROM PROGRAM RCE' },
     '5900':  { service:'VNC',          proto:'TCP', risk:'high',     exploitability:0.75, category:'remote-access',  note:'VNC frequently lacks strong auth; common ransomware ingress path' },
     '6379':  { service:'Redis',        proto:'TCP', risk:'critical', exploitability:0.93, category:'database',       note:'No-auth Redis enables config writes for SSH key injection and RCE' },
@@ -300,7 +301,7 @@ const MISCONFIG_DB = [
       detail:'Public API documentation reveals internal service structures and query options, significantly reducing reconnaissance cost for API tampering.',
       mitre:'T1592.002', amplifies:['web'], severityDelta:22 },
 
-    // Public database exposure — critical pattern for common misconfig phrases
+    // Public database exposure â€” critical pattern for common misconfig phrases
     { id:'NOAUTH-004', pattern:/(public.*database|database.*public|database.*exposed|database.*internet|internet.*database|db.*exposed|exposed.*db|public.*db|mssql.*public|mysql.*public|postgres.*exposed|public.*sql|sql.*publicly|database.*no.*auth|unauthenticated.*database)/i,
       category:'Authentication', risk:'critical', exploitability:0.88,
       finding:'Database service exposed to the public internet',
@@ -314,7 +315,7 @@ const MISCONFIG_DB = [
       mitre:'T1592', amplifies:['infrastructure'], severityDelta:20 },
 ];
 
-/** Threat correlation rules — combinations that elevate risk above their individual sum */
+/** Threat correlation rules â€” combinations that elevate risk above their individual sum */
 const CORRELATION_RULES = [
     {
         id:'CORR-001', name:'RDP Ransomware Ingress Path',
@@ -347,7 +348,7 @@ const CORRELATION_RULES = [
     {
         id:'CORR-005', name:'Docker API Full Host Compromise',
         requires: { ports:['2375'], misconfigIds:[] },
-        threat:'Unauthenticated Docker socket enables privileged container creation with host filesystem mount — equivalent to root shell on the host.',
+        threat:'Unauthenticated Docker socket enables privileged container creation with host filesystem mount â€” equivalent to root shell on the host.',
         likelihood:'LIKELY', confidenceBoost:35, riskBoost:40, mitre:'T1610',
         targetedBy:['Cryptominers', 'TeamTNT', 'Kinsing'],
     },
@@ -396,7 +397,7 @@ const CORRELATION_RULES = [
     {
         id:'CORR-012', name:'MongoDB Ransom Attack Pattern',
         requires: { ports:['27017'], misconfigIds:[] },
-        threat:'Exposed MongoDB without auth is a known ransomware target — attackers wipe data and leave ransom notes.',
+        threat:'Exposed MongoDB without auth is a known ransomware target â€” attackers wipe data and leave ransom notes.',
         likelihood:'LIKELY', confidenceBoost:28, riskBoost:30, mitre:'T1485',
         targetedBy:['MongoDB ransom campaigns', 'Automated wipe-and-ransom bots'],
     },
@@ -480,20 +481,20 @@ const CORRELATION_RULES = [
     {
         id:'CORR-024', name:'EternalBlue + Anonymous SMB Wormable Propagation',
         requires: { ports:['445'], misconfigIds:['PROTO-003', 'PROTO-002'] },
-        threat:'SMBv1 + MS17-010 + Anonymous SMB shares creates a zero-authentication wormable attack chain. An attacker can enumerate shares without credentials, exploit EternalBlue for SYSTEM-level RCE, and propagate laterally across the entire network segment without any user interaction — identical conditions to WannaCry and NotPetya.',
+        threat:'SMBv1 + MS17-010 + Anonymous SMB shares creates a zero-authentication wormable attack chain. An attacker can enumerate shares without credentials, exploit EternalBlue for SYSTEM-level RCE, and propagate laterally across the entire network segment without any user interaction â€” identical conditions to WannaCry and NotPetya.',
         likelihood:'LIKELY', confidenceBoost:38, riskBoost:42, mitre:'T1210',
         cve:'CVE-2017-0144', targetedBy:['WannaCry', 'NotPetya', 'EternalBlue mass-exploitation campaigns'],
     },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // LAYER 1: DATA ACQUISITION
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function acquireData(payload) {
     const { openPorts = [], misconfigurations = [], logSnippet = '' } = payload;
 
-    // ── UNKNOWN PORT HANDLING FRAMEWORK — Phase 1: Data Acquisition ──────────
+    // â”€â”€ UNKNOWN PORT HANDLING FRAMEWORK â€” Phase 1: Data Acquisition â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Map ports to intelligence profiles, tagging unknown ones explicitly.
     const portMap = new Map();
     const unknownPortsList = [];
@@ -505,7 +506,7 @@ function acquireData(payload) {
             portMap.set(String(port), { ...knownIntel, isUnknownPort: false });
             knownPortsList.push(String(port));
         } else {
-            // Unknown port — use minimal generic profile, never fabricate service details
+            // Unknown port â€” use minimal generic profile, never fabricate service details
             portMap.set(String(port), {
                 service: `Unknown(${port})`,
                 proto: 'TCP',
@@ -519,7 +520,7 @@ function acquireData(payload) {
         }
     });
 
-    // ── UNKNOWN PORT HANDLING FRAMEWORK — Phase 2: Misconfig Classification ─
+    // â”€â”€ UNKNOWN PORT HANDLING FRAMEWORK â€” Phase 2: Misconfig Classification â”€
     // Track which user-supplied misconfig text was NOT matched in the DB.
     const miscStr = misconfigurations.join('\n');
     const matchedMisconfigs = MISCONFIG_DB.filter(m => m.pattern.test(miscStr));
@@ -590,7 +591,7 @@ function extractLogTelemetry(logSnippet) {
         { type:'AUTH_SUCCESS',
           regex:/(?:accepted\s+(?:password|publickey)|session\s+opened\s+for|authenticated\s+successfully|login\s+(?:succeeded|success(?:ful)?))/i,
           desc:'Successful authentication events detected in log data', ttp:'T1078', severity:'high' },
-        // QA-FIX (CRIT-001): Tightened — require SQL structural markers to prevent false positives
+        // QA-FIX (CRIT-001): Tightened â€” require SQL structural markers to prevent false positives
         // from natural language containing "select", "from", "insert", etc.
         { type:'SQLI_PATTERN',
           regex:/(?:UNION\s+(?:ALL\s+)?SELECT\s|SELECT\s+[\w*]+\s+FROM\s+\w|DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?\w|INSERT\s+INTO\s+\w+\s*\(|'\s*(?:OR|AND)\s+'\d+'='|;\s*(?:DROP|DELETE|UPDATE)\s+\w|EXEC(?:UTE)?\s*\(|xp_cmdshell|WAITFOR\s+DELAY)/i,
@@ -605,7 +606,7 @@ function extractLogTelemetry(logSnippet) {
         // to avoid triggering on tool name mentions in documentation or admin notes
         { type:'SCANNER_ACTIVITY',
           regex:/(?:nmap\s+-[a-z]|masscan\s+-[a-z]|zmap\s+-[a-z]|nikto\s+-[a-z]|gobuster\s+(?:dir|dns|vhost)|dirb\s+https?|nuclei\s+-[a-z]|sqlmap\s+-[a-z]|shodan\.io\/host|discovered\s+\d+\s+open\s+port)/i,
-          desc:'Security scanning tool activity patterns detected in log data (source context unknown — may represent self-initiated or external scan)', ttp:'T1595', severity:'medium' },
+          desc:'Security scanning tool activity patterns detected in log data (source context unknown â€” may represent self-initiated or external scan)', ttp:'T1595', severity:'medium' },
         { type:'RANSOMWARE',
           regex:/(?:ransomware|your\s+files\s+(?:have\s+been|are)\s+encrypted|ransom\s+note|pay\s+.*bitcoin|decrypt.*key)\b|(?:\.locked|\.encrypted|\.enc)(?:\s|$|["'])|(?:ryuk|conti|lockbit|revil|darkside|blackcat|clop|hive)\b/i,
           desc:'Ransomware-associated strings or file extension patterns in log data', ttp:'T1486', severity:'critical' },
@@ -624,7 +625,7 @@ function extractLogTelemetry(logSnippet) {
         { type:'PERSISTENCE',
           regex:/(?:schtasks|scheduled\s+task|crontab\s+-[el]|\[HKEY[_A-Z]+\\Run(?:Once)?\]|startup\s+(?:folder|script)|sc\.exe\s+create|new\s+service\s+install|webshell|backdoor\s+(?:install|drop))/i,
           desc:'Persistence mechanism installation patterns in log data', ttp:'T1053', severity:'high' },
-        // QA-FIX (MIN-005): 'hostname' alone removed — requires command-execution context
+        // QA-FIX (MIN-005): 'hostname' alone removed â€” requires command-execution context
         { type:'RECON_INDICATOR',
           regex:/(?:whoami\s+\/|ipconfig\s+\/all|ifconfig\s+-a|net\s+(?:user|group|localgroup)\s+|systeminfo\b|uname\s+-a|id\s*;|cat\s+\/etc\/(?:passwd|shadow|hosts)|arp\s+-a|route\s+print)/i,
           desc:'Post-access reconnaissance command patterns in log data', ttp:'T1082', severity:'high' },
@@ -639,15 +640,15 @@ function extractLogTelemetry(logSnippet) {
     return { ips, domains, hashes, urls, emails, ja3, yara, hasLog:true, indicators, rawLog:logSnippet };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // LAYER 2: EVIDENCE VALIDATION
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function validateEvidence(portMap, matchedMisconfigs, logData, frameworkMeta = {}) {
     const validationResults = { passed:[], failed:[], warnings:[] };
     const { unknownPortsList = [], knownPortsList = [], unmatchedMisconfigs = [] } = frameworkMeta;
 
-    // ── UNKNOWN PORT HANDLING FRAMEWORK — Phase 3: Evidence Validation ───────
+    // â”€â”€ UNKNOWN PORT HANDLING FRAMEWORK â€” Phase 3: Evidence Validation â”€â”€â”€â”€â”€â”€â”€
     // Inject structured framework warnings per the UX rules spec.
 
     // Rule UX-1: Unknown ports in submitted scan
@@ -661,12 +662,12 @@ function validateEvidence(portMap, matchedMisconfigs, logData, frameworkMeta = {
     // Rule UX-2: Unmatched misconfiguration entries
     unmatchedMisconfigs.forEach(entry => {
         validationResults.warnings.push(
-            `Misconfiguration not recognized in ETH knowledge base: "${entry.slice(0, 80)}${entry.length > 80 ? '…' : ''}". ` +
+            `Misconfiguration not recognized in ETH knowledge base: "${entry.slice(0, 80)}${entry.length > 80 ? 'â€¦' : ''}". ` +
             `Defaulting to general service exposure analysis. Recognized patterns include default credentials, unpatched software, open CORS, SMBv1, and similar.`
         );
     });
 
-    // Rule UX-3: All ports unknown — escalate to a consolidated warning
+    // Rule UX-3: All ports unknown â€” escalate to a consolidated warning
     if (unknownPortsList.length > 0 && knownPortsList.length === 0 && matchedMisconfigs.length === 0) {
         validationResults.warnings.push(
             `Insufficient information for targeted attacker analysis. No known ports or misconfigurations were recognized. ` +
@@ -682,12 +683,12 @@ function validateEvidence(portMap, matchedMisconfigs, logData, frameworkMeta = {
         );
     }
 
-    // Hash validation — full MD5, SHA1, SHA256 only. Truncated hashes excluded.
+    // Hash validation â€” full MD5, SHA1, SHA256 only. Truncated hashes excluded.
     logData.hashes.forEach(h => {
         if (/^(?:[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$/.test(h)) {
             validationResults.passed.push(`Hash ${h.slice(0,8)}... passes full hash format validation`);
         } else {
-            validationResults.failed.push(`Hash ${h.slice(0,8)}... failed SHA256 format check — excluded from IOCs`);
+            validationResults.failed.push(`Hash ${h.slice(0,8)}... failed SHA256 format check â€” excluded from IOCs`);
         }
     });
     const validHashes = logData.hashes.filter(h => /^(?:[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$/.test(h));
@@ -696,30 +697,30 @@ function validateEvidence(portMap, matchedMisconfigs, logData, frameworkMeta = {
     portMap.forEach((_, port) => {
         const n = parseInt(port);
         if (n < 1 || n > 65535) {
-            validationResults.failed.push(`Port ${port} is outside valid range 1–65535`);
+            validationResults.failed.push(`Port ${port} is outside valid range 1â€“65535`);
             portMap.delete(port);
         }
     });
 
-    // Contradiction detection — flag impossible combinations
+    // Contradiction detection â€” flag impossible combinations
     const contradictions = [];
     if (portMap.has('443') && matchedMisconfigs.some(m => m.id === 'CRYPTO-001') && !portMap.has('80')) {
-        contradictions.push('TLS misconfiguration flagged but only HTTPS port active — verify TLS configuration details');
+        contradictions.push('TLS misconfiguration flagged but only HTTPS port active â€” verify TLS configuration details');
     }
 
-    // CVE–service consistency check
+    // CVEâ€“service consistency check
     matchedMisconfigs.forEach(m => {
         if (m.cve === 'CVE-2017-0144' && !portMap.has('445') && !portMap.has('139')) {
-            validationResults.warnings.push('EternalBlue (CVE-2017-0144) referenced but SMB port not in scope — mapping confidence reduced');
+            validationResults.warnings.push('EternalBlue (CVE-2017-0144) referenced but SMB port not in scope â€” mapping confidence reduced');
         }
     });
 
     return { ...validationResults, validHashes, contradictions };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // LAYER 3: THREAT CORRELATION
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function correlateThreatSignals(portMap, misconfigIds, logData) {
     const activeCorrelations = [];
@@ -767,18 +768,18 @@ function correlateThreatSignals(portMap, misconfigIds, logData) {
     };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // LAYER 4: MITRE ATT&CK MAPPING ENGINE
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Create a technique entry with evidence classification */
 function technique(id, name, description, evidenceType, generatedBecause, confidence = 'medium', predictiveLabel = null) {
     return { id, name, description, evidenceType, generatedBecause, confidence, predictiveLabel };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LAYER 5: PREDICTIVE ATTACK MODELING — 7-PHASE KILL CHAIN (ALWAYS PRESENT)
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// LAYER 5: PREDICTIVE ATTACK MODELING â€” 7-PHASE KILL CHAIN (ALWAYS PRESENT)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /* eslint-disable no-unused-vars */
 function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signals, validatedHashes) {
@@ -816,14 +817,14 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
         return 'hypothetical';
     };
 
-    // ─── PHASE 1: RECONNAISSANCE ────────────────────────────────────────────────
+    // â”€â”€â”€ PHASE 1: RECONNAISSANCE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const phase1Techs = [];
     let phase1Evidence = 'inferred';
 
     if (logData.indicators.some(i => i.type === 'SCANNER_ACTIVITY')) {
         phase1Techs.push(technique(
             'T1595', 'Active Scanning',
-            'Log data contains patterns consistent with scanning tool activity. Note: source context is unknown — this may represent external scanning or self-initiated security assessment. Correlation with source IPs is required to confirm hostile intent.',
+            'Log data contains patterns consistent with scanning tool activity. Note: source context is unknown â€” this may represent external scanning or self-initiated security assessment. Correlation with source IPs is required to confirm hostile intent.',
             'verified', ['Scanner activity patterns in log data (source context unknown)'], 'medium', 'POTENTIAL'
         ));
         phase1Evidence = 'verified';
@@ -848,10 +849,10 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
     if (hasDefaultCreds || hasNoMFA) {
         phase1Techs.push(technique(
             'T1589.001', 'Gather Victim Identity Information: Credentials',
-            `Identified authentication configuration weaknesses (${[hasDefaultCreds && 'default credentials', hasNoMFA && 'absent MFA'].filter(Boolean).join(', ')}) indicate that credential intelligence for this environment may be trivially obtainable — either from public default password databases or low-effort credential stuffing operations.`,
+            `Identified authentication configuration weaknesses (${[hasDefaultCreds && 'default credentials', hasNoMFA && 'absent MFA'].filter(Boolean).join(', ')}) indicate that credential intelligence for this environment may be trivially obtainable â€” either from public default password databases or low-effort credential stuffing operations.`,
             'inferred', [
                 hasDefaultCreds ? 'Default credentials documented in public sources' : null,
-                hasNoMFA ? 'No MFA — credential intelligence reduces attack cost significantly' : null,
+                hasNoMFA ? 'No MFA â€” credential intelligence reduces attack cost significantly' : null,
             ].filter(Boolean), 'high', 'LIKELY'
         ));
     }
@@ -859,12 +860,12 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
     if (hasWeb) {
         phase1Techs.push(technique(
             'T1598', 'Phishing for Information',
-            'Internet-facing web presence enables social engineering reconnaissance — harvesting employee details, email formats, and organizational structure for targeted phishing.',
+            'Internet-facing web presence enables social engineering reconnaissance â€” harvesting employee details, email formats, and organizational structure for targeted phishing.',
             'hypothetical', ['Web service provides external organizational footprint'], 'low', 'POSSIBLE'
         ));
     }
 
-    // ─── PHASE 2: WEAPONIZATION ─────────────────────────────────────────────────
+    // â”€â”€â”€ PHASE 2: WEAPONIZATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const phase2Techs = [];
     let phase2Evidence = 'hypothetical';
 
@@ -893,7 +894,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
             'T1586', 'Compromise Accounts',
             'Identified authentication weaknesses (default credentials or absent MFA) dramatically reduce weaponization effort. An attacker may acquire or derive working credentials without any exploit, leveraging public default password lists or targeted credential stuffing.',
             'inferred', [
-                hasDefaultCreds ? 'Default credentials identified — no exploit required' : null,
+                hasDefaultCreds ? 'Default credentials identified â€” no exploit required' : null,
                 hasNoMFA ? 'No MFA: credential stuffing is a viable low-effort attack' : null,
             ].filter(Boolean), 'high', 'LIKELY'
         ));
@@ -907,7 +908,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
         'hypothetical', ['Standard attacker operational security practice'], 'low', 'POSSIBLE'
     ));
 
-    // ─── PHASE 3: DELIVERY ──────────────────────────────────────────────────────
+    // â”€â”€â”€ PHASE 3: DELIVERY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const phase3Techs = [];
     let phase3Evidence = 'inferred';
 
@@ -958,7 +959,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
         if (phase3Evidence === 'hypothetical') phase3Evidence = 'hypothetical';
     }
 
-    // ─── PHASE 4: EXPLOITATION ──────────────────────────────────────────────────
+    // â”€â”€â”€ PHASE 4: EXPLOITATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const phase4Techs = [];
     let phase4Evidence = 'hypothetical';
     let phase4Confidence = 'low';
@@ -966,7 +967,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
     if (logData.indicators.some(i => i.type === 'CMD_EXECUTION')) {
         phase4Techs.push(technique(
             'T1059', 'Command and Scripting Interpreter',
-            'Log data contains command interpreter invocation strings. This is direct evidence of code execution activity on systems in scope — requires immediate investigation to determine authorization.',
+            'Log data contains command interpreter invocation strings. This is direct evidence of code execution activity on systems in scope â€” requires immediate investigation to determine authorization.',
             'verified', ['Command interpreter activity in log data'], 'high', 'CONFIRMED'
         ));
         phase4Evidence = 'verified'; phase4Confidence = 'high';
@@ -983,7 +984,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
     if (hasSMBv1 && hasSMB) {
         phase4Techs.push(technique(
             'T1210', 'Exploitation of Remote Services',
-            'SMBv1 active on port 445 creates conditions for EternalBlue (CVE-2017-0144) exploitation — a remote code execution vulnerability requiring no credentials.',
+            'SMBv1 active on port 445 creates conditions for EternalBlue (CVE-2017-0144) exploitation â€” a remote code execution vulnerability requiring no credentials.',
             'inferred', ['SMBv1 protocol active', 'Port 445 exposed'], 'high', 'LIKELY'
         ));
         if (phase4Evidence === 'hypothetical') { phase4Evidence = 'inferred'; phase4Confidence = 'high'; }
@@ -992,7 +993,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
     if (hasNoAuthRedis) {
         phase4Techs.push(technique(
             'T1190', 'Exploit Public-Facing Application',
-            'Unauthenticated Redis enables CONFIG/SLAVEOF commands that write attacker-controlled content to arbitrary file paths — a no-exploit RCE path.',
+            'Unauthenticated Redis enables CONFIG/SLAVEOF commands that write attacker-controlled content to arbitrary file paths â€” a no-exploit RCE path.',
             'inferred', ['Redis running without authentication', 'Port 6379 exposed'], 'high', 'LIKELY'
         ));
         if (phase4Evidence === 'hypothetical') { phase4Evidence = 'inferred'; phase4Confidence = 'high'; }
@@ -1019,7 +1020,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
     if (hasDefaultCreds && (hasRemoteAccess || hasDatabase)) {
         phase4Techs.push(technique(
             'T1078.001', 'Valid Accounts: Default Accounts',
-            'Default credentials eliminate the exploitation requirement — direct authenticated access to services is possible using publicly documented default username/password pairs.',
+            'Default credentials eliminate the exploitation requirement â€” direct authenticated access to services is possible using publicly documented default username/password pairs.',
             'inferred', ['Default credentials identified', 'Target service publicly accessible'], 'high', 'LIKELY'
         ));
         if (phase4Evidence === 'hypothetical') { phase4Evidence = 'inferred'; phase4Confidence = 'high'; }
@@ -1030,11 +1031,11 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
         phase4Techs.push(technique(
             'T1203', 'Exploitation for Client Execution',
             'Based on the identified attack surface, client-side exploitation (malicious document, browser exploit) represents a plausible delivery-to-execution path in environments with internet-facing web presence.',
-            'hypothetical', ['Baseline exploitation scenario — no specific exploitation evidence identified'], 'low', 'POSSIBLE'
+            'hypothetical', ['Baseline exploitation scenario â€” no specific exploitation evidence identified'], 'low', 'POSSIBLE'
         ));
     }
 
-    // ─── PHASE 5: INSTALLATION / PERSISTENCE ────────────────────────────────────
+    // â”€â”€â”€ PHASE 5: INSTALLATION / PERSISTENCE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const phase5Techs = [];
     let phase5Evidence = 'hypothetical';
     let phase5Confidence = 'low';
@@ -1052,7 +1053,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
     if (hasWebAttack || logData.indicators.some(i => i.type === 'CMD_EXECUTION')) {
         phase5Techs.push(technique(
             'T1505.003', 'Server-Side Web Shell (TA0003)',
-            'Environments with active web attack or command execution evidence are at elevated risk of web shell installation — providing persistent, browser-based backdoor access that survives reboots and password changes. Verification requires file system or EDR telemetry.',
+            'Environments with active web attack or command execution evidence are at elevated risk of web shell installation â€” providing persistent, browser-based backdoor access that survives reboots and password changes. Verification requires file system or EDR telemetry.',
             'inferred', [
                 hasWebAttack ? 'Web application attack patterns in logs' : null,
                 logData.indicators.some(i => i.type === 'CMD_EXECUTION') ? 'Command execution evidence in logs' : null,
@@ -1066,7 +1067,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
             'T1098.004', 'Account Manipulation: SSH Authorized Keys',
             'Following remote access compromise, adding SSH authorized keys is a standard persistence technique that bypasses password authentication and survives password changes.',
             hasNoAuthRedis ? 'inferred' : 'hypothetical',
-            [hasNoAuthRedis ? 'Redis config-write enables SSH key injection' : 'Remote access compromise scenario — persistence is a predictable follow-on action'],
+            [hasNoAuthRedis ? 'Redis config-write enables SSH key injection' : 'Remote access compromise scenario â€” persistence is a predictable follow-on action'],
             hasNoAuthRedis ? 'high' : 'medium', hasNoAuthRedis ? 'LIKELY' : 'POTENTIAL'
         ));
         if (phase5Evidence === 'hypothetical' && hasNoAuthRedis) { phase5Evidence = 'inferred'; phase5Confidence = 'medium'; }
@@ -1085,11 +1086,11 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
         phase5Techs.push(technique(
             'T1547', 'Boot or Logon Autostart Execution',
             'Following any successful access, an attacker would establish persistence via autostart mechanisms. Specific persistence method depends on OS and access level obtained.',
-            'hypothetical', ['Standard post-access attacker behavior — baseline persistence scenario'], 'low', 'POSSIBLE'
+            'hypothetical', ['Standard post-access attacker behavior â€” baseline persistence scenario'], 'low', 'POSSIBLE'
         ));
     }
 
-    // ─── PHASE 6: COMMAND & CONTROL ─────────────────────────────────────────────
+    // â”€â”€â”€ PHASE 6: COMMAND & CONTROL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const phase6Techs = [];
     let phase6Evidence = 'hypothetical';
     let phase6Confidence = 'low';
@@ -1128,11 +1129,11 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
         phase6Techs.push(technique(
             'T1102', 'Web Service',
             'Threat actors commonly establish C2 channels using legitimate web services (GitHub, Pastebin, cloud storage) to blend with normal traffic. Outbound traffic inspection is required to detect.',
-            'hypothetical', ['Baseline C2 scenario — no specific C2 evidence identified'], 'low', 'POSSIBLE'
+            'hypothetical', ['Baseline C2 scenario â€” no specific C2 evidence identified'], 'low', 'POSSIBLE'
         ));
     }
 
-    // ─── PHASE 7: ACTIONS ON OBJECTIVES ─────────────────────────────────────────
+    // â”€â”€â”€ PHASE 7: ACTIONS ON OBJECTIVES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const phase7Techs = [];
     let phase7Evidence = 'hypothetical';
     let phase7Confidence = 'low';
@@ -1189,16 +1190,16 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
         phase7Techs.push(technique(
             'T1657', 'Financial Theft',
             'Without specific impact evidence, the most likely attacker objectives based on the exposed service profile would be data theft for financial gain or operational disruption. Impact assessment requires telemetry evidence.',
-            'hypothetical', ['Baseline impact scenario — no specific impact evidence identified'], 'low', 'POSSIBLE'
+            'hypothetical', ['Baseline impact scenario â€” no specific impact evidence identified'], 'low', 'POSSIBLE'
         ));
         phase7Techs.push(technique(
             'T1565', 'Data Manipulation',
-            'Internet-accessible services without strong authentication controls are at risk of unauthorized data modification — a non-destructive attack that may remain undetected for extended periods.',
+            'Internet-accessible services without strong authentication controls are at risk of unauthorized data modification â€” a non-destructive attack that may remain undetected for extended periods.',
             'hypothetical', ['Unauthenticated service access creates data integrity risk'], 'low', 'POSSIBLE'
         ));
     }
 
-    // ─── ASSEMBLE KILL CHAIN ─────────────────────────────────────────────────────
+    // â”€â”€â”€ ASSEMBLE KILL CHAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     const phase1Conf = logData.indicators.some(i => i.type === 'SCANNER_ACTIVITY') ? 'high' : portCount > 0 ? 'medium' : 'low';
     const phase2Conf = (hasSMBv1 || hasDefaultCreds || hasNoMFA) ? 'medium' : 'low';
@@ -1208,7 +1209,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
             phase: 'Reconnaissance',
             mitreId: 'TA0043',
             riskLevel: phase1Conf === 'high' ? 'high' : 'medium',
-            timeEstimate: '1–14 days',
+            timeEstimate: '1â€“14 days',
             evidenceType: phase1Evidence,
             confidenceLevel: phase1Conf,
             confidenceScore: phase1Conf === 'high' ? 85 : phase1Conf === 'medium' ? 60 : 35,
@@ -1227,14 +1228,14 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
             // TA0042 (Resource Development) is the correct current tactic for this phase.
             mitreId: 'TA0042',
             riskLevel: phase2Evidence === 'inferred' ? 'high' : 'medium',
-            timeEstimate: '1–7 days',
+            timeEstimate: '1â€“7 days',
             evidenceType: phase2Evidence,
             confidenceLevel: phase2Conf,
             confidenceScore: phase2Conf === 'high' ? 70 : phase2Conf === 'medium' ? 50 : 30,
             supportingEvidence: [
-                hasSMBv1 ? 'SMBv1 active — EternalBlue exploit modules directly applicable' : null,
-                hasUnpatched ? 'Unpatched components — n-day exploit code may be publicly available' : null,
-                hasDefaultCreds ? 'Default credentials — weaponization may be unnecessary (direct access)' : null,
+                hasSMBv1 ? 'SMBv1 active â€” EternalBlue exploit modules directly applicable' : null,
+                hasUnpatched ? 'Unpatched components â€” n-day exploit code may be publicly available' : null,
+                hasDefaultCreds ? 'Default credentials â€” weaponization may be unnecessary (direct access)' : null,
             ].filter(Boolean),
             confidenceReasoning: 'Weaponization activity occurs off-network and cannot be directly observed from target data alone.',
             techniques: phase2Techs,
@@ -1250,7 +1251,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
             supportingEvidence: [
                 hasWebAttack ? 'Web application attack patterns confirmed in logs' : null,
                 hasBruteForce ? 'Brute-force delivery attempts in logs' : null,
-                hasRemoteAccess ? `Remote access service(s) exposed — direct delivery vector available` : null,
+                hasRemoteAccess ? `Remote access service(s) exposed â€” direct delivery vector available` : null,
                 hasLegacy ? 'Cleartext protocol exposure enables passive credential capture' : null,
             ].filter(Boolean),
             confidenceReasoning: phase3Evidence === 'verified'
@@ -1323,7 +1324,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
             phase: 'Actions on Objectives',
             mitreId: 'TA0040',
             riskLevel: phase7Evidence === 'verified' ? 'critical' : phase7Evidence === 'inferred' ? 'high' : 'medium',
-            timeEstimate: '2–72 hours post-persistence',
+            timeEstimate: '2â€“72 hours post-persistence',
             evidenceType: phase7Evidence,
             confidenceLevel: phase7Evidence === 'verified' ? 'high' : phase7Evidence === 'inferred' ? 'medium' : 'low',
             confidenceScore: phase7Evidence === 'verified' ? 95 : phase7Evidence === 'inferred' ? 62 : 25,
@@ -1333,7 +1334,7 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
                 activeCorrelations.some(c => ['CORR-001','CORR-002'].includes(c.id)) ? 'Ransomware-associated exposure pattern identified' : null,
             ].filter(Boolean),
             confidenceReasoning: phase7Evidence === 'verified'
-                ? 'Impact activity directly observed in telemetry — incident response required.'
+                ? 'Impact activity directly observed in telemetry â€” incident response required.'
                 : phase7Evidence === 'inferred'
                 ? 'Exposure profile and correlation rules indicate high-probability impact scenarios.'
                 : 'No impact evidence identified; objectives modelled from attacker motivation patterns.',
@@ -1342,9 +1343,9 @@ function buildKillChain(portMap, matchedMisconfigs, misconfigIds, logData, signa
     ];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // LAYER 6: RISK SCORING ENGINE
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /* eslint-enable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
@@ -1439,7 +1440,7 @@ function calculateExposureRisk(portMap, matchedMisconfigs, logData, signals) {
 function calculateConfidence(portMap, matchedMisconfigs, logData, frameworkMeta = {}) {
     const { unknownPortsList = [], knownPortsList = [], unmatchedMisconfigs = [] } = frameworkMeta;
 
-    // ── UNKNOWN PORT HANDLING FRAMEWORK — Confidence Model ───────────────────
+    // â”€â”€ UNKNOWN PORT HANDLING FRAMEWORK â€” Confidence Model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Base score depends on how much KNOWN information we have to work with.
     // Full Confidence:    Known Port + Known Misconfig
     // Partial Confidence: Known Port only, OR Unknown Port + Known Misconfig
@@ -1664,9 +1665,9 @@ function buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData
 
     addStage({
         stageName: 'EXPLOITATION',
-        // Escalate to INFERRED when EternalBlue conditions are met — not merely hypothetical
+        // Escalate to INFERRED when EternalBlue conditions are met â€” not merely hypothetical
         status: hasExecutionEvidence || hasPrivilegeEvidence ? 'OBSERVED' : (hasEternalBlueConditions || hasInitialAccessRoute) ? 'INFERRED' : 'HYPOTHETICAL',
-        explanation: hasExecutionEvidence ? 'Direct evidence of command execution observed.' : hasEternalBlueConditions ? 'SMBv1 + MS17-010 + port 445 co-present. EternalBlue exploitation is strongly inferred — exploit code is publicly available with no skill barrier.' : hasInitialAccessRoute ? 'Exploitation is possible via exposed access routes but unconfirmed.' : 'No evidence supports execution.',
+        explanation: hasExecutionEvidence ? 'Direct evidence of command execution observed.' : hasEternalBlueConditions ? 'SMBv1 + MS17-010 + port 445 co-present. EternalBlue exploitation is strongly inferred â€” exploit code is publicly available with no skill barrier.' : hasInitialAccessRoute ? 'Exploitation is possible via exposed access routes but unconfirmed.' : 'No evidence supports execution.',
         techniques: exploitTechs,
         generatedBecause: [hasExecutionEvidence ? 'Execution patterns in logs.' : null, hasEternalBlueConditions ? 'SMBv1 + unpatched MS17-010 + open port 445.' : null, hasPrivilegeEvidence ? 'Privilege escalation strings in logs.' : null]
     });
@@ -1707,7 +1708,7 @@ function buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData
         techniques: installStatus !== 'NOT OBSERVED' ? installTechs : [],
         generatedBecause: [
             hasPersistenceEvidence ? 'Persistence installation patterns in logs.' : null,
-            hasExecutionEvidence ? 'Command execution evidence — persistence is a predictable follow-on.' : null,
+            hasExecutionEvidence ? 'Command execution evidence â€” persistence is a predictable follow-on.' : null,
             (misconfigIds.has('PROTO-002') && hasSMB) ? 'Anonymous SMB shares enable lateral file staging.' : null,
             signals.hasWebAttack && !hasPersistenceEvidence ? 'Web attack evidence raises web shell persistence probability.' : null,
         ]
@@ -1727,7 +1728,7 @@ function buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData
         c2Techs.push(techniqueV4({ id:'T1071.001', name:'Application Layer Protocol: Web Protocols', tactic:'Command and Control',
             description:`${logData.ips.length} external IP address(es) extracted from log data require reputation lookup to determine if they represent C2 infrastructure. This is an inferred indicator, not confirmed C2.`,
             evidenceType:'inferred', confidence:45,
-            generatedBecause:[`${logData.ips.length} external IP(s) present in logs — threat intel enrichment required`] }));
+            generatedBecause:[`${logData.ips.length} external IP(s) present in logs â€” threat intel enrichment required`] }));
     }
     if (!hasC2Evidence && !hasC2IpBasis && hasExecutionEvidence) {
         c2Techs.push(techniqueV4({ id:'T1072', name:'Software Deployment Tools', tactic:'Command and Control',
@@ -1743,7 +1744,7 @@ function buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData
     const c2Explanation = hasC2Evidence
         ? 'C2 framework tool signatures directly observed in log telemetry.'
         : hasC2IpBasis
-        ? 'External IPs present in logs — correlation with threat intelligence required before C2 can be confirmed.'
+        ? 'External IPs present in logs â€” correlation with threat intelligence required before C2 can be confirmed.'
         : hasExecutionEvidence
         ? 'Execution activity observed. Attacker would likely establish a C2 channel; specific channel type cannot be determined without network telemetry.'
         : 'No evidence basis for Command and Control. No C2 signatures, no external IPs, and no execution telemetry provided. ETH will not model this phase without evidence.';
@@ -1802,9 +1803,9 @@ function buildATTACKMappings(attackChain) {
     return [...seen.values()].sort((a, b) => b.confidence - a.confidence);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// IOC BUILDER (verified telemetry only — zero fabrication)
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// IOC BUILDER (verified telemetry only â€” zero fabrication)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildIOCs(logData, validHashes) {
     const iocList = [];
@@ -1825,7 +1826,7 @@ function buildIOCs(logData, validHashes) {
     logData.ips.slice(0, 5).forEach(ip => {
         addIoc({
             type:'IP Address', value:ip,
-            label:'External IP extracted from logs — requires threat intel lookup (VirusTotal, AbuseIPDB)',
+            label:'External IP extracted from logs â€” requires threat intel lookup (VirusTotal, AbuseIPDB)',
             severity:'medium', evidenceType:'verified', verified:false,
         });
     });
@@ -1834,7 +1835,7 @@ function buildIOCs(logData, validHashes) {
         const type = hash.length === 64 ? 'SHA256 Hash' : hash.length === 40 ? 'SHA1 Hash' : 'MD5 Hash';
         addIoc({
             type, value:hash,
-            label:'File hash extracted from logs — submit to VirusTotal/MISP for reputation analysis',
+            label:'File hash extracted from logs â€” submit to VirusTotal/MISP for reputation analysis',
             severity:hash.length === 64 ? 'medium' : 'low', verified:false, validationScore:hash.length === 64 ? 95 : 78,
             falsePositiveNotes:'Cryptographic hashes are exact-match indicators; validate full hash context and file provenance.',
         });
@@ -1843,7 +1844,7 @@ function buildIOCs(logData, validHashes) {
     logData.urls.slice(0, 3).forEach(url => {
         addIoc({
             type:'URL', value:url,
-            label:'URL extracted from logs — verify intent, check URL reputation',
+            label:'URL extracted from logs â€” verify intent, check URL reputation',
             severity:'medium', verified:false, validationScore:82,
             falsePositiveNotes:'URLs can be benign update, CDN, SSO, or SaaS endpoints; compare against proxy allowlists.',
         });
@@ -1906,9 +1907,9 @@ function buildIOCs(logData, validHashes) {
     return iocList;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MITIGATION BUILDER
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildMitigations(portMap, matchedMisconfigs, misconfigIds, logData, signals) {
     const mitigations = [];
@@ -1985,16 +1986,16 @@ function buildMitigations(portMap, matchedMisconfigs, misconfigIds, logData, sig
     add({ id:'M1049', title:'Deploy Endpoint Detection and Response (EDR)', priority:'high',
         description:'Implement an EDR solution with behavioral detection capability across all endpoints. Enable process, network, file system, and registry telemetry. Configure alerts for known attack techniques (MITRE ATT&CK coverage).' });
     add({ id:'M1016', title:'Continuous Vulnerability Scanning', priority:'medium',
-        description:'Deploy authenticated vulnerability scanning against all internet-facing assets on a weekly cycle. Prioritize findings by CVSS score × public exploit availability. Integrate scan results with patch management workflow.' });
+        description:'Deploy authenticated vulnerability scanning against all internet-facing assets on a weekly cycle. Prioritize findings by CVSS score Ã— public exploit availability. Integrate scan results with patch management workflow.' });
     add({ id:'M1032-SIEM', title:'Implement Centralized Log Management', priority:'medium',
         description:'Aggregate logs from all internet-facing services into a SIEM. Enable alerting for authentication anomalies, scan patterns, and data transfer spikes. Maintain log retention for minimum 90 days for forensic analysis.' });
 
     return mitigations.slice(0, 10);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SOC NARRATIVE BUILDER
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, activeCorrelations, frameworkMeta = {}, intelligenceLevel = 'LOW') {
     const { hasActiveThreat } = signals;
@@ -2067,34 +2068,6 @@ function buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore,
         return narrative;
     }
 
-    if (intelligenceLevel === 'LE') {
-        narrative += '1. Investigation Summary\n';
-        if (hasActiveThreat) {
-            narrative += 'Telemetry corroborates active threat indicators. Immediate preservation of endpoint logs is recommended for chain of custody.\n\n';
-        } else {
-            narrative += 'No evidence of active compromise was identified in the submitted data. Further log review is recommended.\n\n';
-        }
-
-        narrative += '2. Observed Exposure\n';
-        narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No objective exposure findings verified from provided telemetry.\n\n';
-
-        narrative += '3. Potential Criminal Abuse\n';
-        narrative += 'Such exposure has historically been associated with unauthorized access incidents, ransomware deployment, and lateral movement activities.\n\n';
-
-        narrative += '4. Indicators Of Compromise\n';
-        narrative += logData.hasLog ? `${logData.indicators.length} behavioral indicator(s) extracted from telemetry.\n\n` : 'No log telemetry provided for IOC extraction.\n\n';
-
-        narrative += '5. MITRE Mapping\n';
-        narrative += assessed.length > 0 ? assessed.join('\n') + '\n\n' : 'T1190 - Exploit Public-Facing Application.\n\n';
-
-        narrative += '6. Evidence Notes\n';
-        narrative += `Evidentiary Confidence Score: ${riskScore}/100. Score reflects observed exposure severity based on objective telemetry.\n\n`;
-
-        narrative += '7. Recommended Actions\n';
-        narrative += 'Preserve all relevant firewall and authentication logs for forensic analysis. Subpoena access records if unauthorized intrusion is suspected.';
-        return narrative;
-    }
-
     // Default HIGH
     narrative += '1. Technical Assessment\n';
     narrative += observed.length > 0 ? observed.join('\n') + '\n\n' : 'No confirmed exposure findings verified from provided telemetry.\n\n';
@@ -2129,9 +2102,9 @@ function buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore,
     return narrative;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MAIN ENGINE ORCHESTRATOR
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function runAttackSimulationMock(payload, signal) {
     // Realistic analysis latency
@@ -2145,40 +2118,40 @@ export async function runAttackSimulationMock(payload, signal) {
         });
     });
 
-    // ── L1: Data Acquisition ──────────────────────────────────────────────────
+    // â”€â”€ L1: Data Acquisition â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const { portMap, matchedMisconfigs, misconfigIds, logData,
              unknownPortsList, knownPortsList, unmatchedMisconfigs } = acquireData(payload);
     
     const intelligenceLevel = payload.intelligenceLevel || 'LOW';
 
-    // ── Framework metadata bundle — passed to all downstream layers ───────────
+    // â”€â”€ Framework metadata bundle â€” passed to all downstream layers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const frameworkMeta = { unknownPortsList, knownPortsList, unmatchedMisconfigs };
 
-    // ── L2: Evidence Validation ───────────────────────────────────────────────
+    // â”€â”€ L2: Evidence Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const { validHashes, contradictions, warnings: validationWarnings } = validateEvidence(portMap, matchedMisconfigs, logData, frameworkMeta);
 
-    // ── L3: Threat Correlation ─────────────────────────────────────────────────
+    // â”€â”€ L3: Threat Correlation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const signals = correlateThreatSignals(portMap, misconfigIds, logData);
 
-    // ── L4: MITRE Mapping ─────────────────
+    // â”€â”€ L4: MITRE Mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const killChain = buildCyberKillChainV4(portMap, matchedMisconfigs, misconfigIds, logData, signals, intelligenceLevel);
     const ATTACKMappings = buildATTACKMappings(killChain);
 
-    // ── L6: Risk Scoring ──────────────────────────────────────────────────────
+    // â”€â”€ L6: Risk Scoring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const { score: riskScore, topFactors, riskAssessment } = calculateExposureRisk(portMap, matchedMisconfigs, logData, signals);
     const confidenceScore = calculateConfidence(portMap, matchedMisconfigs, logData, frameworkMeta);
     const accuracyAssessment = calculateAccuracyAssessment(portMap, matchedMisconfigs, logData, signals, frameworkMeta);
 
-    // ── IOC Generation ────────────────────────────────────────────────────────
+    // â”€â”€ IOC Generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const iocList = buildIOCs(logData, validHashes);
 
-    // ── Mitigations ───────────────────────────────────────────────────────────
+    // â”€â”€ Mitigations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const mitigations = buildMitigations(portMap, matchedMisconfigs, misconfigIds, logData, signals);
 
-    // ── Narrative ──────────────────────────────────────────────────────────────
+    // â”€â”€ Narrative â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const summary = buildNarrative(portMap, matchedMisconfigs, logData, signals, riskScore, signals.activeCorrelations, frameworkMeta, intelligenceLevel);
 
-    // ── ETH Engine Operational Decision Protocol (ODP) v1 ─────────────────────
+    // â”€â”€ ETH Engine Operational Decision Protocol (ODP) v1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const odpStep1 = {
         step: 1, name: 'Parse Evidence',
         verifiedFindings: [
@@ -2243,26 +2216,26 @@ export async function runAttackSimulationMock(payload, signal) {
     
     const odp = [odpStep1, odpStep2, odpStep3, odpStep4, odpStep5, odpStep6, odpStep7, odpStep8];
 
-    // ── Risk Breakdown ────────────────────────────────────────────────────────
+    // â”€â”€ Risk Breakdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const riskBreakdown = riskAssessment.dimensions.map(d => ({
         category:d.category,
         score:Math.max(0, Math.min(d.score, 99)),
     }));
 
-    // ── Detection Status ──────────────────────────────────────────────────────
+    // â”€â”€ Detection Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let detectionDifficulty;
     if (signals.hasActiveThreat) {
-        detectionDifficulty = 'Active — Immediate Investigation Required';
+        detectionDifficulty = 'Active â€” Immediate Investigation Required';
     } else if (logData.indicators.length > 0) {
-        detectionDifficulty = 'Telemetry Available — Threat Hunting Recommended';
+        detectionDifficulty = 'Telemetry Available â€” Threat Hunting Recommended';
     } else if (matchedMisconfigs.length >= 3 || signals.activeCorrelations.length >= 2) {
-        detectionDifficulty = 'High Exposure — Proactive Hardening Required';
+        detectionDifficulty = 'High Exposure â€” Proactive Hardening Required';
     } else {
-        detectionDifficulty = 'Monitoring — Standard Patch and Harden Cycle';
+        detectionDifficulty = 'Monitoring â€” Standard Patch and Harden Cycle';
     }
 
     const estimatedDwellTime = signals.hasActiveThreat
-        ? 'Unknown — Active investigation required'
+        ? 'Unknown â€” Active investigation required'
         : 'Not determinable without endpoint telemetry';
 
     return {
@@ -2334,7 +2307,7 @@ export async function runAttackSimulationMock(payload, signal) {
         // Evidence classification summary
         evidenceSummary: {
             observedFindings: [
-                ...[...portMap.entries()].map(([p, d]) => `${d.service} (${p}) publicly accessible — ${d.note}`),
+                ...[...portMap.entries()].map(([p, d]) => `${d.service} (${p}) publicly accessible â€” ${d.note}`),
                 ...matchedMisconfigs.map(m => `${m.finding} [${m.category}]`),
                 ...logData.indicators.map(i => i.description),
             ].slice(0, 10),
@@ -2355,7 +2328,7 @@ export async function runAttackSimulationMock(payload, signal) {
                 matchedMisconfigs.length > 0 ? `${matchedMisconfigs.length} misconfiguration(s) matched` : null,
                 logData.hasLog
                     ? `Log telemetry: ${logData.indicators.length} behavioral indicator(s) extracted`
-                    : 'No log telemetry — confidence limited to exposure profile',
+                    : 'No log telemetry â€” confidence limited to exposure profile',
                 signals.activeCorrelations.length > 0
                     ? `${signals.activeCorrelations.length} threat correlation rule(s) triggered`
                     : null,
@@ -2393,7 +2366,7 @@ export async function runAttackSimulationMock(payload, signal) {
             },
         },
 
-        // ── UNKNOWN PORT HANDLING FRAMEWORK — Port Intelligence Status ────────
+        // â”€â”€ UNKNOWN PORT HANDLING FRAMEWORK â€” Port Intelligence Status â”€â”€â”€â”€â”€â”€â”€â”€
         // Exposed to UI for rendering framework warnings and confidence context.
         portIntelStatus: {
             knownPorts:          knownPortsList,
@@ -2403,7 +2376,7 @@ export async function runAttackSimulationMock(payload, signal) {
             hasUnknownEntities:  unknownPortsList.length > 0 || unmatchedMisconfigs.length > 0,
         },
 
-        // Framework warnings surfaced from validateEvidence — for UI banner rendering
+        // Framework warnings surfaced from validateEvidence â€” for UI banner rendering
         frameworkWarnings: validationWarnings.filter(w =>
             w.includes('not found in ETH knowledge base') ||
             w.includes('not recognized in ETH knowledge base') ||
@@ -2417,9 +2390,9 @@ export async function runAttackSimulationMock(payload, signal) {
     };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // UNIFIED EXPORT
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function analyzeAttackChain(payload, signal) {
     const enrichWithIntelligence = (result) => {
@@ -2503,6 +2476,44 @@ export function analyzeAttackChain(payload, signal) {
         }
         result.misconfigIntelligence = misconfigIntelList;
 
+        // Match Attack Library combinations
+        const matchedCombos = [];
+        if (COMBOS && Array.isArray(COMBOS)) {
+            const portsSet = new Set((payload.openPorts || []).map(p => String(p).trim()));
+            const userMisconfigs = (payload.misconfigurations || []).map(m => String(m).toLowerCase().trim());
+            const verifiedFindingTexts = (result.verifiedFindings || []).map(f => String(f.finding || '').toLowerCase());
+
+            COMBOS.forEach(combo => {
+                const portMatches = portsSet.has(String(combo.port));
+                if (!portMatches) return;
+
+                const comboMisconfigLower = String(combo.misconfig || '').toLowerCase();
+                const comboNameLower = String(combo.name || '').toLowerCase();
+
+                // Check exact or keyword match against user-provided misconfigurations
+                const misconfigDirectMatch = userMisconfigs.some(um => 
+                    um.includes(comboMisconfigLower) || 
+                    comboMisconfigLower.includes(um) ||
+                    combo.tags?.some(tag => um.includes(tag))
+                );
+
+                // Check against verified finding texts from detection engine
+                const findingMatch = verifiedFindingTexts.some(vf => 
+                    vf.includes(comboMisconfigLower) || 
+                    combo.tags?.some(tag => vf.includes(tag))
+                );
+
+                if (misconfigDirectMatch || findingMatch) {
+                    matchedCombos.push({
+                        ...combo,
+                        matchReason: `Triggered by Port ${combo.port} (${combo.service}) + ${combo.misconfig}`,
+                        confidenceScore: Math.min(98, combo.interestScore || 85),
+                    });
+                }
+            });
+        }
+        result.matchedAttackCombinations = matchedCombos;
+
         return result;
     };
 
@@ -2513,3 +2524,6 @@ export function analyzeAttackChain(payload, signal) {
 }
 
 export default apiClient;
+
+
+

@@ -16,6 +16,7 @@ import { mitreIntelligenceData } from '../../data/mitreIntelligenceData';
 import { useCILSession } from '@/hooks/useCILSession';
 import { CILNavigator } from '@/integrations/cil';
 import AttackerReasoningPanel from './AttackerReasoningPanel';
+import MatchedCombinationsSection from './MatchedCombinationsSection';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function Ico({ d, size = 16, strokeWidth = 2 }) {
@@ -1040,7 +1041,19 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
             />
 
             {/* ── 05. MITRE ATT&CK Mapping ── */}
-            <SectionDivider number="05" title="MITRE MAPPING" />
+            {/* ── 05. Matched Attack Combination Intelligence ── */}
+            {result.matchedAttackCombinations?.length > 0 && (
+                <>
+                    <SectionDivider number="05" title="COMBINATION INTELLIGENCE" />
+                    <MatchedCombinationsSection 
+                        combinations={result.matchedAttackCombinations}
+                        intelligenceLevel={result.intelligenceLevel}
+                    />
+                </>
+            )}
+
+            {/* ── 06. MITRE ATT&CK Mapping ── */}
+            <SectionDivider number="06" title="MITRE MAPPING" />
             {result.intelligenceLevel === 'LOW' ? (
                 <SimplifiedMitreSection mitreChain={result.killChain} />
             ) : (

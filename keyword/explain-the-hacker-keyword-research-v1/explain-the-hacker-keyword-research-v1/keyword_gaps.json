@@ -1,0 +1,55 @@
+[
+  {
+    "gap_id": "gap_001",
+    "title": "Home page content not retrievable as text",
+    "gap_type": "technical_seo",
+    "evidence_level": "observed",
+    "evidence": "A fetch of the ETH home page returned head meta tags (title, description, robots index/follow, Open Graph) but no body text.",
+    "supporting_sources": [
+      "https://explainthehacker.cyberedt.com/"
+    ],
+    "notes": "May be client-rendered. Verify with URL Inspection in Search Console; the meta keywords tag is not a ranking lever to rely on."
+  },
+  {
+    "gap_id": "gap_002",
+    "title": "Beginner narrative attack-chain learning",
+    "gap_type": "content",
+    "evidence_level": "hypothesis",
+    "evidence": "Observed offerings are investigator-side SOC labs [H11][H12], enterprise ranges [H13], paid courses [H06][H07], or developer-oriented open-source tools [H04][H05]; a free beginner narrative explainer was not observed.",
+    "supporting_sources": [
+      "https://help.letsdefend.io/en/articles/8742685-what-is-letsdefend",
+      "https://cyberdefenders.org/labs",
+      "https://www.hackthebox.com/business/threat-range-demo?hsLang=en",
+      "https://www.antisyphontraining.com/on-demand-courses/attack-emulation-tools-atomic-red-team-caldera-and-more-w-carrie-roberts/",
+      "https://github.com/Pr0cella/AttackFlow",
+      "https://github.com/aidhas23/cyber-range-simulator"
+    ],
+    "notes": "Snippet-level sample."
+  },
+  {
+    "gap_id": "gap_003",
+    "title": "ATT&CK learning is largely paid or video-based",
+    "gap_type": "education",
+    "evidence_level": "observed_with_limited_sample",
+    "evidence": "Coursera module [H02] and Antisyphon classes [H06][H07] carry price or platform plans.",
+    "supporting_sources": [
+      "https://www.coursera.org/de-DE/learn/packt-mitre-att-ck-framework-foundations-for-cyber-defense-onrdn",
+      "https://www.antisyphontraining.com/on-demand-courses/attack-emulation-tools-atomic-red-team-caldera-and-more-w-carrie-roberts/",
+      "https://www.antisyphontraining.com/?p=8449"
+    ],
+    "notes": "Free resources (MITRE itself) exist [H18]."
+  },
+  {
+    "gap_id": "gap_004",
+    "title": "Platform landscape is well funded",
+    "gap_type": "positioning",
+    "evidence_level": "observed",
+    "evidence": "HTB absorbed LetsDefend [H08]; CyberDefenders and Infosec run browser labs [H12][H14].",
+    "supporting_sources": [
+      "https://www.hackthebox.com/blog/welcome-letsdefend?hsLang=en",
+      "https://cyberdefenders.org/labs",
+      "https://www.infosecinstitute.com/range"
+    ],
+    "notes": "Avoid head-on SOC training keywords."
+  }
+]

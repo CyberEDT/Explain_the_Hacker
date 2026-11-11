@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "KeywordGap",
+  "type": "object",
+  "required": [
+    "gap_id",
+    "title",
+    "evidence_level",
+    "evidence",
+    "supporting_sources"
+  ],
+  "properties": {
+    "evidence_level": {
+      "enum": [
+        "observed",
+        "observed_with_limited_sample",
+        "observed_community_signal",
+        "hypothesis"
+      ]
+    },
+    "supporting_sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "pattern": "^https?://"
+      }
+    }
+  }
+}

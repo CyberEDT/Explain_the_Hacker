@@ -10,7 +10,9 @@ export default function SEO({
     keywords = "Explain The Hacker, CyberEDT, cybersecurity, hacker simulation, attack chain, MITRE ATT&CK, threat analysis, penetration testing"
 }) {
     const siteName = "CyberEDT";
-    const fullTitle = `${title} | ${siteName} Attacker Intelligence Platform`;
+    const fullTitle = title.includes('ETH') || title.includes(siteName) 
+        ? title 
+        : `${title} | ETH`;
     const canonical = canonicalUrl ? `https://explainthehacker.cyberedt.com${canonicalUrl}` : 'https://explainthehacker.cyberedt.com/';
 
     return (

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { MISCONFIGURATION_SUGGESTIONS, PORT_PRESETS } from './validationSchema';
+import { COMBOS } from '../../data/attackCombinationsData.js';
 import Editor from 'react-simple-code-editor';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-clike';
@@ -8,10 +9,10 @@ import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-markup';
 import 'prismjs/themes/prism-tomorrow.css';
 
-// ─── Quick-add port numbers ───────────────────────────────────────────────────
+// â”€â”€â”€ Quick-add port numbers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const QUICK_PORTS = ['22', '80', '443', '3389', '8080', '5432'];
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function XIcon({ size = 10 }) {
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
@@ -44,7 +45,7 @@ function AlertIcon() {
     );
 }
 
-// ─── Section Header — matches reference: [01] badge + title + subtitle ────────
+// â”€â”€â”€ Section Header â€” matches reference: [01] badge + title + subtitle â”€â”€â”€â”€â”€â”€â”€â”€
 // Reference: flex items-baseline justify-between mb-1
 //            [01] badge: bg-accent text-accent-foreground size-6 inline-flex ...
 //            Title: font-bold uppercase tracking-tight text-xl
@@ -98,14 +99,70 @@ function SectionHeader({ number, title, subtitle, count, max }) {
     );
 }
 
-// ─── Intelligence Level Selector ──────────────────────────────────────────────
+// â”€â”€â”€ Intelligence Level Selector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+
+// ─── Library Attack Combination Preset Selector ──────────────────────────────
+function LibraryPresetSelector({ onSelectPreset, onAddPort, onAddMisconfiguration }) {
+    const [selectedId, setSelectedId] = useState('');
+
+    const handleChange = (e) => {
+        const id = e.target.value;
+        setSelectedId(id);
+        if (!id) return;
+        const combo = COMBOS.find(c => c.id === id);
+        if (combo) {
+            if (onSelectPreset) {
+                onSelectPreset(combo);
+            } else if (onAddPort && onAddMisconfiguration) {
+                if (combo.port) onAddPort(String(combo.port));
+                if (combo.misconfig) onAddMisconfiguration(combo.misconfig);
+            }
+        }
+    };
+
+    return (
+        <div style={{ background: '#0a0a0a', padding: '16px 24px', borderBottom: '1px solid #1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#ff0033', border: '1px solid rgba(255,0,51,0.3)', padding: '2px 6px', fontWeight: 700 }}>
+                    LIBRARY PRESETS
+                </span>
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem', color: '#ccc', fontWeight: 600 }}>
+                    Load Multi-Vector Attack Combination:
+                </span>
+            </div>
+            <div style={{ flex: '1 1 320px', maxWidth: '480px' }}>
+                <select
+                    value={selectedId}
+                    onChange={handleChange}
+                    style={{
+                        width: '100%',
+                        background: '#111',
+                        color: selectedId ? '#00ff9d' : '#888',
+                        border: '1px solid #333',
+                        padding: '8px 12px',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.72rem',
+                        outline: 'none',
+                        cursor: 'pointer'
+                    }}
+                >
+                    <option value="">-- Choose one of {COMBOS.length} curated attack scenarios --</option>
+                    {COMBOS.map(c => (
+                        <option key={c.id} value={c.id}>
+                            [{c.id}] {c.name} (Port {c.port})
+                        </option>
+                    ))}
+                </select>
+            </div>
+        </div>
+    );
+}
 function IntelligenceLevelSelector({ value, onChange }) {
     const levels = [
-        { id: 'LOW', label: 'LOW', desc: 'Beginner-friendly, minimal jargon' },
-        { id: 'MEDIUM', label: 'MEDIUM', desc: 'Operational security context' },
-        { id: 'HIGH', label: 'HIGH', desc: 'Research-grade threat intel' },
-        { id: 'LE', label: 'LAW ENFORCEMENT', desc: 'Investigation & forensics focus' }
+        { id: 'LOW', label: 'LOW', desc: 'Beginners & Students: Why it matters, defender actions, minimal jargon' },
+        { id: 'MEDIUM', label: 'MEDIUM', desc: 'SecOps & Engineers: Evidence reasoning, MITRE mappings, confidence' },
+        { id: 'HIGH', label: 'HIGH', desc: 'Red Teams & Researchers: Full diagnostics, IoCs, raw telemetry' },
     ];
 
     return (
@@ -115,7 +172,7 @@ function IntelligenceLevelSelector({ value, onChange }) {
                 title="Intelligence Level"
                 subtitle="Select the depth and complexity of the resulting intelligence report."
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
                 {levels.map(level => {
                     const isSelected = value === level.id;
                     return (
@@ -159,7 +216,7 @@ function IntelligenceLevelSelector({ value, onChange }) {
     );
 }
 
-// ─── Tag pill ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Tag pill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Tag({ label, onRemove, id }) {
     const [hovered, setHovered] = useState(false);
     return (
@@ -196,7 +253,7 @@ function Tag({ label, onRemove, id }) {
     );
 }
 
-// ─── Field error ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Field error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function FieldError({ message }) {
     if (!message) return null;
     return (
@@ -206,7 +263,7 @@ function FieldError({ message }) {
     );
 }
 
-// ─── Section 1: Open Ports ────────────────────────────────────────────────────
+// â”€â”€â”€ Section 1: Open Ports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Reference: ml-0 lg:ml-9 border border-border p-3 min-h-[60px] flex flex-wrap gap-2 items-center
 function OpenPortsInput({ ports, onAddPort, onRemovePort, error }) {
     const [inputValue, setInputValue] = useState('');
@@ -264,7 +321,7 @@ function OpenPortsInput({ ports, onAddPort, onRemovePort, error }) {
                         onChange={(e) => { setInputValue(e.target.value.replace(/[^0-9,\s]/g, '')); setInputError(''); }}
                         onKeyDown={handleKeyDown}
                         onBlur={tryAdd}
-                        placeholder={ports.length === 0 ? 'e.g. 22, 80, 443…' : ''}
+                        placeholder={ports.length === 0 ? 'e.g. 22, 80, 443â€¦' : ''}
                         style={{
                             flex: 1, minWidth: '120px',
                             background: 'transparent', border: 'none', outline: 'none',
@@ -282,7 +339,7 @@ function OpenPortsInput({ ports, onAddPort, onRemovePort, error }) {
                 </p>
             )}
 
-            {/* Quick Add row — reference: mt-3 flex items-center gap-2 flex-wrap */}
+            {/* Quick Add row â€” reference: mt-3 flex items-center gap-2 flex-wrap */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
                 {/* Reference: font-mono text-[10px] text-muted-foreground uppercase tracking-widest */}
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#555', textTransform: 'uppercase', letterSpacing: '0.2em', flexShrink: 0 }}>
@@ -330,7 +387,7 @@ function OpenPortsInput({ ports, onAddPort, onRemovePort, error }) {
     );
 }
 
-// ─── Section 2: Known Misconfigurations ───────────────────────────────────────
+// â”€â”€â”€ Section 2: Known Misconfigurations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
     const [inputValue, setInputValue] = useState('');
     const [inputError, setInputError] = useState('');
@@ -417,7 +474,7 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
                 </div>
             )}
 
-            {/* Input row — reference: flex gap-px bg-border */}
+            {/* Input row â€” reference: flex gap-px bg-border */}
             <div style={{ display: 'flex', gap: '1px', background: '#1a1a1a', position: 'relative' }}>
                 <div style={{ flex: 1, position: 'relative' }}>
                     {/* Reference: flex-1 bg-background px-3 py-2 outline-none font-mono text-sm placeholder:text-muted-foreground border border-border focus:border-accent transition-colors */}
@@ -476,7 +533,7 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
                     )}
                 </div>
 
-                {/* + Add button — reference: bg-foreground text-background px-4 font-mono text-xs font-bold uppercase tracking-widest hover:bg-accent hover:text-accent-foreground */}
+                {/* + Add button â€” reference: bg-foreground text-background px-4 font-mono text-xs font-bold uppercase tracking-widest hover:bg-accent hover:text-accent-foreground */}
                 <button
                     type="button"
                     id="add-misconfig-btn"
@@ -508,7 +565,7 @@ function MisconfigurationsInput({ misconfigs, onAdd, onRemove, error }) {
     );
 }
 
-// ─── Section 3: Log Snippet ───────────────────────────────────────────────────
+// â”€â”€â”€ Section 3: Log Snippet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Reference: textarea ml-0 lg:ml-9 w-... min-h-[180px] bg-white/5 border border-border focus:border-accent ...
 const toolbarBtnStyle = {
     background: '#222', color: '#ccc', border: 'none', padding: '6px 12px',
@@ -631,6 +688,7 @@ export default function AttackSimulationForm({
     onRemoveMisconfiguration,
     onLogSnippetChange,
     onIntelligenceLevelChange,
+    onSelectPreset,
     onSubmit,
     onReset,
 }) {
@@ -651,12 +709,18 @@ export default function AttackSimulationForm({
                 onChange={onIntelligenceLevelChange} 
             />
 
-            {/* ── Section 01: Open Ports ── reference: bg-background p-6 ─────── */}
+            <LibraryPresetSelector 
+                onSelectPreset={onSelectPreset}
+                onAddPort={onAddPort}
+                onAddMisconfiguration={onAddMisconfiguration}
+            />
+
+            {/* â”€â”€ Section 01: Open Ports â”€â”€ reference: bg-background p-6 â”€â”€â”€â”€â”€â”€â”€ */}
             <div style={{ background: '#000', padding: '24px' }}>
                 <SectionHeader
                     number="01"
                     title="Open Ports"
-                    subtitle="Type a port and press Enter or comma. Numeric 1–65535."
+                    subtitle="Type a port and press Enter or comma. Numeric 1â€“65535."
                     count={openPorts.length}
                     max={50}
                 />
@@ -697,7 +761,7 @@ export default function AttackSimulationForm({
                 )}
             </div>
 
-            {/* ── Section 02: Known Misconfigurations ───────────────────────── */}
+            {/* â”€â”€ Section 02: Known Misconfigurations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div style={{ background: '#000', padding: '24px' }}>
                 <SectionHeader
                     number="02"
@@ -714,7 +778,7 @@ export default function AttackSimulationForm({
                 />
             </div>
 
-            {/* ── Section 03: Log Snippet ─────────────────────────────────── */}
+            {/* â”€â”€ Section 03: Log Snippet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div style={{ background: '#000', padding: '24px' }}>
                 <SectionHeader
                     number="03"
@@ -749,15 +813,15 @@ export default function AttackSimulationForm({
                 </div>
             </div>
 
-            {/* ── Bottom status + actions — reference: bg-background p-6 flex flex-wrap gap-3 items-center justify-between ── */}
+            {/* â”€â”€ Bottom status + actions â€” reference: bg-background p-6 flex flex-wrap gap-3 items-center justify-between â”€â”€ */}
             <div style={{
                 background: '#000', padding: '24px',
                 display: 'flex', flexWrap: 'wrap', gap: '12px',
                 alignItems: 'center', justifyContent: 'space-between',
             }}>
-                {/* Status — reference: font-mono text-[10px] text-muted-foreground uppercase tracking-widest */}
+                {/* Status â€” reference: font-mono text-[10px] text-muted-foreground uppercase tracking-widest */}
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: '#555', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
-                    Ready: {portSummary} ports • {miscSummary} misconfigs • {logSummary}
+                    Ready: {portSummary} ports â€¢ {miscSummary} misconfigs â€¢ {logSummary}
                 </div>
 
                 {/* Buttons */}
@@ -830,3 +894,10 @@ export default function AttackSimulationForm({
         </form>
     );
 }
+
+
+
+
+
+
+

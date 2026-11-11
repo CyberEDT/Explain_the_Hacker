@@ -1,0 +1,55 @@
+{
+  "run_at": "2026-10-24",
+  "results": [
+    {
+      "check": "unique_page_ids",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "unique_slugs",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "slug_format",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "title_length_le_60",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "check": "meta_length_le_160",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "check": "internal_links_resolve",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "no_research_required_primary_or_secondary",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "keyword_ids_exist",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "no_numeric_metrics_in_map",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "summary": {
+    "checks": 9,
+    "passed": 9,
+    "failed": 0
+  }
+}

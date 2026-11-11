@@ -27,8 +27,9 @@ export default function Tactics() {
     return (
         <main style={{ background: '#050505', color: '#fff', minHeight: '100vh', overflowX: 'hidden' }}>
             <SEO 
-                title="MITRE ATT&CK Tactics Explorer" 
-                description="Explore enterprise tactics and adversary objectives through interactive MITRE ATT&CK visualizations."
+                title="MITRE ATT&CK Techniques Explained | ETH"
+                description="Explore enterprise tactics, techniques, and procedures (TTPs) explained in plain language, mapped to real-world defensive detection ideas."
+                keywords="mitre attack techniques explained, tactics techniques procedures explained, mitre attack mapping tool, enterprise tactics"
                 canonicalUrl="/tactics"
                 schema={schemaOrg}
             />

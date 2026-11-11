@@ -1,4 +1,11 @@
-import puppeteer from 'puppeteer';
+let puppeteer;
+try {
+    puppeteer = (await import('puppeteer')).default;
+} catch {
+    console.log('[INFO] Puppeteer is not installed in local environment.');
+    console.log('[INFO] To run end-to-end browser tests, install it via: npm i -D puppeteer');
+    process.exit(0);
+}
 
 (async () => {
     const browser = await puppeteer.launch({ headless: 'new' });

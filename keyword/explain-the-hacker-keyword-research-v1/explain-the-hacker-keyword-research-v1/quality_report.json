@@ -1,0 +1,148 @@
+{
+  "total_unique_keywords": 33,
+  "total_records": 33,
+  "duplicate_count": 0,
+  "cluster_count": 8,
+  "competitor_count": 11,
+  "source_coverage": {
+    "sources_registered": 20,
+    "keywords_with_zero_sources": 9,
+    "keywords_with_2plus_sources": 21
+  },
+  "percent_with_volume_data": 0.0,
+  "percent_with_difficulty_data": 0.0,
+  "percent_with_cpc_data": 0.0,
+  "percent_with_verified_serp_evidence": {
+    "google_serp_for_target_geography": 0.0,
+    "pages_observed_in_search_tool_results": 72.7
+  },
+  "priority_distribution": {
+    "P0": 4,
+    "P1": 13,
+    "P2": 6,
+    "research_required": 10
+  },
+  "missing_metrics": [
+    "monthly_search_volume",
+    "keyword_difficulty",
+    "cpc",
+    "trend_direction",
+    "seasonality",
+    "ranking_urls"
+  ],
+  "conflicting_metrics": [],
+  "unsupported_claims_detected": [
+    {
+      "claim": "Metana platform pricing (for example about $14/mo for HTB)",
+      "found_in": "https://metana.io/blog/what-is-the-best-soc-analyst-training-platform/",
+      "treatment": "Third-party; not repeated."
+    },
+    {
+      "claim": "Ratings and strengths on EthicalHacking.ai review page",
+      "found_in": "https://ethicalhacking.ai/tools/letsdefend",
+      "treatment": "Third-party; not repeated."
+    }
+  ],
+  "known_limitations": [
+    "No volume, difficulty or CPC data for any keyword.",
+    "The ETH page fetch returned only head meta tags, so its actual features were not read; product scope comes from that metadata and from your CyberEDT notes.",
+    "Keywords are researcher-derived; most were not observed as queries.",
+    "Search results were not geo-targeted; India evidence is minimal.",
+    "Competitor pricing and free tiers were not verified; several facts come from third-party listings.",
+    "Red/blue team terms are crowded by funded platforms; fit with ETH unverified."
+  ],
+  "recommended_follow_up_research": [
+    "Open ETH in a browser or share its feature list so keywords match actual features.",
+    "Check indexing and rendering in Search Console URL Inspection.",
+    "Keyword Planner and Trends for P0/P1 terms; real India SERPs.",
+    "Verify competitor free tiers and pricing on official pages.",
+    "Check that campaign walkthroughs cite verified sources."
+  ],
+  "validation_results": [
+    {
+      "check": "json_syntax",
+      "passed": true,
+      "detail": "all files parse"
+    },
+    {
+      "check": "keywords_schema",
+      "passed": true,
+      "detail": "33 valid"
+    },
+    {
+      "check": "clusters_schema",
+      "passed": true,
+      "detail": "8 valid"
+    },
+    {
+      "check": "competitors_schema",
+      "passed": true,
+      "detail": "11 valid"
+    },
+    {
+      "check": "content_schema",
+      "passed": true,
+      "detail": "8 valid"
+    },
+    {
+      "check": "gaps_schema",
+      "passed": true,
+      "detail": "4 valid"
+    },
+    {
+      "check": "unique_ids",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "no_duplicates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "valid_urls",
+      "passed": true,
+      "detail": "94 syntax-checked"
+    },
+    {
+      "check": "source_ids_resolve",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "metrics_null_no_source",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "unsourced_not_prioritised",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "cluster_references",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "content_references",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "manifest_counts",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "summary_written",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "validation_summary": {
+    "checks": 16,
+    "passed": 16,
+    "failed": 0
+  }
+}

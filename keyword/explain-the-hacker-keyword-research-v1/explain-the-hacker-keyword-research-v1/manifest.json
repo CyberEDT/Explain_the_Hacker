@@ -1,0 +1,186 @@
+{
+  "dataset_name": "explain-the-hacker-keyword-research",
+  "dataset_version": "v1",
+  "schema_version": "1.0.0",
+  "research_scope": "Qualitative keyword, intent and competitor research for Explain The Hacker (ETH) by CyberEDT, an interactive attack-chain simulation and MITRE ATT&CK-mapped threat analysis learning tool.",
+  "countries": [
+    "India",
+    "International_unspecified"
+  ],
+  "languages": [
+    "en"
+  ],
+  "research_date": "2026-10-24",
+  "sources_consulted": [
+    {
+      "source_id": "H01",
+      "title": "Explain The Hacker (own site; only head meta tags returned to fetch)",
+      "url": "https://explainthehacker.cyberedt.com/",
+      "source_type": "own_site"
+    },
+    {
+      "source_id": "H02",
+      "title": "Coursera / Packt: MITRE ATT&CK Framework foundations",
+      "url": "https://www.coursera.org/de-DE/learn/packt-mitre-att-ck-framework-foundations-for-cyber-defense-onrdn",
+      "source_type": "course_platform"
+    },
+    {
+      "source_id": "H03",
+      "title": "NICCS / Cybrary: practical threat modeling course",
+      "url": "https://niccs.cisa.gov/education-training/catalog/cybrary/practical-threat-modeling",
+      "source_type": "government_catalog"
+    },
+    {
+      "source_id": "H04",
+      "title": "GitHub: AttackFlow kill chain editor and visualizer",
+      "url": "https://github.com/Pr0cella/AttackFlow",
+      "source_type": "open_source_repo"
+    },
+    {
+      "source_id": "H05",
+      "title": "GitHub: cyber range simulator (ATT&CK-mapped attack simulation)",
+      "url": "https://github.com/aidhas23/cyber-range-simulator",
+      "source_type": "open_source_repo"
+    },
+    {
+      "source_id": "H06",
+      "title": "Antisyphon: attack emulation tools course",
+      "url": "https://www.antisyphontraining.com/on-demand-courses/attack-emulation-tools-atomic-red-team-caldera-and-more-w-carrie-roberts/",
+      "source_type": "training_vendor"
+    },
+    {
+      "source_id": "H07",
+      "title": "Antisyphon: MITRE ATT&CK framework and tools class",
+      "url": "https://www.antisyphontraining.com/?p=8449",
+      "source_type": "training_vendor"
+    },
+    {
+      "source_id": "H08",
+      "title": "Hack The Box: LetsDefend joins HTB",
+      "url": "https://www.hackthebox.com/blog/welcome-letsdefend?hsLang=en",
+      "source_type": "vendor_blog"
+    },
+    {
+      "source_id": "H09",
+      "title": "ShieldRiser C-SOC attack scenario platform (listing)",
+      "url": "https://globalcybersecuritynetwork.com/company/shieldriser/",
+      "source_type": "third_party_listing"
+    },
+    {
+      "source_id": "H10",
+      "title": "Security Blue Team / SourceForge listing (CyberDefenders text)",
+      "url": "https://sourceforge.net/software/product/Security-Blue-Team/",
+      "source_type": "third_party_listing"
+    },
+    {
+      "source_id": "H11",
+      "title": "LetsDefend help: what is LetsDefend",
+      "url": "https://help.letsdefend.io/en/articles/8742685-what-is-letsdefend",
+      "source_type": "vendor_docs"
+    },
+    {
+      "source_id": "H12",
+      "title": "CyberDefenders labs",
+      "url": "https://cyberdefenders.org/labs",
+      "source_type": "vendor_page"
+    },
+    {
+      "source_id": "H13",
+      "title": "Hack The Box Threat Range",
+      "url": "https://www.hackthebox.com/business/threat-range-demo?hsLang=en",
+      "source_type": "vendor_page"
+    },
+    {
+      "source_id": "H14",
+      "title": "Infosec Skills cyber range labs",
+      "url": "https://www.infosecinstitute.com/range",
+      "source_type": "vendor_page"
+    },
+    {
+      "source_id": "H15",
+      "title": "Metana: best SOC analyst training platform (pricing claims unverified)",
+      "url": "https://metana.io/blog/what-is-the-best-soc-analyst-training-platform/",
+      "source_type": "third_party_blog"
+    },
+    {
+      "source_id": "H16",
+      "title": "EthicalHacking.ai LetsDefend review",
+      "url": "https://ethicalhacking.ai/tools/letsdefend",
+      "source_type": "third_party_review"
+    },
+    {
+      "source_id": "H17",
+      "title": "Fraunhofer SIT cyber range blue team training",
+      "url": "https://cyberrange.sit.fraunhofer.de/blue-team-basic-en.php",
+      "source_type": "research_institute"
+    },
+    {
+      "source_id": "H18",
+      "title": "MITRE ATT&CK Groups",
+      "url": "https://attack.mitre.org/groups",
+      "source_type": "official_framework"
+    },
+    {
+      "source_id": "H19",
+      "title": "KELA: APT profiling with MITRE framework",
+      "url": "https://kelacyber.com/blog/effective-threat-hunting-with-apt-profiling-leveraging-mitre-framework",
+      "source_type": "vendor_blog"
+    },
+    {
+      "source_id": "H20",
+      "title": "ATT&CK Navigator analysis guide (skill listing; shows Navigator URL)",
+      "url": "https://www.claudemarket.ai/skills/mukul975/analyzing-apt-group-with-mitre-navigator",
+      "source_type": "low_reliability_listing"
+    }
+  ],
+  "tools_attempted_or_unavailable": {
+    "web_fetch_eth_homepage": "returned head meta only",
+    "web_search_tool_standard_mode": "used",
+    "google_keyword_planner": "not accessible",
+    "google_trends": "not accessible",
+    "search_console": "not supplied",
+    "third_party_seo_tools": "not accessible"
+  },
+  "keyword_count": 33,
+  "cluster_count": 8,
+  "competitor_count": 11,
+  "content_opportunity_count": 8,
+  "gap_count": 4,
+  "metrics_availability": {
+    "search_volume": "0 of 33",
+    "keyword_difficulty": "0 of 33",
+    "cpc": "0 of 33",
+    "trend": "0 of 33",
+    "ranking_urls": "none collected",
+    "observed_pages_in_search_results": "24 of 33"
+  },
+  "known_limitations": [
+    "No volume, difficulty or CPC data for any keyword.",
+    "The ETH page fetch returned only head meta tags, so its actual features were not read; product scope comes from that metadata and from your CyberEDT notes.",
+    "Keywords are researcher-derived; most were not observed as queries.",
+    "Search results were not geo-targeted; India evidence is minimal.",
+    "Competitor pricing and free tiers were not verified; several facts come from third-party listings.",
+    "Red/blue team terms are crowded by funded platforms; fit with ETH unverified."
+  ],
+  "quality_status": "partial_qualitative_dataset_no_volume_or_difficulty_data",
+  "score_method": {
+    "version": "eth_opp_v1",
+    "scale": "0-100 provisional",
+    "weights": {
+      "product_relevance": 0.25,
+      "intent_alignment": 0.15,
+      "ability_to_satisfy": 0.15,
+      "commercial_relevance": 0.1,
+      "audience_relevance": 0.1,
+      "demand_evidence": 0.15,
+      "competitive_attainability": 0.1
+    },
+    "priority_rules": "no sources -> research_required; P0 needs score>=70, relevance>=4, satisfy>=4, cluster eth_attack_chain; P1 score>=58 relevance>=3 satisfy>=3; P2 score>=40; else research_required",
+    "missing_data_treatment": "Unverified demand scores 0; 2+ external independent pages (own-site meta excluded) give a capped qualitative signal of 2 of 5."
+  },
+  "additional_files": {
+    "seo_implementation_map.json": "Per-page SEO briefs (proposals); P0/P1 opportunities only",
+    "AGENTS.md": "Rules and workflow for coding agents",
+    "seo_validation.json": "Checks for the SEO map"
+  }
+}

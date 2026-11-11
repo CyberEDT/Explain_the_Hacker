@@ -1,0 +1,289 @@
+{
+  "map_version": "1.0.0",
+  "product": "Explain The Hacker (ETH)",
+  "site": "explainthehacker.cyberedt.com",
+  "created": "2026-10-24",
+  "status": "proposal_only_no_volume_data",
+  "domain_note": "Product scope inferred from head meta tags and owner notes; feature list unverified.",
+  "how_to_use": "Read AGENTS.md first. Each page entry is a brief for one page. Check the live site and sitemap before creating anything.",
+  "pages": [
+    {
+      "page_id": "pg_001",
+      "opportunity_id": "co_001",
+      "priority": "P0",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/",
+      "page_type": "product_landing_page",
+      "search_intent": "commercial_investigation",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000003",
+        "keyword": "attack chain visualization"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_intl_000001",
+          "keyword": "attack chain simulator"
+        },
+        {
+          "keyword_id": "kw_intl_000002",
+          "keyword": "cyber attack simulation tool"
+        }
+      ],
+      "excluded_keywords": [
+        {
+          "keyword_id": "kw_in_000033",
+          "keyword": "attack simulation tool india students",
+          "reason": "priority research_required"
+        }
+      ],
+      "title_tag": "Explain The Hacker: Interactive Attack Chain Simulator",
+      "title_length": 54,
+      "meta_description": "Simulate and visualize real-world attack chains mapped to MITRE ATT&CK. Learn how attacks unfold and how defenders can spot them.",
+      "meta_length": 129,
+      "h1": "Explain The Hacker: interactive attack chain simulator",
+      "h2_outline": [
+        "What you can do here",
+        "How a simulation works",
+        "ATT&CK mapping",
+        "Who it is for",
+        "Start a simulation"
+      ],
+      "schema_type": "SoftwareApplication (WebApplication)",
+      "internal_links_to": [
+        "pg_002",
+        "pg_003"
+      ],
+      "primary_cta": "Start a simulation",
+      "content_rules": [
+        "Ensure the H1 and intro text exist in server-rendered HTML; a fetch returned only head meta tags.",
+        "Keep content defensive and non-operational."
+      ],
+      "evidence_to_cite": [
+        "https://github.com/Pr0cella/AttackFlow",
+        "https://github.com/aidhas23/cyber-range-simulator",
+        "https://www.hackthebox.com/business/threat-range-demo?hsLang=en"
+      ],
+      "owner_confirmations_needed": [
+        "Actual feature list",
+        "Whether the page is client-rendered",
+        "Whether it is free"
+      ],
+      "uncertainty": "Terms not observed as queries."
+    },
+    {
+      "page_id": "pg_002",
+      "opportunity_id": "co_002",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/learn/cyber-kill-chain-explained",
+      "page_type": "tutorial",
+      "search_intent": "informational",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000005",
+        "keyword": "cyber kill chain explained"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_intl_000004",
+          "keyword": "attack path visualization"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "Cyber Kill Chain and Attack Paths Explained | ETH",
+      "title_length": 49,
+      "meta_description": "A beginner explanation of kill chain models and attack paths, with interactive examples from Explain The Hacker.",
+      "meta_length": 112,
+      "h1": "Cyber kill chain and attack paths explained",
+      "h2_outline": [
+        "What a kill chain is",
+        "Common models",
+        "An attack path step by step",
+        "How defenders use this"
+      ],
+      "schema_type": "Article",
+      "internal_links_to": [
+        "pg_001",
+        "pg_003"
+      ],
+      "primary_cta": "See it in the simulator",
+      "content_rules": [
+        "Paraphrase framework descriptions; cite sources."
+      ],
+      "evidence_to_cite": [
+        "https://github.com/Pr0cella/AttackFlow",
+        "https://niccs.cisa.gov/education-training/catalog/cybrary/practical-threat-modeling"
+      ],
+      "owner_confirmations_needed": [],
+      "uncertainty": "Single-sourced intent."
+    },
+    {
+      "page_id": "pg_003",
+      "opportunity_id": "co_003",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/learn/mitre-attack-techniques-for-beginners",
+      "page_type": "tutorial",
+      "search_intent": "educational",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000011",
+        "keyword": "mitre attack techniques explained"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_intl_000013",
+          "keyword": "tactics techniques procedures explained"
+        },
+        {
+          "keyword_id": "kw_intl_000010",
+          "keyword": "mitre attack mapping tool"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "MITRE ATT&CK Techniques for Beginners | ETH",
+      "title_length": 43,
+      "meta_description": "Plain-language explanations of ATT&CK tactics and techniques, linked to attack chains you can explore.",
+      "meta_length": 102,
+      "h1": "MITRE ATT&CK techniques for beginners",
+      "h2_outline": [
+        "Tactics vs techniques",
+        "Reading a technique",
+        "Techniques in a chain",
+        "Mapping to detection ideas"
+      ],
+      "schema_type": "Article",
+      "internal_links_to": [
+        "pg_001",
+        "pg_005"
+      ],
+      "primary_cta": "Explore a chain",
+      "content_rules": [
+        "Do not copy MITRE text."
+      ],
+      "evidence_to_cite": [
+        "https://www.coursera.org/de-DE/learn/packt-mitre-att-ck-framework-foundations-for-cyber-defense-onrdn",
+        "https://www.antisyphontraining.com/?p=8449",
+        "https://www.antisyphontraining.com/on-demand-courses/attack-emulation-tools-atomic-red-team-caldera-and-more-w-carrie-roberts/"
+      ],
+      "owner_confirmations_needed": [],
+      "uncertainty": "Do not copy MITRE text."
+    },
+    {
+      "page_id": "pg_004",
+      "opportunity_id": "co_004",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/learn/how-hackers-think",
+      "page_type": "tutorial",
+      "search_intent": "informational",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000007",
+        "keyword": "how hackers think"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_intl_000008",
+          "keyword": "think like a hacker"
+        },
+        {
+          "keyword_id": "kw_intl_000009",
+          "keyword": "attacker mindset for defenders"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "How Hackers Think: Attacker Mindset for Defenders | ETH",
+      "title_length": 55,
+      "meta_description": "Understand attacker goals and decision-making so you can defend better, with examples drawn from documented campaigns.",
+      "meta_length": 118,
+      "h1": "How hackers think",
+      "h2_outline": [
+        "Goals and constraints",
+        "Reconnaissance to impact",
+        "What defenders can learn",
+        "Responsible learning"
+      ],
+      "schema_type": "Article",
+      "internal_links_to": [
+        "pg_001",
+        "pg_005"
+      ],
+      "primary_cta": "Explore a chain",
+      "content_rules": [
+        "Defensive framing; no operational how-to details."
+      ],
+      "evidence_to_cite": [
+        "https://www.infosecinstitute.com/range",
+        "https://www.hackthebox.com/blog/welcome-letsdefend?hsLang=en"
+      ],
+      "owner_confirmations_needed": [],
+      "uncertainty": "Content must stay defensive and non-operational."
+    },
+    {
+      "page_id": "pg_005",
+      "opportunity_id": "co_005",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/learn/campaign-walkthroughs",
+      "page_type": "tutorial",
+      "search_intent": "informational",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000014",
+        "keyword": "apt group attack chain"
+      },
+      "secondary_keywords": [],
+      "excluded_keywords": [
+        {
+          "keyword_id": "kw_intl_000015",
+          "keyword": "ransomware attack chain explained",
+          "reason": "priority research_required"
+        },
+        {
+          "keyword_id": "kw_intl_000016",
+          "keyword": "cyber attack case study walkthrough",
+          "reason": "priority research_required"
+        }
+      ],
+      "title_tag": "APT and Ransomware Campaign Walkthroughs | ETH",
+      "title_length": 46,
+      "meta_description": "Step-by-step walkthroughs of documented campaigns mapped to MITRE ATT&CK, with sources for each.",
+      "meta_length": 96,
+      "h1": "Campaign walkthroughs",
+      "h2_outline": [
+        "How to read a walkthrough",
+        "Featured campaigns",
+        "Sources and verification"
+      ],
+      "schema_type": "CollectionPage",
+      "internal_links_to": [
+        "pg_001",
+        "pg_003"
+      ],
+      "primary_cta": "Open a walkthrough",
+      "content_rules": [
+        "Every campaign claim needs a verified, cited source.",
+        "Avoid certainty on attribution."
+      ],
+      "evidence_to_cite": [
+        "https://kelacyber.com/blog/effective-threat-hunting-with-apt-profiling-leveraging-mitre-framework",
+        "https://attack.mitre.org/groups"
+      ],
+      "owner_confirmations_needed": [
+        "Which campaigns from the dataset are verified and ready"
+      ],
+      "uncertainty": "Source accuracy for each campaign must be verified."
+    }
+  ],
+  "implementation_checklist": [
+    "Run Search Console URL Inspection on the home page and compare rendered HTML to raw HTML.",
+    "Check indexability: robots meta and robots.txt allow the page; canonical points to itself.",
+    "Check the server-rendered HTML contains the H1 and main copy.",
+    "Add new pages to sitemap.xml and submit in Search Console.",
+    "Connect Search Console; after 4+ weeks review impressions and queries, then update priorities with real data.",
+    "Request Keyword Planner (India) and Trends exports and add them to keywords.jsonl with source and date.",
+    "Use descriptive internal link anchors; avoid orphan pages."
+  ]
+}

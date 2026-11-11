@@ -1,0 +1,317 @@
+[
+  {
+    "competitor_id": "c_htb",
+    "name": "Hack The Box (Threat Range, LetsDefend)",
+    "official_url": "https://www.hackthebox.com",
+    "product_category": "cyber_range_training",
+    "target_audience": "Teams and learners",
+    "observed_features": [
+      "Live-fire blue team simulation with attack storylines (APT, ransomware, insider)",
+      "Acquired LetsDefend SOC simulations"
+    ],
+    "observed_messaging": [
+      "Attackers and defenders learn from each other"
+    ],
+    "relevant_pages": [
+      "https://www.hackthebox.com/business/threat-range-demo?hsLang=en",
+      "https://www.hackthebox.com/blog/welcome-letsdefend?hsLang=en"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Free, narrative-first ATT&CK-mapped explainers for beginners (hypothesis)"
+    ],
+    "source_urls": [
+      "https://www.hackthebox.com/business/threat-range-demo?hsLang=en",
+      "https://www.hackthebox.com/blog/welcome-letsdefend?hsLang=en"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "medium",
+    "limitations": "Pricing not verified here."
+  },
+  {
+    "competitor_id": "c_letsdefend",
+    "name": "LetsDefend",
+    "official_url": "https://letsdefend.io",
+    "product_category": "soc_simulation",
+    "target_audience": "Blue team learners",
+    "observed_features": [
+      "Investigate real attacks inside a simulated SOC"
+    ],
+    "observed_messaging": [
+      "Hands-on blue team training"
+    ],
+    "relevant_pages": [
+      "https://help.letsdefend.io/en/articles/8742685-what-is-letsdefend"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Visual attack-chain teaching vs alert triage practice"
+    ],
+    "source_urls": [
+      "https://help.letsdefend.io/en/articles/8742685-what-is-letsdefend",
+      "https://ethicalhacking.ai/tools/letsdefend"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "medium",
+    "limitations": "Main site not fetched; review site says freemium (third party)."
+  },
+  {
+    "competitor_id": "c_cyberdefenders",
+    "name": "CyberDefenders",
+    "official_url": "https://cyberdefenders.org",
+    "product_category": "blue_team_labs",
+    "target_audience": "SOC analysts, DFIR",
+    "observed_features": [
+      "Browser-based blue team labs, weekly additions (vendor/listing text)"
+    ],
+    "observed_messaging": [
+      "No setup required"
+    ],
+    "relevant_pages": [
+      "https://cyberdefenders.org/labs"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Beginner-level narrative and mapping"
+    ],
+    "source_urls": [
+      "https://cyberdefenders.org/labs",
+      "https://sourceforge.net/software/product/Security-Blue-Team/"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "medium",
+    "limitations": "Free vs paid scope unverified."
+  },
+  {
+    "competitor_id": "c_infosec",
+    "name": "Infosec Skills cyber range",
+    "official_url": "https://www.infosecinstitute.com",
+    "product_category": "training_labs",
+    "target_audience": "Teams and learners",
+    "observed_features": [
+      "Hands-on labs mapped to ATT&CK tactics"
+    ],
+    "observed_messaging": [
+      "Learn to think like an attacker"
+    ],
+    "relevant_pages": [
+      "https://www.infosecinstitute.com/range"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Free access and India context"
+    ],
+    "source_urls": [
+      "https://www.infosecinstitute.com/range"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "medium",
+    "limitations": "Subscription terms not verified."
+  },
+  {
+    "competitor_id": "c_shieldriser",
+    "name": "ShieldRiser",
+    "official_url": "https://globalcybersecuritynetwork.com/company/shieldriser/",
+    "product_category": "c_soc_attack_scenarios",
+    "target_audience": "Students, enterprises",
+    "observed_features": [
+      "Simulated C-SOC attack scenarios"
+    ],
+    "observed_messaging": [
+      "Pressure-tested defensive training"
+    ],
+    "relevant_pages": [
+      "https://globalcybersecuritynetwork.com/company/shieldriser/"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Compare after reviewing product site"
+    ],
+    "source_urls": [
+      "https://globalcybersecuritynetwork.com/company/shieldriser/"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "low",
+    "limitations": "Only a directory listing observed; official site not found."
+  },
+  {
+    "competitor_id": "c_antisyphon",
+    "name": "Antisyphon Training",
+    "official_url": "https://www.antisyphontraining.com",
+    "product_category": "paid_training",
+    "target_audience": "Defenders, students",
+    "observed_features": [
+      "Attack emulation course (Atomic Red Team, CALDERA, VECTR) and ATT&CK tools class"
+    ],
+    "observed_messaging": [
+      "Course lists 16 hours and USD 575 tuition on its page"
+    ],
+    "relevant_pages": [
+      "https://www.antisyphontraining.com/on-demand-courses/attack-emulation-tools-atomic-red-team-caldera-and-more-w-carrie-roberts/",
+      "https://www.antisyphontraining.com/?p=8449"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Free visual learning; do not claim emulation capability"
+    ],
+    "source_urls": [
+      "https://www.antisyphontraining.com/on-demand-courses/attack-emulation-tools-atomic-red-team-caldera-and-more-w-carrie-roberts/",
+      "https://www.antisyphontraining.com/?p=8449"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "medium",
+    "limitations": "Prices may change."
+  },
+  {
+    "competitor_id": "c_coursera_packt",
+    "name": "Coursera (Packt): MITRE ATT&CK foundations",
+    "official_url": "https://www.coursera.org",
+    "product_category": "mooc",
+    "target_audience": "Learners",
+    "observed_features": [
+      "About 3 hours; Navigator and Pyramid of Pain hands-on"
+    ],
+    "observed_messaging": [
+      "Certificate offered"
+    ],
+    "relevant_pages": [
+      "https://www.coursera.org/de-DE/learn/packt-mitre-att-ck-framework-foundations-for-cyber-defense-onrdn"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Interactive chain visualisation instead of video modules"
+    ],
+    "source_urls": [
+      "https://www.coursera.org/de-DE/learn/packt-mitre-att-ck-framework-foundations-for-cyber-defense-onrdn"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "medium",
+    "limitations": "Plan and price not verified."
+  },
+  {
+    "competitor_id": "c_attackflow",
+    "name": "AttackFlow (open source)",
+    "official_url": "https://github.com/Pr0cella/AttackFlow",
+    "product_category": "oss_kill_chain_editor",
+    "target_audience": "Analysts, developers",
+    "observed_features": [
+      "Kill chain editor mapping ATT&CK, CAPEC, CWE, STIX to Unified Kill Chain"
+    ],
+    "observed_messaging": [
+      "Developer-oriented"
+    ],
+    "relevant_pages": [
+      "https://github.com/Pr0cella/AttackFlow"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Beginner UX and narratives"
+    ],
+    "source_urls": [
+      "https://github.com/Pr0cella/AttackFlow"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "medium",
+    "limitations": "Adoption unknown."
+  },
+  {
+    "competitor_id": "c_cyberrangesim",
+    "name": "cyber-range-simulator (open source)",
+    "official_url": "https://github.com/aidhas23/cyber-range-simulator",
+    "product_category": "oss_attack_simulation",
+    "target_audience": "Developers, students",
+    "observed_features": [
+      "Multi-phase attack simulation with ATT&CK mapping and SIEM-style logs"
+    ],
+    "observed_messaging": [
+      "Run locally"
+    ],
+    "relevant_pages": [
+      "https://github.com/aidhas23/cyber-range-simulator"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Hosted, polished experience"
+    ],
+    "source_urls": [
+      "https://github.com/aidhas23/cyber-range-simulator"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "low",
+    "limitations": "Small project as observed."
+  },
+  {
+    "competitor_id": "c_cybrary_tm",
+    "name": "Cybrary practical threat modeling",
+    "official_url": "https://niccs.cisa.gov/education-training/catalog/cybrary/practical-threat-modeling",
+    "product_category": "course_catalog_entry",
+    "target_audience": "Practitioners",
+    "observed_features": [
+      "Navigator and Deciduous attack-path visualization course"
+    ],
+    "observed_messaging": [
+      "Self-paced"
+    ],
+    "relevant_pages": [
+      "https://niccs.cisa.gov/education-training/catalog/cybrary/practical-threat-modeling"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Entry-level focus"
+    ],
+    "source_urls": [
+      "https://niccs.cisa.gov/education-training/catalog/cybrary/practical-threat-modeling"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "medium",
+    "limitations": "Catalog entry only."
+  },
+  {
+    "competitor_id": "c_mitre_groups",
+    "name": "MITRE ATT&CK",
+    "official_url": "https://attack.mitre.org",
+    "product_category": "official_framework",
+    "target_audience": "Everyone in security",
+    "observed_features": [
+      "Official groups and technique pages"
+    ],
+    "observed_messaging": [
+      "Authoritative reference"
+    ],
+    "relevant_pages": [
+      "https://attack.mitre.org/groups"
+    ],
+    "observed_keyword_relationships": [
+      "Observed in search-tool results; no ranking verified."
+    ],
+    "differentiation_opportunities": [
+      "Narrative layer on top; do not copy content"
+    ],
+    "source_urls": [
+      "https://attack.mitre.org/groups"
+    ],
+    "retrieved_at": "2026-10-24",
+    "confidence": "high",
+    "limitations": "Authoritative; navigational intent goes here."
+  }
+]

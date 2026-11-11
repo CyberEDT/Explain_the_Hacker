@@ -761,37 +761,7 @@ export default function ThreatVisualization({ result }) {
                 </>
             )}
 
-            {/*
-              LE — Law Enforcement / Digital Forensics & Incident Response
-              Goal: Evidence integrity above all else. Focus on what was CONFIRMED vs theorized.
-              Show chain-of-events clearly. Avoid visual noise that distracts from evidentiary weight.
-            */}
-            {intelLevel === 'LE' && (
-                <>
-                    {/* Row 1: Risk score + evidence quality split — key for court-admissible framing */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        <RiskGaugeSection result={result} colors={colors} />
-                        <div className="lg:col-span-2">
-                            <EvidenceDistribution evidenceData={evidenceData} colors={colors} />
-                        </div>
-                    </div>
-                    {/* Row 2: Confidence quality distribution + explainability of top event */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <ConfidenceDistribution phaseData={phaseData} colors={colors} />
-                        <ExplainabilityPanel phaseData={phaseData} colors={colors} />
-                    </div>
-                    {/* Row 3: Full kill-chain timeline — shows sequential event flow */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <AttackProbabilitySection phaseData={phaseData} colors={colors} />
-                        <AttackFlowSection phaseData={phaseData} colors={colors} />
-                    </div>
-                    {/* Row 4: Network graph — structural path of the attack */}
-                    <AttackGraph result={result} phaseData={phaseData} colors={colors} />
-                    {/* Row 5: MITRE coverage for legal attribution framing */}
-                    <AttackCoverageMatrix coverage={coverage} colors={colors} />
-                </>
-            )}
-
         </div>
     );
 }
+

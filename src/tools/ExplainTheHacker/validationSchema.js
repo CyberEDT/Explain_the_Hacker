@@ -6,13 +6,19 @@ import DOMPurify from 'dompurify';
 /** Strip all HTML tags from a string using DOMPurify */
 export function stripHtml(str) {
     if (typeof str !== 'string') return '';
-    return DOMPurify.sanitize(str, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim();
+    if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+        return DOMPurify.sanitize(str, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim();
+    }
+    return str.replace(/<[^>]*>?/gm, '').trim();
 }
 
 /** Strip scripts and dangerous tags using standard DOMPurify defaults */
 export function stripScripts(str) {
     if (typeof str !== 'string') return '';
-    return DOMPurify.sanitize(str).trim();
+    if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+        return DOMPurify.sanitize(str).trim();
+    }
+    return str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim();
 }
 
 // ─── Port Validation ──────────────────────────────────────────────────────────
@@ -58,8 +64,8 @@ export const attackSimulationSchema = z.object({
         .optional()
         .or(z.literal('')),
 
-    // Intelligence Level (LOW, MEDIUM, HIGH, LE)
-    intelligenceLevel: z.enum(['LOW', 'MEDIUM', 'HIGH', 'LE']).default('LOW'),
+    // Intelligence Level (LOW, MEDIUM, HIGH)
+    intelligenceLevel: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('LOW'),
 });
 
 // ─── Default Form Values ──────────────────────────────────────────────────────
@@ -68,7 +74,7 @@ export const defaultFormValues = {
     openPorts: [],   // string[]
     misconfigurations: [],  // string[]
     logSnippet: '',   // string
-    intelligenceLevel: 'LOW', // 'LOW' | 'MEDIUM' | 'HIGH' | 'LE'
+    intelligenceLevel: 'LOW', // 'LOW' | 'MEDIUM' | 'HIGH'
 };
 
 // ─── Preset port lists for quick-add ─────────────────────────────────────────
@@ -196,3 +202,4 @@ export const MISCONFIGURATION_SUGGESTIONS = [
     'Pre-Authentication Disabled on User Accounts',
     'Open Recursive Resolver + No DNS Query Monitoring'
 ];
+

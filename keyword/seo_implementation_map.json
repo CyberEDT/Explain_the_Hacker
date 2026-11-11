@@ -1,0 +1,516 @@
+{
+  "map_version": "1.0.0",
+  "product": "CyberEDT",
+  "site": "cyberedt.com",
+  "created": "2026-10-24",
+  "status": "proposal_only_no_volume_data",
+  "domain_note": "Live URL structure was not checked. Map slugs to cyberedt.com's real paths.",
+  "how_to_use": "Read AGENTS.md first. Each page entry is a brief for one page. Check the live site and sitemap before creating anything.",
+  "pages": [
+    {
+      "page_id": "pg_001",
+      "opportunity_id": "co_001",
+      "priority": "P0",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/tools/phishing-analyzer",
+      "page_type": "free_tool",
+      "search_intent": "commercial_investigation",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000001",
+        "keyword": "phishing url checker"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_intl_000002",
+          "keyword": "phishing link checker"
+        },
+        {
+          "keyword_id": "kw_intl_000003",
+          "keyword": "is this link safe"
+        }
+      ],
+      "excluded_keywords": [
+        {
+          "keyword_id": "kw_intl_000006",
+          "keyword": "phishing analyzer tool",
+          "reason": "priority research_required"
+        }
+      ],
+      "title_tag": "Free Phishing Link Checker and Analyzer | CyberEDT",
+      "title_length": 50,
+      "meta_description": "Check a suspicious link with CyberEDT's Phishing Analyzer and see what each security check found and why it matters.",
+      "meta_length": 116,
+      "h1": "Phishing Analyzer: check a suspicious link",
+      "h2_outline": [
+        "Paste a link to analyze",
+        "What each check means",
+        "Limits: what a link checker cannot tell you",
+        "How to spot phishing yourself",
+        "FAQ"
+      ],
+      "schema_type": "SoftwareApplication (WebApplication)",
+      "internal_links_to": [
+        "pg_002",
+        "pg_003"
+      ],
+      "primary_cta": "Analyze a link",
+      "content_rules": [
+        "Say what is and is not stored about submitted URLs only after the owner confirms.",
+        "Do not claim detection accuracy figures."
+      ],
+      "evidence_to_cite": [
+        "https://www.emailveritas.com/url-checker",
+        "https://powerdmarc.com/da/is-this-link-safe-how-to-check/",
+        "https://empist.com/free-tools/phishing-link-scanner/"
+      ],
+      "owner_confirmations_needed": [
+        "Exact number and names of checks (notes say 14+)",
+        "Data retention and privacy of submitted URLs"
+      ],
+      "uncertainty": "Head terms are crowded; no volume data."
+    },
+    {
+      "page_id": "pg_002",
+      "opportunity_id": "co_002",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/learn/how-phishing-link-checkers-work",
+      "page_type": "tutorial",
+      "search_intent": "informational",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000008",
+        "keyword": "how to spot a phishing website"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_intl_000004",
+          "keyword": "free url scanner"
+        },
+        {
+          "keyword_id": "kw_intl_000007",
+          "keyword": "typosquatting domain check"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "How Phishing Link Checkers Work | CyberEDT",
+      "title_length": 42,
+      "meta_description": "What phishing link checkers look at, how to read their results, and the red flags you can spot yourself before clicking.",
+      "meta_length": 120,
+      "h1": "How phishing link checkers work",
+      "h2_outline": [
+        "Typical checks and what they mean",
+        "Reading a verdict",
+        "Manual red flags",
+        "Limits and false results"
+      ],
+      "schema_type": "Article",
+      "internal_links_to": [
+        "pg_001"
+      ],
+      "primary_cta": "Try the Phishing Analyzer",
+      "content_rules": [
+        "Defensive framing only."
+      ],
+      "evidence_to_cite": [
+        "https://urlert.com/blog/five-simple-ways-to-spot-phishing-site",
+        "https://powerdmarc.com/da/is-this-link-safe-how-to-check/"
+      ],
+      "owner_confirmations_needed": [],
+      "uncertainty": "Content parity risk."
+    },
+    {
+      "page_id": "pg_003",
+      "opportunity_id": "co_003",
+      "priority": "P0",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/tools/hash-guard",
+      "page_type": "free_tool",
+      "search_intent": "commercial_investigation",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000020",
+        "keyword": "malware hash lookup"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_intl_000019",
+          "keyword": "file hash checker"
+        },
+        {
+          "keyword_id": "kw_intl_000021",
+          "keyword": "check md5 hash for malware"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "File Hash Checker and Malware Hash Lookup | CyberEDT",
+      "title_length": 52,
+      "meta_description": "Check a file hash against known malware sources with Hash Guard, and learn what a match or no match really means.",
+      "meta_length": 113,
+      "h1": "Hash Guard: file hash and malware hash lookup",
+      "h2_outline": [
+        "Look up a hash",
+        "What a result means",
+        "Limits of exact-match lookup",
+        "Hash vs uploading a file",
+        "Data sources"
+      ],
+      "schema_type": "SoftwareApplication (WebApplication)",
+      "internal_links_to": [
+        "pg_004",
+        "pg_001"
+      ],
+      "primary_cta": "Look up a hash",
+      "content_rules": [
+        "State that exact-match lookups miss modified files.",
+        "Name data sources only as verified."
+      ],
+      "evidence_to_cite": [
+        "https://inventivehq.com/tools/security/hash-lookup",
+        "https://inventivehq.com/blog/how-malware-hash-lookup-services-identify-threats",
+        "https://jentic.com/apis/circl.lu/circl",
+        "https://echo.archivarix.net/fr/archive/malwarebazaar"
+      ],
+      "owner_confirmations_needed": [
+        "Which databases/APIs are queried and their terms (MalwareBazaar needs an abuse.ch key per a third-party listing)",
+        "Whether files are hashed locally"
+      ],
+      "uncertainty": "Data-source terms and API key requirements (X12) need verifying."
+    },
+    {
+      "page_id": "pg_004",
+      "opportunity_id": "co_004",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/learn/what-is-a-file-hash",
+      "page_type": "tutorial",
+      "search_intent": "informational",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000023",
+        "keyword": "what is a file hash"
+      },
+      "secondary_keywords": [],
+      "excluded_keywords": [],
+      "title_tag": "What Is a File Hash? MD5, SHA-1, SHA-256 | CyberEDT",
+      "title_length": 51,
+      "meta_description": "A beginner explanation of file hashes, why analysts use them, and what hash lookups can and cannot tell you.",
+      "meta_length": 108,
+      "h1": "What is a file hash?",
+      "h2_outline": [
+        "Hashes in plain language",
+        "MD5, SHA-1 and SHA-256",
+        "How analysts use hashes",
+        "Limits"
+      ],
+      "schema_type": "Article",
+      "internal_links_to": [
+        "pg_003"
+      ],
+      "primary_cta": "Try Hash Guard",
+      "content_rules": [],
+      "evidence_to_cite": [
+        "https://inventivehq.com/blog/how-malware-hash-lookup-services-identify-threats"
+      ],
+      "owner_confirmations_needed": [],
+      "uncertainty": "Single source."
+    },
+    {
+      "page_id": "pg_005",
+      "opportunity_id": "co_005",
+      "priority": "P0",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/defence/threat-actors",
+      "page_type": "free_tool",
+      "search_intent": "informational",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000025",
+        "keyword": "apt groups list"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_intl_000026",
+          "keyword": "threat actor database"
+        },
+        {
+          "keyword_id": "kw_intl_000028",
+          "keyword": "mitre attack groups"
+        },
+        {
+          "keyword_id": "kw_intl_000027",
+          "keyword": "ransomware groups list"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "Threat Actor and APT Group Intelligence | CyberEDT",
+      "title_length": 50,
+      "meta_description": "Explore APT, ransomware and crimeware groups with ATT&CK-mapped techniques, tools and campaign context from CyberEDT.",
+      "meta_length": 117,
+      "h1": "Threat actor intelligence hub",
+      "h2_outline": [
+        "Browse groups",
+        "What each profile includes",
+        "How we map to MITRE ATT&CK",
+        "Sources and update policy"
+      ],
+      "schema_type": "CollectionPage",
+      "internal_links_to": [
+        "pg_006"
+      ],
+      "primary_cta": "Explore a group",
+      "content_rules": [
+        "Every actor claim needs a cited source; avoid attribution certainty unless sourced.",
+        "Do not copy MITRE or vendor text."
+      ],
+      "evidence_to_cite": [
+        "https://socradar.io/free-tools/threat-actor/",
+        "https://attack.mitre.org/groups",
+        "https://security.glexia.com/threat-intelligence/attack/groups"
+      ],
+      "owner_confirmations_needed": [
+        "Which groups are live",
+        "Source and verification policy for each record"
+      ],
+      "uncertainty": "Authoritative competitors; navigational queries may not convert."
+    },
+    {
+      "page_id": "pg_006",
+      "opportunity_id": "co_006",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/learn/mitre-attack-for-beginners",
+      "page_type": "tutorial",
+      "search_intent": "educational",
+      "primary_keyword": {
+        "keyword_id": "kw_intl_000035",
+        "keyword": "mitre attack for beginners"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_intl_000032",
+          "keyword": "mitre attack navigator tutorial"
+        },
+        {
+          "keyword_id": "kw_intl_000036",
+          "keyword": "apt group profiling threat hunting"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "MITRE ATT&CK for Beginners | CyberEDT",
+      "title_length": 37,
+      "meta_description": "A beginner guide to MITRE ATT&CK tactics and techniques with attacker narratives, built from CyberEDT's technique dataset.",
+      "meta_length": 122,
+      "h1": "MITRE ATT&CK for beginners",
+      "h2_outline": [
+        "Tactics, techniques, procedures",
+        "Reading a technique",
+        "Using the Navigator",
+        "Technique stories",
+        "Where to go next"
+      ],
+      "schema_type": "Article",
+      "internal_links_to": [
+        "pg_005"
+      ],
+      "primary_cta": "Explore techniques",
+      "content_rules": [
+        "Paraphrase; cite attack.mitre.org."
+      ],
+      "evidence_to_cite": [
+        "https://kelacyber.com/blog/effective-threat-hunting-with-apt-profiling-leveraging-mitre-framework",
+        "https://medium.com/@paritoshblogs/understanding-mitre-att-ck-groups-a-technical-analysis-e35773a46cd5",
+        "https://www.claudemarket.ai/skills/mukul975/analyzing-apt-group-with-mitre-navigator"
+      ],
+      "owner_confirmations_needed": [],
+      "uncertainty": "Only seed-level evidence."
+    },
+    {
+      "page_id": "pg_007",
+      "opportunity_id": "co_007",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/learn/free-cybersecurity-learning-path-india",
+      "page_type": "career_roadmap",
+      "search_intent": "educational",
+      "primary_keyword": {
+        "keyword_id": "kw_in_000041",
+        "keyword": "cyber security course for beginners free india"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_in_000042",
+          "keyword": "government free cybersecurity course india"
+        },
+        {
+          "keyword_id": "kw_in_000038",
+          "keyword": "free ethical hacking course"
+        },
+        {
+          "keyword_id": "kw_in_000037",
+          "keyword": "ethical hacking course for beginners india"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "Free Cybersecurity Learning Path for India | CyberEDT",
+      "title_length": 53,
+      "meta_description": "A free path to learn cybersecurity in India, with each course labelled by what you actually receive: certificate, badge or nothing.",
+      "meta_length": 131,
+      "h1": "Free cybersecurity learning path (India)",
+      "h2_outline": [
+        "Start here",
+        "Government and provider courses",
+        "Hands-on practice",
+        "What certificates really mean",
+        "Next steps"
+      ],
+      "schema_type": "Article (or ItemList)",
+      "internal_links_to": [
+        "pg_008"
+      ],
+      "primary_cta": "Start learning",
+      "content_rules": [
+        "List only courses verified on official pages.",
+        "No placement or job guarantees."
+      ],
+      "evidence_to_cite": [
+        "https://www.lingayasvidyapeeth.edu.in/?p=15341",
+        "https://www.mygreatlearning.com/academy/learn-for-free/courses/introduction-to-ethical-hacking-in-hindi",
+        "https://www.careers360.com/university/uttarakhand-open-university-haldwani/introduction-cyber-security-certification-course",
+        "https://www.careers360.com/courses-certifications/articles/government-cyber-security-courses-in-india"
+      ],
+      "owner_confirmations_needed": [
+        "Verify each course's certificate terms and costs"
+      ],
+      "uncertainty": "Provider terms unverified."
+    },
+    {
+      "page_id": "pg_008",
+      "opportunity_id": "co_008",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/education/internship-program",
+      "page_type": "product_landing_page",
+      "search_intent": "job_seeking",
+      "primary_keyword": {
+        "keyword_id": "kw_in_000045",
+        "keyword": "cybersecurity internship with projects"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_in_000046",
+          "keyword": "virtual cybersecurity internship certificate india"
+        },
+        {
+          "keyword_id": "kw_in_000047",
+          "keyword": "cyber security internship for college students"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "Cybersecurity Internship With Real Projects | CyberEDT",
+      "title_length": 54,
+      "meta_description": "CyberEDT's project-based cybersecurity internship: what you build, how it works, and who can apply.",
+      "meta_length": 99,
+      "h1": "Project-based cybersecurity internship",
+      "h2_outline": [
+        "Program overview",
+        "Project catalog",
+        "Who can apply",
+        "What you receive",
+        "How to apply"
+      ],
+      "schema_type": "Course (or EducationalOccupationalProgram)",
+      "internal_links_to": [
+        "pg_007"
+      ],
+      "primary_cta": "Apply",
+      "content_rules": [
+        "Describe only confirmed outcomes; no job guarantees.",
+        "State clearly whether a certificate is issued."
+      ],
+      "evidence_to_cite": [
+        "https://www.jobinsider.in/jobs/i4c-internship-cyber-security-summer-winter/",
+        "https://alexahire.in/?p=101800"
+      ],
+      "owner_confirmations_needed": [
+        "Program length, number of projects, fees, certificate terms, eligibility",
+        "Dates and application process"
+      ],
+      "uncertainty": "Offer legitimacy comparisons not done."
+    },
+    {
+      "page_id": "pg_009",
+      "opportunity_id": "co_009",
+      "priority": "P1",
+      "status": "draft_needed",
+      "url_status": "proposed_not_mapped_to_live_url",
+      "proposed_slug": "/go-plus/school-cyber-awareness",
+      "page_type": "product_landing_page",
+      "search_intent": "informational",
+      "primary_keyword": {
+        "keyword_id": "kw_in_000012",
+        "keyword": "cyber awareness program for school students india"
+      },
+      "secondary_keywords": [
+        {
+          "keyword_id": "kw_in_000015",
+          "keyword": "cybersecurity awareness workshop for schools"
+        },
+        {
+          "keyword_id": "kw_in_000016",
+          "keyword": "free cyber awareness session for government schools"
+        },
+        {
+          "keyword_id": "kw_in_000014",
+          "keyword": "cyber safety session for schools"
+        }
+      ],
+      "excluded_keywords": [],
+      "title_tag": "Cyber Awareness Program for Schools | EDT GO+",
+      "title_length": 45,
+      "meta_description": "EDT GO+ brings free cyber awareness sessions to government schools. See what we cover and how schools and partners can get involved.",
+      "meta_length": 132,
+      "h1": "EDT GO+: cyber awareness for schools",
+      "h2_outline": [
+        "What we teach",
+        "How a session works",
+        "Safeguards for students",
+        "Partner with us",
+        "Contact"
+      ],
+      "schema_type": "Organization / Event (if real events)",
+      "internal_links_to": [
+        "pg_002"
+      ],
+      "primary_cta": "Partner with GO+",
+      "content_rules": [
+        "Do not imply government endorsement or partnership unless confirmed.",
+        "Child-safety and consent practices must be real and stated by the owner."
+      ],
+      "evidence_to_cite": [
+        "https://www.cbseacademic.nic.in/web_material/Circulars/2021/98_Circular_2021.pdf",
+        "https://cyberpeace.org/events/cyberpeace-first-responder-program-kendriya-vidyalaya-sangathan-kvs-june-2026",
+        "https://www.cbseacademic.nic.in/web_material/Notifications/2025/63_Notification_2025.pdf",
+        "https://events.vtools.ieee.org/m/538593"
+      ],
+      "owner_confirmations_needed": [
+        "Partnership status with any authority",
+        "Child-safety policy",
+        "Contact details"
+      ],
+      "uncertainty": "Peers/partners not assessed; compliance with child-safety rules not researched."
+    }
+  ],
+  "implementation_checklist": [
+    "Check indexability: robots meta and robots.txt allow the page; canonical points to itself.",
+    "Check the server-rendered HTML contains the H1 and main copy.",
+    "Add new pages to sitemap.xml and submit in Search Console.",
+    "Connect Search Console; after 4+ weeks review impressions and queries, then update priorities with real data.",
+    "Request Keyword Planner (India) and Trends exports and add them to keywords.jsonl with source and date.",
+    "Use descriptive internal link anchors; avoid orphan pages."
+  ]
+}
