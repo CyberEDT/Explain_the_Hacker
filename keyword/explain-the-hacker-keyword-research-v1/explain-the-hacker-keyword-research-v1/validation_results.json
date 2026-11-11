@@ -1,0 +1,90 @@
+{
+  "run_at": "2026-10-24",
+  "results": [
+    {
+      "check": "json_syntax",
+      "passed": true,
+      "detail": "all files parse"
+    },
+    {
+      "check": "keywords_schema",
+      "passed": true,
+      "detail": "33 valid"
+    },
+    {
+      "check": "clusters_schema",
+      "passed": true,
+      "detail": "8 valid"
+    },
+    {
+      "check": "competitors_schema",
+      "passed": true,
+      "detail": "11 valid"
+    },
+    {
+      "check": "content_schema",
+      "passed": true,
+      "detail": "8 valid"
+    },
+    {
+      "check": "gaps_schema",
+      "passed": true,
+      "detail": "4 valid"
+    },
+    {
+      "check": "unique_ids",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "no_duplicates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "valid_urls",
+      "passed": true,
+      "detail": "94 syntax-checked"
+    },
+    {
+      "check": "source_ids_resolve",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "metrics_null_no_source",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "unsourced_not_prioritised",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "cluster_references",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "content_references",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "manifest_counts",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "summary_written",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "summary": {
+    "checks": 16,
+    "passed": 16,
+    "failed": 0
+  }
+}

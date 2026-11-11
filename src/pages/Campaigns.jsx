@@ -21,8 +21,9 @@ export default function Campaigns() {
     return (
         <main style={{ minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text-primary)', paddingBottom: '100px' }}>
             <SEO 
-                title="Historical Campaigns" 
-                description="Explore historical threat actor campaigns, their targets, and the techniques used in major cyber attacks."
+                title="APT & Threat Actor Campaign Walkthroughs | ETH"
+                description="Step-by-step walkthroughs of documented threat actor campaigns mapped to MITRE ATT&CK, with verified real-world indicators and defender telemetry."
+                keywords="apt group attack chain, threat actor campaigns, ransomware attack chain, MITRE ATT&CK groups"
                 canonicalUrl="/campaigns"
             />
             

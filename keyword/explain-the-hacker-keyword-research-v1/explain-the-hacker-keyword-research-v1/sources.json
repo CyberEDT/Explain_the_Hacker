@@ -1,0 +1,122 @@
+{
+  "H01": {
+    "title": "Explain The Hacker (own site; only head meta tags returned to fetch)",
+    "url": "https://explainthehacker.cyberedt.com/",
+    "source_type": "own_site",
+    "retrieved_at": "2026-10-24"
+  },
+  "H02": {
+    "title": "Coursera / Packt: MITRE ATT&CK Framework foundations",
+    "url": "https://www.coursera.org/de-DE/learn/packt-mitre-att-ck-framework-foundations-for-cyber-defense-onrdn",
+    "source_type": "course_platform",
+    "retrieved_at": "2026-10-24"
+  },
+  "H03": {
+    "title": "NICCS / Cybrary: practical threat modeling course",
+    "url": "https://niccs.cisa.gov/education-training/catalog/cybrary/practical-threat-modeling",
+    "source_type": "government_catalog",
+    "retrieved_at": "2026-10-24"
+  },
+  "H04": {
+    "title": "GitHub: AttackFlow kill chain editor and visualizer",
+    "url": "https://github.com/Pr0cella/AttackFlow",
+    "source_type": "open_source_repo",
+    "retrieved_at": "2026-10-24"
+  },
+  "H05": {
+    "title": "GitHub: cyber range simulator (ATT&CK-mapped attack simulation)",
+    "url": "https://github.com/aidhas23/cyber-range-simulator",
+    "source_type": "open_source_repo",
+    "retrieved_at": "2026-10-24"
+  },
+  "H06": {
+    "title": "Antisyphon: attack emulation tools course",
+    "url": "https://www.antisyphontraining.com/on-demand-courses/attack-emulation-tools-atomic-red-team-caldera-and-more-w-carrie-roberts/",
+    "source_type": "training_vendor",
+    "retrieved_at": "2026-10-24"
+  },
+  "H07": {
+    "title": "Antisyphon: MITRE ATT&CK framework and tools class",
+    "url": "https://www.antisyphontraining.com/?p=8449",
+    "source_type": "training_vendor",
+    "retrieved_at": "2026-10-24"
+  },
+  "H08": {
+    "title": "Hack The Box: LetsDefend joins HTB",
+    "url": "https://www.hackthebox.com/blog/welcome-letsdefend?hsLang=en",
+    "source_type": "vendor_blog",
+    "retrieved_at": "2026-10-24"
+  },
+  "H09": {
+    "title": "ShieldRiser C-SOC attack scenario platform (listing)",
+    "url": "https://globalcybersecuritynetwork.com/company/shieldriser/",
+    "source_type": "third_party_listing",
+    "retrieved_at": "2026-10-24"
+  },
+  "H10": {
+    "title": "Security Blue Team / SourceForge listing (CyberDefenders text)",
+    "url": "https://sourceforge.net/software/product/Security-Blue-Team/",
+    "source_type": "third_party_listing",
+    "retrieved_at": "2026-10-24"
+  },
+  "H11": {
+    "title": "LetsDefend help: what is LetsDefend",
+    "url": "https://help.letsdefend.io/en/articles/8742685-what-is-letsdefend",
+    "source_type": "vendor_docs",
+    "retrieved_at": "2026-10-24"
+  },
+  "H12": {
+    "title": "CyberDefenders labs",
+    "url": "https://cyberdefenders.org/labs",
+    "source_type": "vendor_page",
+    "retrieved_at": "2026-10-24"
+  },
+  "H13": {
+    "title": "Hack The Box Threat Range",
+    "url": "https://www.hackthebox.com/business/threat-range-demo?hsLang=en",
+    "source_type": "vendor_page",
+    "retrieved_at": "2026-10-24"
+  },
+  "H14": {
+    "title": "Infosec Skills cyber range labs",
+    "url": "https://www.infosecinstitute.com/range",
+    "source_type": "vendor_page",
+    "retrieved_at": "2026-10-24"
+  },
+  "H15": {
+    "title": "Metana: best SOC analyst training platform (pricing claims unverified)",
+    "url": "https://metana.io/blog/what-is-the-best-soc-analyst-training-platform/",
+    "source_type": "third_party_blog",
+    "retrieved_at": "2026-10-24"
+  },
+  "H16": {
+    "title": "EthicalHacking.ai LetsDefend review",
+    "url": "https://ethicalhacking.ai/tools/letsdefend",
+    "source_type": "third_party_review",
+    "retrieved_at": "2026-10-24"
+  },
+  "H17": {
+    "title": "Fraunhofer SIT cyber range blue team training",
+    "url": "https://cyberrange.sit.fraunhofer.de/blue-team-basic-en.php",
+    "source_type": "research_institute",
+    "retrieved_at": "2026-10-24"
+  },
+  "H18": {
+    "title": "MITRE ATT&CK Groups",
+    "url": "https://attack.mitre.org/groups",
+    "source_type": "official_framework",
+    "retrieved_at": "2026-10-24"
+  },
+  "H19": {
+    "title": "KELA: APT profiling with MITRE framework",
+    "url": "https://kelacyber.com/blog/effective-threat-hunting-with-apt-profiling-leveraging-mitre-framework",
+    "source_type": "vendor_blog",
+    "retrieved_at": "2026-10-24"
+  },
+  "H20": {
+    "title": "ATT&CK Navigator analysis guide (skill listing; shows Navigator URL)",
+    "url": "https://www.claudemarket.ai/skills/mukul975/analyzing-apt-group-with-mitre-navigator",
+    "source_type": "low_reliability_listing",
+    "retrieved_at": "2026-10-24"
+  }
+}

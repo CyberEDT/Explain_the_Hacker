@@ -14,6 +14,7 @@ import { mitreIntelligenceData } from '../../data/mitreIntelligenceData';
 import { useCILSession } from '@/hooks/useCILSession';
 import { CILNavigator } from '@/integrations/cil';
 import AttackerReasoningPanel from './AttackerReasoningPanel';
+import MatchedCombinationsSection from './MatchedCombinationsSection';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 function Ico({ d, size = 16, strokeWidth = 2 }) {
@@ -1246,7 +1247,17 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
                 </>
             )}
 
-            <SectionDivider number="06" title="MITRE MAPPING" />
+            {/* ── 05. MITRE ATT&CK Mapping ── */}
+            {result.matchedAttackCombinations?.length > 0 && (
+                <>
+                    <SectionDivider number="06" title="COMBINATION INTELLIGENCE" />
+                    <MatchedCombinationsSection
+                        combinations={result.matchedAttackCombinations}
+                    />
+                </>
+            )}
+
+            <SectionDivider number="07" title="MITRE MAPPING" />
             {result.intelligenceLevel === 'LOW' ? (
                 <SimplifiedMitreSection mitreChain={result.killChain} />
             ) : (
@@ -1259,7 +1270,7 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
             {/* ── 07. Supporting evidence ── */}
             {result.intelligenceLevel === 'HIGH' && (
                 <>
-                    <SectionDivider number="07" title="EVIDENCE" />
+                    <SectionDivider number="08" title="EVIDENCE" />
                     <EvidenceSummarySection 
                         evidenceSummary={result.evidenceSummary} 
                     />
@@ -1267,13 +1278,13 @@ export default function ResultsPanel({ result, onNewAnalysis }) {
             )}
 
             {/* ── 08. Mitigations ── */}
-            <SectionDivider number="08" title="MITIGATIONS" />
+            <SectionDivider number="09" title="MITIGATIONS" />
             <MitigationsSection mitigations={result.mitigations} intelligenceLevel={result.intelligenceLevel} />
 
             {/* ── 09. IOCs ── */}
             {result.intelligenceLevel === 'HIGH' && (
                 <>
-                    <SectionDivider number="09" title="IOCS" />
+                    <SectionDivider number="10" title="IOCS" />
                     <IOCSection iocList={result.iocList} />
                 </>
             )}

@@ -240,8 +240,9 @@ export default function LandingPage() {
     return (
         <div style={{ background: '#000', color: '#fff', flex: 1 }}>
             <SEO 
-                title="ETH (Explain The Hacker)" 
-                description="Explain The Hacker by CyberEDT is an advanced interactive cybersecurity tool to simulate and understand real-world attack chains. Visualize threats, analyze tactics, and learn how hackers think."
+                title="Explain The Hacker: Attack Chain Simulator | ETH"
+                description="Simulate and visualize real-world attack chains mapped to MITRE ATT&CK. Learn how attacks unfold and how defenders can spot them."
+                keywords="attack chain visualization, attack chain simulator, cyber attack simulation tool, MITRE ATT&CK, threat analysis, how hackers think"
                 canonicalUrl="/"
                 schema={schemaOrg}
             />

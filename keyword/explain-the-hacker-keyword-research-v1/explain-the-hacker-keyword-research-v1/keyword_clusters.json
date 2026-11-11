@@ -1,0 +1,189 @@
+[
+  {
+    "cluster_id": "cl_eth_attack_chain",
+    "cluster_name": "Attack chain simulation and visualization (core)",
+    "parent_cluster": null,
+    "description": "Attack chain simulation and visualization (core).",
+    "user_problem": "Learners want to see how an attack unfolds step by step.",
+    "primary_intent": "commercial_investigation",
+    "target_audience": "Students, junior analysts",
+    "associated_keywords": [
+      "kw_intl_000001",
+      "kw_intl_000002",
+      "kw_intl_000003",
+      "kw_intl_000004",
+      "kw_intl_000005",
+      "kw_intl_000006",
+      "kw_in_000033"
+    ],
+    "landing_page_recommendation": "ETH product landing page: interactive attack chain simulator",
+    "supporting_content_recommendations": [],
+    "internal_linking_relationships": [
+      "cl_eth_mitre_mapping",
+      "cl_eth_campaign_walkthroughs"
+    ],
+    "priority": "P0",
+    "evidence_summary": "7 keywords; 6 with sources; 0 with volume.",
+    "limitations": "No volume, difficulty or ranking data."
+  },
+  {
+    "cluster_id": "cl_eth_mitre_mapping",
+    "cluster_name": "MITRE ATT&CK mapping and technique explainers",
+    "parent_cluster": null,
+    "description": "MITRE ATT&CK mapping and technique explainers.",
+    "user_problem": "ATT&CK feels abstract; learners want technique explainers.",
+    "primary_intent": "educational",
+    "target_audience": "Students, analysts",
+    "associated_keywords": [
+      "kw_intl_000010",
+      "kw_intl_000011",
+      "kw_intl_000012",
+      "kw_intl_000013"
+    ],
+    "landing_page_recommendation": "Technique explainer hub linked to simulations",
+    "supporting_content_recommendations": [],
+    "internal_linking_relationships": [
+      "cl_eth_attack_chain",
+      "cl_eth_ioc_analysis"
+    ],
+    "priority": "P1",
+    "evidence_summary": "4 keywords; 4 with sources; 0 with volume.",
+    "limitations": "No volume, difficulty or ranking data."
+  },
+  {
+    "cluster_id": "cl_eth_hacker_mindset",
+    "cluster_name": "How hackers think / attacker mindset",
+    "parent_cluster": null,
+    "description": "How hackers think / attacker mindset.",
+    "user_problem": "Defenders want to understand attacker thinking.",
+    "primary_intent": "educational",
+    "target_audience": "Beginners",
+    "associated_keywords": [
+      "kw_intl_000007",
+      "kw_intl_000008",
+      "kw_intl_000009"
+    ],
+    "landing_page_recommendation": "Attacker mindset guide",
+    "supporting_content_recommendations": [],
+    "internal_linking_relationships": [
+      "cl_eth_attack_chain"
+    ],
+    "priority": "P1",
+    "evidence_summary": "3 keywords; 3 with sources; 0 with volume.",
+    "limitations": "No volume, difficulty or ranking data."
+  },
+  {
+    "cluster_id": "cl_eth_soc_training",
+    "cluster_name": "SOC and blue team training simulation",
+    "parent_cluster": null,
+    "description": "SOC and blue team training simulation.",
+    "user_problem": "Learners seek SOC practice; heavy established competition.",
+    "primary_intent": "commercial_investigation",
+    "target_audience": "SOC aspirants",
+    "associated_keywords": [
+      "kw_intl_000017",
+      "kw_intl_000018",
+      "kw_intl_000019",
+      "kw_intl_000020",
+      "kw_intl_000021",
+      "kw_intl_000022",
+      "kw_intl_000023"
+    ],
+    "landing_page_recommendation": "Comparison page (only if ETH fit is confirmed)",
+    "supporting_content_recommendations": [],
+    "internal_linking_relationships": [
+      "cl_eth_attack_chain",
+      "cl_eth_ioc_analysis"
+    ],
+    "priority": "P1",
+    "evidence_summary": "7 keywords; 7 with sources; 0 with volume.",
+    "limitations": "No volume, difficulty or ranking data."
+  },
+  {
+    "cluster_id": "cl_eth_red_team_learning",
+    "cluster_name": "Red team and adversary emulation learning",
+    "parent_cluster": null,
+    "description": "Red team and adversary emulation learning.",
+    "user_problem": "Learners explore red team and emulation.",
+    "primary_intent": "educational",
+    "target_audience": "Students",
+    "associated_keywords": [
+      "kw_intl_000024",
+      "kw_intl_000025",
+      "kw_intl_000026",
+      "kw_intl_000027"
+    ],
+    "landing_page_recommendation": "Explainer on simulation vs emulation",
+    "supporting_content_recommendations": [],
+    "internal_linking_relationships": [
+      "cl_eth_attack_chain"
+    ],
+    "priority": "P2",
+    "evidence_summary": "4 keywords; 2 with sources; 0 with volume.",
+    "limitations": "No volume, difficulty or ranking data."
+  },
+  {
+    "cluster_id": "cl_eth_ioc_analysis",
+    "cluster_name": "IOC and threat analysis learning",
+    "parent_cluster": null,
+    "description": "IOC and threat analysis learning.",
+    "user_problem": "Learners need IOC and threat analysis basics.",
+    "primary_intent": "educational",
+    "target_audience": "Students",
+    "associated_keywords": [
+      "kw_intl_000028",
+      "kw_intl_000029",
+      "kw_intl_000030"
+    ],
+    "landing_page_recommendation": "IOC explainer tied to chain stages",
+    "supporting_content_recommendations": [],
+    "internal_linking_relationships": [
+      "cl_eth_mitre_mapping"
+    ],
+    "priority": "P1",
+    "evidence_summary": "3 keywords; 1 with sources; 0 with volume.",
+    "limitations": "No volume, difficulty or ranking data."
+  },
+  {
+    "cluster_id": "cl_eth_campaign_walkthroughs",
+    "cluster_name": "APT and ransomware campaign walkthroughs",
+    "parent_cluster": null,
+    "description": "APT and ransomware campaign walkthroughs.",
+    "user_problem": "Learners want real campaign narratives.",
+    "primary_intent": "informational",
+    "target_audience": "Students, analysts",
+    "associated_keywords": [
+      "kw_intl_000014",
+      "kw_intl_000015",
+      "kw_intl_000016"
+    ],
+    "landing_page_recommendation": "Campaign walkthrough series",
+    "supporting_content_recommendations": [],
+    "internal_linking_relationships": [
+      "cl_eth_attack_chain",
+      "cl_eth_mitre_mapping"
+    ],
+    "priority": "P1",
+    "evidence_summary": "3 keywords; 1 with sources; 0 with volume.",
+    "limitations": "No volume, difficulty or ranking data."
+  },
+  {
+    "cluster_id": "cl_eth_brand",
+    "cluster_name": "Brand and navigational terms",
+    "parent_cluster": null,
+    "description": "Brand and navigational terms.",
+    "user_problem": "Brand and navigational searches.",
+    "primary_intent": "navigational",
+    "target_audience": "Existing users",
+    "associated_keywords": [
+      "kw_intl_000031",
+      "kw_intl_000032"
+    ],
+    "landing_page_recommendation": "Home page; monitor in Search Console",
+    "supporting_content_recommendations": [],
+    "internal_linking_relationships": [],
+    "priority": "research_required",
+    "evidence_summary": "2 keywords; 0 with sources; 0 with volume.",
+    "limitations": "No volume, difficulty or ranking data."
+  }
+]

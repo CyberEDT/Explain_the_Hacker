@@ -12,19 +12,19 @@
   <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains" />
 
   <!-- ── SEO ─────────────────────────────────────────────────── -->
-  <title>Explain The Hacker | CyberEDT</title>
+  <title>Explain The Hacker: Attack Chain Simulator | ETH</title>
   <meta name="description"
-    content="Explain The Hacker by CyberEDT – an advanced interactive cybersecurity tool to simulate and understand real-world attack chains. Visualize threats, analyze tactics, and learn how hackers think." />
+    content="Simulate and visualize real-world attack chains mapped to MITRE ATT&CK. Learn how attacks unfold and how defenders can spot them." />
   <meta name="keywords"
-    content="Explain The Hacker, CyberEDT, cybersecurity, hacker simulation, attack chain, MITRE ATT&CK, threat analysis, penetration testing, IOC, red team, soc training" />
+    content="attack chain visualization, attack chain simulator, cyber attack simulation tool, cyber kill chain explained, MITRE ATT&CK, threat analysis, how hackers think" />
   <meta name="author" content="CyberEDT" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <link rel="canonical" href="https://explainthehacker.cyberedt.com/" />
 
   <!-- ── Open Graph ───────────────────────────────────────────── -->
-  <meta property="og:title" content="Explain The Hacker | CyberEDT" />
+  <meta property="og:title" content="Explain The Hacker: Attack Chain Simulator | ETH" />
   <meta property="og:description"
-    content="Simulate, visualize, and understand real-world attack chains with MITRE ATT&CK-mapped threat analysis by CyberEDT." />
+    content="Simulate and visualize real-world attack chains mapped to MITRE ATT&CK. Learn how attacks unfold and how defenders can spot them." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://explainthehacker.cyberedt.com/" />
   <meta property="og:site_name" content="CyberEDT" />
@@ -34,9 +34,9 @@
   <!-- ── Twitter Card ─────────────────────────────────────────── -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@CyberEDT" />
-  <meta name="twitter:title" content="Explain The Hacker | CyberEDT" />
+  <meta name="twitter:title" content="Explain The Hacker: Attack Chain Simulator | ETH" />
   <meta name="twitter:description"
-    content="Simulate and understand real-world attack chains with MITRE ATT&CK-mapped threat analysis." />
+    content="Simulate and visualize real-world attack chains mapped to MITRE ATT&CK. Learn how attacks unfold and how defenders can spot them." />
   <meta name="twitter:image" content="https://explainthehacker.cyberedt.com/favicon.png" />
 
   <!-- ── Structured Data (JSON-LD) ────────────────────────────── -->
@@ -83,7 +83,24 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <header style="padding:20px;font-family:sans-serif;color:#fff;background:#000;">
+      <h1>Explain The Hacker: Interactive Attack Chain Simulator</h1>
+      <p>Simulate and visualize real-world attack chains mapped to MITRE ATT&CK. Learn how attacks unfold and how defenders can spot them.</p>
+      <nav>
+        <a href="/lab" style="color:#ff0033;">Attack Simulation Lab</a> |
+        <a href="/killchain" style="color:#ff0033;">Cyber Kill Chain Explained</a> |
+        <a href="/tactics" style="color:#ff0033;">MITRE ATT&CK Techniques</a> |
+        <a href="/library" style="color:#ff0033;">How Hackers Think: Attack Library</a> |
+        <a href="/campaigns" style="color:#ff0033;">Threat Actor Campaigns</a>
+      </nav>
+    </header>
+  </div>
+  <noscript>
+    <div style="padding:20px;font-family:sans-serif;background:#050505;color:#fff;">
+      <p>JavaScript is required to run real-time attack simulations in Explain The Hacker. Please enable JavaScript in your browser.</p>
+    </div>
+  </noscript>
   <script>window.__DEFINES__ = window.__DEFINES__ || {};</script>
   <script type="module" src="/src/main.jsx"></script>
 </body>

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Competitor",
+  "type": "object",
+  "required": [
+    "competitor_id",
+    "name",
+    "official_url",
+    "source_urls",
+    "retrieved_at",
+    "confidence",
+    "limitations"
+  ],
+  "properties": {
+    "official_url": {
+      "pattern": "^https?://"
+    },
+    "source_urls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "pattern": "^https?://"
+      }
+    },
+    "confidence": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    }
+  }
+}

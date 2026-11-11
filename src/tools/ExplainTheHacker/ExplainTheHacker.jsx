@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, Suspense, lazy } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { COMBOS } from '@/data/attackCombinationsData';
 import useExplainHacker from './useExplainHacker';
 import AttackSimulationForm from './AttackSimulationForm';
 const ResultsPanel = lazy(() => import('./ResultsPanel'));
@@ -284,6 +285,7 @@ function StatItem({ value, label }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ExplainTheHacker() {
     const navigate = useNavigate();
+    const location = useLocation();
     const {
         loading, error, result, formValues, fieldErrors, history,
         addPort, addPorts, removePort,
@@ -293,6 +295,31 @@ export default function ExplainTheHacker() {
         handleSubmit, resetForm, clearResult, cancelAnalysis, loadHistoryItem, importExposureData
     } = useExplainHacker();
 
+    const handleSelectPreset = useCallback((combo) => {
+        if (!combo) return;
+        importExposureData({
+            openPorts: combo.port ? [String(combo.port)] : [],
+            misconfigurations: combo.misconfig ? [combo.misconfig] : [],
+            logSnippet: '',
+        });
+    }, [importExposureData]);
+
+    useEffect(() => {
+        const comboFromState = location.state?.presetCombo;
+        const searchParams = new URLSearchParams(location.search);
+        const comboId = searchParams.get('comboId');
+        const targetCombo = comboFromState || (comboId ? COMBOS.find(c => c.id === comboId) : null);
+
+        if (targetCombo) {
+            const current = importExposureData({
+                openPorts: targetCombo.port ? [String(targetCombo.port)] : [],
+                misconfigurations: targetCombo.misconfig ? [targetCombo.misconfig] : [],
+                logSnippet: '',
+            });
+            handleSubmit(null, current);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, [location.state, location.search, importExposureData, handleSubmit]);
     const handleAnalyzeExposure = useCallback(() => {
         const data = consumeExposureIntelligence();
         if (data) {
@@ -333,8 +360,9 @@ export default function ExplainTheHacker() {
         // Reference outer: min-h-screen bg-background text-foreground font-display
         <div style={{ background: '#000', color: '#fff', flex: 1, minHeight: '100vh' }}>
             <SEO 
-                title="ETH Engine" 
-                description="Simulate real-world attack chains and generate predictive threat models with the Explain The Hacker (ETH) Engine."
+                title="Interactive Attack Chain Simulator Lab | ETH"
+                description="Input exposed ports and misconfigurations to simulate predictive MITRE ATT&CK attack chains, evidence reasoning, and actionable mitigations."
+                keywords="attack chain simulator, cyber attack simulation tool, mitre attack mapping tool, threat simulation"
                 canonicalUrl="/lab"
                 schema={schemaOrg}
             />
@@ -445,6 +473,7 @@ export default function ExplainTheHacker() {
                         onRemoveMisconfiguration={removeMisconfiguration}
                         onLogSnippetChange={setLogSnippet}
                         onIntelligenceLevelChange={setIntelligenceLevel}
+                        onSelectPreset={handleSelectPreset}
                         onSubmit={handleSubmit}
                         onReset={resetForm}
                     />

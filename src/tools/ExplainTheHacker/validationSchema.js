@@ -6,13 +6,19 @@ import DOMPurify from 'dompurify';
 /** Strip all HTML tags from a string using DOMPurify */
 export function stripHtml(str) {
     if (typeof str !== 'string') return '';
-    return DOMPurify.sanitize(str, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim();
+    if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+        return DOMPurify.sanitize(str, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim();
+    }
+    return str.replace(/<[^>]*>?/gm, '').trim();
 }
 
 /** Strip scripts and dangerous tags using standard DOMPurify defaults */
 export function stripScripts(str) {
     if (typeof str !== 'string') return '';
-    return DOMPurify.sanitize(str).trim();
+    if (DOMPurify && typeof DOMPurify.sanitize === 'function') {
+        return DOMPurify.sanitize(str).trim();
+    }
+    return str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim();
 }
 
 // ─── Port Validation ──────────────────────────────────────────────────────────

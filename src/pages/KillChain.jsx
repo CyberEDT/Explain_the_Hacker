@@ -23,8 +23,9 @@ export default function KillChain() {
     return (
         <main style={{ minHeight: '100vh', background: '#050505', color: '#fff' }}>
             <SEO 
-                title="Cyber Kill Chain Visualizer" 
-                description="Interactive learning resource to explore the 7-phase cyber attack chain and understand adversary movement."
+                title="Cyber Kill Chain & Attack Paths Explained | ETH"
+                description="Understand the 7-phase cyber kill chain and multi-stage attack paths with interactive visual simulations and defensive insights from ETH."
+                keywords="cyber kill chain explained, attack path visualization, cyber attack simulation, intrusion kill chain, MITRE ATT&CK"
                 canonicalUrl="/killchain"
                 schema={schemaOrg}
             />

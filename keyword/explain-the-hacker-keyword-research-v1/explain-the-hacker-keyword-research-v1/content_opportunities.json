@@ -1,0 +1,216 @@
+[
+  {
+    "opportunity_id": "co_001",
+    "topic": "Interactive attack chain simulator (ETH home/landing)",
+    "target_keywords": [
+      "kw_intl_000001",
+      "kw_intl_000002",
+      "kw_intl_000003",
+      "kw_in_000033"
+    ],
+    "audience": "Students, junior analysts",
+    "search_intent": "commercial_investigation",
+    "recommended_content_type": "product_landing_page",
+    "proposed_page_purpose": "State what ETH does, who it is for, with crawlable text",
+    "user_problem": "Learners cannot picture how attacks unfold",
+    "product_connection": "Explain The Hacker",
+    "differentiation_angle": "Narrative-first, ATT&CK-mapped chains",
+    "internal_links": [
+      "co_002",
+      "co_003"
+    ],
+    "supporting_sources": [
+      "https://github.com/Pr0cella/AttackFlow",
+      "https://github.com/aidhas23/cyber-range-simulator",
+      "https://www.hackthebox.com/business/threat-range-demo?hsLang=en"
+    ],
+    "priority": "P0",
+    "rationale": "Direct product fit; the fetched page exposed only meta tags, so crawlable body copy is the first fix.",
+    "uncertainty": "Terms not observed as queries."
+  },
+  {
+    "opportunity_id": "co_002",
+    "topic": "Cyber kill chain and attack path explained",
+    "target_keywords": [
+      "kw_intl_000005",
+      "kw_intl_000004"
+    ],
+    "audience": "Beginners",
+    "search_intent": "informational",
+    "recommended_content_type": "tutorial",
+    "proposed_page_purpose": "Teach chain models using ETH examples",
+    "user_problem": "Chain models are abstract",
+    "product_connection": "Explain The Hacker",
+    "differentiation_angle": "Examples tied to interactive steps",
+    "internal_links": [
+      "co_001",
+      "co_003"
+    ],
+    "supporting_sources": [
+      "https://github.com/Pr0cella/AttackFlow",
+      "https://niccs.cisa.gov/education-training/catalog/cybrary/practical-threat-modeling"
+    ],
+    "priority": "P1",
+    "rationale": "Educational intent aligned.",
+    "uncertainty": "Single-sourced intent."
+  },
+  {
+    "opportunity_id": "co_003",
+    "topic": "ATT&CK techniques explained for beginners",
+    "target_keywords": [
+      "kw_intl_000011",
+      "kw_intl_000013",
+      "kw_intl_000010"
+    ],
+    "audience": "Students",
+    "search_intent": "educational",
+    "recommended_content_type": "tutorial",
+    "proposed_page_purpose": "Technique explainers linked to chains",
+    "user_problem": "ATT&CK courses are paid or video-based",
+    "product_connection": "Explain The Hacker",
+    "differentiation_angle": "Free and visual",
+    "internal_links": [
+      "co_001",
+      "co_005"
+    ],
+    "supporting_sources": [
+      "https://www.coursera.org/de-DE/learn/packt-mitre-att-ck-framework-foundations-for-cyber-defense-onrdn",
+      "https://www.antisyphontraining.com/?p=8449",
+      "https://www.antisyphontraining.com/on-demand-courses/attack-emulation-tools-atomic-red-team-caldera-and-more-w-carrie-roberts/"
+    ],
+    "priority": "P1",
+    "rationale": "Paid options observed [H02][H06][H07].",
+    "uncertainty": "Do not copy MITRE text."
+  },
+  {
+    "opportunity_id": "co_004",
+    "topic": "Think like a hacker: attacker mindset",
+    "target_keywords": [
+      "kw_intl_000007",
+      "kw_intl_000008",
+      "kw_intl_000009"
+    ],
+    "audience": "Beginners",
+    "search_intent": "informational",
+    "recommended_content_type": "tutorial",
+    "proposed_page_purpose": "Mindset guide with safe examples",
+    "user_problem": "Defenders lack attacker perspective",
+    "product_connection": "Explain The Hacker",
+    "differentiation_angle": "Narratives from real campaigns",
+    "internal_links": [
+      "co_001"
+    ],
+    "supporting_sources": [
+      "https://www.infosecinstitute.com/range",
+      "https://www.hackthebox.com/blog/welcome-letsdefend?hsLang=en"
+    ],
+    "priority": "P1",
+    "rationale": "Vendors use this framing.",
+    "uncertainty": "Content must stay defensive and non-operational."
+  },
+  {
+    "opportunity_id": "co_005",
+    "topic": "Campaign walkthrough series",
+    "target_keywords": [
+      "kw_intl_000014",
+      "kw_intl_000015",
+      "kw_intl_000016"
+    ],
+    "audience": "Students, analysts",
+    "search_intent": "informational",
+    "recommended_content_type": "tutorial",
+    "proposed_page_purpose": "Walkthroughs of documented campaigns mapped to ATT&CK",
+    "user_problem": "Hard to follow campaign reports",
+    "product_connection": "Explain The Hacker",
+    "differentiation_angle": "Uses CyberEDT campaign dataset",
+    "internal_links": [
+      "co_001",
+      "co_003"
+    ],
+    "supporting_sources": [
+      "https://kelacyber.com/blog/effective-threat-hunting-with-apt-profiling-leveraging-mitre-framework",
+      "https://attack.mitre.org/groups"
+    ],
+    "priority": "P1",
+    "rationale": "Fits existing datasets.",
+    "uncertainty": "Source accuracy for each campaign must be verified."
+  },
+  {
+    "opportunity_id": "co_006",
+    "topic": "ETH vs SOC training platforms",
+    "target_keywords": [
+      "kw_intl_000017",
+      "kw_intl_000020",
+      "kw_intl_000018"
+    ],
+    "audience": "SOC aspirants",
+    "search_intent": "commercial_investigation",
+    "recommended_content_type": "comparison_page",
+    "proposed_page_purpose": "Honest comparison of what ETH covers versus alert-triage platforms",
+    "user_problem": "Learners choose among many platforms",
+    "product_connection": "Explain The Hacker",
+    "differentiation_angle": "Complement, not replacement",
+    "internal_links": [
+      "co_001"
+    ],
+    "supporting_sources": [
+      "https://www.hackthebox.com/blog/welcome-letsdefend?hsLang=en",
+      "https://help.letsdefend.io/en/articles/8742685-what-is-letsdefend",
+      "https://cyberdefenders.org/labs",
+      "https://metana.io/blog/what-is-the-best-soc-analyst-training-platform/"
+    ],
+    "priority": "P2",
+    "rationale": "Strong incumbents; only publish if ETH features are confirmed.",
+    "uncertainty": "ETH SOC features not verified."
+  },
+  {
+    "opportunity_id": "co_007",
+    "topic": "Simulation vs emulation explainer",
+    "target_keywords": [
+      "kw_intl_000027",
+      "kw_intl_000024"
+    ],
+    "audience": "Students",
+    "search_intent": "informational",
+    "recommended_content_type": "FAQ",
+    "proposed_page_purpose": "Clarify what ETH does and does not do",
+    "user_problem": "Terminology confusion",
+    "product_connection": "Explain The Hacker",
+    "differentiation_angle": "Honest positioning",
+    "internal_links": [
+      "co_001"
+    ],
+    "supporting_sources": [
+      "https://www.antisyphontraining.com/on-demand-courses/attack-emulation-tools-atomic-red-team-caldera-and-more-w-carrie-roberts/",
+      "https://www.antisyphontraining.com/?p=8449"
+    ],
+    "priority": "P2",
+    "rationale": "Avoids overclaiming.",
+    "uncertainty": "Seed-level evidence."
+  },
+  {
+    "opportunity_id": "co_008",
+    "topic": "IOC and threat analysis basics",
+    "target_keywords": [
+      "kw_intl_000028",
+      "kw_intl_000029",
+      "kw_intl_000030"
+    ],
+    "audience": "Students",
+    "search_intent": "informational",
+    "recommended_content_type": "tutorial",
+    "proposed_page_purpose": "IOC basics tied to chain stages",
+    "user_problem": "IOCs confusing",
+    "product_connection": "Explain The Hacker",
+    "differentiation_angle": "Linked to chain stages",
+    "internal_links": [
+      "co_003"
+    ],
+    "supporting_sources": [
+      "https://www.coursera.org/de-DE/learn/packt-mitre-att-ck-framework-foundations-for-cyber-defense-onrdn"
+    ],
+    "priority": "P2",
+    "rationale": "Site meta mentions IOC; evidence thin.",
+    "uncertainty": "Not researched."
+  }
+]
